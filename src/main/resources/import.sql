@@ -3,6 +3,10 @@
 -- Inserting Country (United States, Spain)
 INSERT INTO countries (id, code, name) VALUES (1, 'usa', 'United States'), (2, 'es', 'Spain');
 
+-- Inserting WarehouseLocation
+INSERT INTO warehouse_locations (id, name, address_line1, city, postal_code, country_id, contact_number, is_active)
+VALUES (1, 'EU First', 'Line 1', 'Berlin', 1216, 1, '0123456789', TRUE);
+
 -- Inserting Currency (USD, EUR)
 INSERT INTO currencies (id, code, name) VALUES (1, 'USD', 'US Dollar'), (2, 'EUR', 'Euro');
 
@@ -72,9 +76,9 @@ VALUES (1, 1),
 
 
 -- Inserting VariantStock
-INSERT INTO variant_stocks(id, variant_id, quantity, warehouseLocation)
-VALUES (1, 1, 100, 'Germany'),
-       (2, 2, 150, 'Spain');
+INSERT INTO variant_stocks(id, variant_id, quantity, warehouse_id)
+VALUES (1, 1, 100, 1),
+       (2, 2, 150, 1);
 
 -- Insert VariantPrice
 INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, tax_rate, is_active)

@@ -1,12 +1,14 @@
 package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
+import org.aicart.country.WarehouseLocation;
 
-@Entity(name = "variant_stocks")
+@Entity
+@Table(
+        name = "variant_stocks",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"variant_id", "warehouse_id"})
+)
 public class VariantStock extends PanacheEntity {
 
     @OneToOne
@@ -14,8 +16,9 @@ public class VariantStock extends PanacheEntity {
     public ProductVariant productVariant;
 
     @Column(nullable = false)
-    public Integer quantity;
+    public Integer quantity = 0;
 
-    public String warehouseLocation;
-
+    @ManyToOne
+    @JoinColumn(name = "warehouse_id", nullable = false)
+    public WarehouseLocation warehouseLocation;
 }
