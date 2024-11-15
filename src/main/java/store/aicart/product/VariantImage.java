@@ -4,18 +4,19 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 
-@Entity(name = "stocks")
-public class Stock extends PanacheEntity {
+@Entity(name = "variant_images")
+public class VariantImage extends PanacheEntity {
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "variant_id", nullable = false)
     public ProductVariant productVariant;
 
     @Column(nullable = false)
-    public Integer quantity;
+    public String url;
 
-    public String warehouseLocation;
+    @Column(columnDefinition = "INT DEFAULT 0")
+    public int position;
 
 }

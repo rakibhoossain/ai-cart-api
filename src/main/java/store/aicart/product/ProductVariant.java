@@ -31,11 +31,11 @@ public class ProductVariant extends PanacheEntity {
     public Set<AttributeValue> attributeValues;
 
     @OneToOne(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
-    public Stock stock;
+    public VariantStock stock;
 
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<Price> prices;
+    public List<VariantPrice> prices;
 
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<Image> images;
+    public List<VariantImage> images;
 }

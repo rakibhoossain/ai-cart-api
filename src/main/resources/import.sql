@@ -1,5 +1,11 @@
 -- This file allow to write SQL commands that will be emitted in test and dev.
 
+-- Inserting Country (United States, Spain)
+INSERT INTO countries (id, code, name) VALUES (1, 'usa', 'United States'), (2, 'es', 'Spain');
+
+-- Inserting Currency (USD, EUR)
+INSERT INTO currencies (id, code, name) VALUES (1, 'USD', 'US Dollar'), (2, 'EUR', 'Euro');
+
 -- Inserting Language (English, Spanish)
 INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'Spanish');
 
@@ -65,19 +71,19 @@ VALUES (1, 1),
        (2, 3);
 
 
--- Inserting stocks
-INSERT INTO stocks(id, variant_id, quantity, warehouseLocation)
+-- Inserting VariantStock
+INSERT INTO variant_stocks(id, variant_id, quantity, warehouseLocation)
 VALUES (1, 1, 100, 'Germany'),
        (2, 2, 150, 'Spain');
 
--- Insert prices
-INSERT INTO prices(id, variant_id, price)
-VALUES (1, 1, 1200),
-       (2, 2, 1700);
+-- Insert VariantPrice
+INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, tax_rate, is_active)
+VALUES (1, 1, 1, 1, 1200, 0, 0, TRUE),
+       (2, 1, 2, 1,1700, 0, 0, TRUE);
 
 
--- Insert Images
-INSERT INTO images(id, variant_id, url)
+-- Insert VariantImage
+INSERT INTO variant_images(id, variant_id, url)
 VALUES (1, 1, 'https://laravel.pixelstrap.net/multikart/storage/49/fashion_173.jpg'),
        (2, 1, 'https://laravel.pixelstrap.net/multikart/storage/70/fashion_71.jpg'),
        (3, 2, 'https://laravel.pixelstrap.net/multikart/storage/13/fashion_311.jpg'),
