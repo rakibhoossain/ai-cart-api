@@ -15,13 +15,14 @@ INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'S
 
 -- Inserting Category
 INSERT INTO categories (id) VALUES (1), (2);
-INSERT INTO categories (id, parent_category_id) VALUES (3, 1);
+INSERT INTO categories (id, parent_category_id) VALUES (3, 1), (4, 3);
 
 -- Inserting Category translations
 INSERT INTO category_translations (id, category_id, language_id, name)
 VALUES (1, 1, 1, 'First category'),
        (2, 2, 1, 'Second category'),
-       (3, 3, 1, 'Third category');
+       (3, 3, 1, 'Third category'),
+        (4, 4, 1, 'Fourth category');
 
 
 -- Inserting Attribute. Defines an attribute type like size or color.
@@ -54,7 +55,8 @@ INSERT INTO products(id, sku) VALUES (1, 'SKU_1'), (2, 'SKU_2');
 -- Inserting translations
 INSERT INTO product_translations(id, product_id, language_id, name, description)
 VALUES (1, 1, 1, 'Test product 1', 'Test product description 1'),
-       (2, 2, 1, 'Test product 2', 'Test product description 2');
+       (2, 2, 1, 'Test product 2', 'Test product description 2'),
+       (3, 2, 2, 'Producto de prueba 2', 'Descripción del producto de prueba 2');
 
 
 -- Inserting product category

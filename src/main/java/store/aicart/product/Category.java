@@ -16,7 +16,7 @@ public class Category extends PanacheEntity {
     @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     public Set<Category> childCategories;
 
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<CategoryTranslation> translations;
 
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)

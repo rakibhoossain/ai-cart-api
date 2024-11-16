@@ -18,7 +18,7 @@ public class VariantStock extends PanacheEntity {
     @Column(nullable = false)
     public Integer quantity = 0;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "warehouse_id", nullable = false)
     public WarehouseLocation warehouseLocation;
 }

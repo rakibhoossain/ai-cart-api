@@ -6,11 +6,11 @@ import org.aicart.country.Language;
 
 @Entity(name = "category_translations")
 public class CategoryTranslation extends PanacheEntity {
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     public Category category;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "language_id", nullable = false)
     public Language language;
 

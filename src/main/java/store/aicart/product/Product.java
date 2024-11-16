@@ -11,7 +11,7 @@ public class Product extends PanacheEntity {
     @Column(unique = true, nullable = false)
     public String sku;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<ProductTranslation> translations;
 
     @ManyToMany(fetch = FetchType.LAZY)
@@ -22,7 +22,7 @@ public class Product extends PanacheEntity {
     )
     public Set<Category> categories;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<ProductVariant> variants;
 
 }

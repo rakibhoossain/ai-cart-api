@@ -11,9 +11,9 @@ import java.util.List;
 @Entity(name = "attribute_values")
 public class AttributeValue extends PanacheEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     public Attribute attribute;
 
-    @OneToMany(mappedBy = "attributeValue", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "attributeValue", cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     public List<AttributeValueTranslation> translations;
 }

@@ -1,18 +1,18 @@
 package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import org.aicart.country.Language;
 
 @Entity(name = "product_translations")
 public class ProductTranslation extends PanacheEntity {
 
-    @ManyToOne
-    public Product product;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false)
+    public Product product; // This is the owning side of the relationship
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "language_id", nullable = false)
     public Language language;
 
     @Column(length = 255, nullable = false)

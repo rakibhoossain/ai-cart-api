@@ -10,7 +10,7 @@ import java.util.Set;
 @Entity(name = "product_variants")
 public class ProductVariant extends PanacheEntity {
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     public Product product;
 
     @Column(unique = true, nullable = false)
@@ -33,9 +33,9 @@ public class ProductVariant extends PanacheEntity {
     @OneToOne(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
     public VariantStock stock;
 
-    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<VariantPrice> prices;
 
-    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<VariantImage> images;
 }
