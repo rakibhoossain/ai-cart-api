@@ -54,6 +54,7 @@ public class ProductResource {
                                                                       ON child.id = child_ct2.category_id
                                                                           AND child_ct2.language_id = :defaultLanguageId
                                                    WHERE child.parent_category_id = c.id
+          
                                                )
                                        )
                                ) AS categories

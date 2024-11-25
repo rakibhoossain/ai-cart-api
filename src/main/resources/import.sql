@@ -13,16 +13,136 @@ INSERT INTO currencies (id, code, name) VALUES (1, 'USD', 'US Dollar'), (2, 'EUR
 -- Inserting Language (English, Spanish)
 INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'Spanish');
 
+
+-- Inserting product category
+-- Insert Root product_categories (Level 1)
+INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+VALUES
+    (1, 'Electronics', NULL, NOW(), NOW()),    -- ID 1
+    (2, 'Furniture', NULL, NOW(), NOW()),      -- ID 2
+    (3, 'Books', NULL, NOW(), NOW());           -- ID 3
+
+-- Insert Level 2 (Subcategories under root categories)
+INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+VALUES
+    (4, 'Computers', (SELECT id FROM product_categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 4
+    (5, 'Smartphones', (SELECT id FROM product_categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 5
+    (6, 'Chairs', (SELECT id FROM product_categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 6
+    (7, 'Tables', (SELECT id FROM product_categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 7
+    (8, 'Novels', (SELECT id FROM product_categories WHERE name = 'Books'), NOW(), NOW()),           -- ID 8
+    (9, 'Magazines', (SELECT id FROM product_categories WHERE name = 'Books'), NOW(), NOW());         -- ID 9
+
+-- Insert Level 3 (Subcategories under the previous level)
+INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+VALUES
+    (10, 'Gaming', (SELECT id FROM product_categories WHERE name = 'Computers'), NOW(), NOW()),     -- ID 10
+    (11, 'Accessories', (SELECT id FROM product_categories WHERE name = 'Computers'), NOW(), NOW()), -- ID 11
+    (12, 'Office', (SELECT id FROM product_categories WHERE name = 'Chairs'), NOW(), NOW()),        -- ID 12
+    (13, 'Outdoor', (SELECT id FROM product_categories WHERE name = 'Tables'), NOW(), NOW());        -- ID 13
+
+-- Insert Level 4 (Subcategories under the previous level)
+INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+VALUES
+    (14, 'PCs', (SELECT id FROM product_categories WHERE name = 'Gaming'), NOW(), NOW()),  -- ID 14
+    (15, 'Consoles', (SELECT id FROM product_categories WHERE name = 'Gaming'), NOW(), NOW()), -- ID 15
+    (16, 'Gaming Accessories', (SELECT id FROM product_categories WHERE name = 'Accessories'), NOW(), NOW());  -- ID 16
+
+-- Insert Level 5 (Subcategories under the previous level)
+INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+VALUES
+    (17, 'Desktop PCs', (SELECT id FROM product_categories WHERE name = 'PCs'), NOW(), NOW()), -- ID 17
+    (18, 'Laptop Accessories', (SELECT id FROM product_categories WHERE name = 'Gaming Accessories'), NOW(), NOW());  -- ID 18
+
+
+INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
+    (1, 1, 0),   -- Electronics (itself)
+    (2, 2, 0),   -- Furniture (itself)
+    (3, 3, 0),   -- Books (itself)
+    (4, 4, 0),   -- Computers (itself)
+    (5, 5, 0),   -- Smartphones (itself)
+    (6, 6, 0),   -- Chairs (itself)
+    (7, 7, 0),   -- Tables (itself)
+    (8, 8, 0),   -- Novels (itself)
+    (9, 9, 0),   -- Magazines (itself)
+    (10, 10, 0), -- Gaming (itself)
+    (11, 11, 0), -- Accessories (itself)
+    (12, 12, 0), -- Office (itself)
+    (13, 13, 0), -- Outdoor (itself)
+    (14, 14, 0), -- PCs (itself)
+    (15, 15, 0), -- Consoles (itself)
+    (16, 16, 0), -- Gaming Accessories (itself)
+    (17, 17, 0), -- Desktop PCs (itself)
+    (18, 18, 0); -- Laptop Accessories (itself)
+
+-- Depth 1 (Direct Parent-Child Relationships)
+INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
+                                                                     (1, 4, 1),  -- Electronics -> Computers
+                                                                     (1, 5, 1),  -- Electronics -> Smartphones
+                                                                     (2, 6, 1),  -- Furniture -> Chairs
+                                                                     (2, 7, 1),  -- Furniture -> Tables
+                                                                     (3, 8, 1),  -- Books -> Novels
+                                                                     (3, 9, 1),  -- Books -> Magazines
+                                                                     (4, 10, 1), -- Computers -> Gaming
+                                                                     (4, 11, 1), -- Computers -> Accessories
+                                                                     (6, 12, 1), -- Chairs -> Office
+                                                                     (7, 13, 1), -- Tables -> Outdoor
+                                                                     (10, 14, 1), -- Gaming -> PCs
+                                                                     (10, 15, 1), -- Gaming -> Consoles
+                                                                     (11, 16, 1), -- Accessories -> Gaming Accessories
+                                                                     (14, 17, 1), -- PCs -> Desktop PCs
+                                                                     (16, 18, 1); -- Gaming Accessories -> Laptop Accessories
+
+-- Depth 2 (Indirect relationships)
+INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
+                                                                     (1, 10, 2),  -- Electronics -> Gaming
+                                                                     (1, 11, 2),  -- Electronics -> Accessories
+                                                                     (2, 12, 2),  -- Furniture -> Office
+                                                                     (2, 13, 2),  -- Furniture -> Outdoor
+                                                                     (4, 14, 2),  -- Computers -> PCs
+                                                                     (4, 15, 2),  -- Computers -> Consoles
+                                                                     (6, 16, 2),  -- Chairs -> Gaming Accessories
+                                                                     (10, 17, 2), -- Gaming -> Desktop PCs
+                                                                     (15, 18, 2); -- Consoles -> Laptop Accessories
+
+-- Depth 3 (Further indirect relationships)
+INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
+                                                                     (1, 14, 3),  -- Electronics -> PCs
+                                                                     (1, 15, 3),  -- Electronics -> Consoles
+                                                                     (2, 16, 3),  -- Furniture -> Gaming Accessories
+                                                                     (4, 17, 3),  -- Computers -> Desktop PCs
+                                                                     (10, 18, 3); -- Gaming -> Laptop Accessories
+
+-- Depth 4 (Max depth from the root)
+INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
+                                                                     (1, 17, 4),  -- Electronics -> Desktop PCs
+                                                                     (1, 18, 4); -- Electronics -> Laptop Accessories
+
+
+
 -- Inserting Category
 INSERT INTO categories (id) VALUES (1), (2);
-INSERT INTO categories (id, parent_category_id) VALUES (3, 1), (4, 3);
+INSERT INTO categories (id, parent_category_id)
+VALUES (3, 1),
+       (4, 3),
+       (5, 4),
+       (6, 5),
+       (7, 6),
+       (8, 7),
+        (9, 8),
+        (10, 9);
 
 -- Inserting Category translations
 INSERT INTO category_translations (id, category_id, language_id, name)
 VALUES (1, 1, 1, 'First category'),
        (2, 2, 1, 'Second category'),
        (3, 3, 1, 'Third category'),
-        (4, 4, 1, 'Fourth category');
+        (4, 4, 1, 'Fourth category'),
+       (5, 5, 1, 'Fifth category'),
+       (6, 6, 1, 'Sixth category'),
+       (7, 7, 1, 'Seventh category'),
+       (8, 8, 1, 'Eight category'),
+       (9, 9, 1, 'Nine category'),
+       (10, 10, 1, 'Ten category');
 
 
 -- Inserting Attribute. Defines an attribute type like size or color.
