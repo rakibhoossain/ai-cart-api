@@ -17,10 +17,13 @@ public class ProductItemDTO {
         this.name = name;
 
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            this.categories = objectMapper.readValue(categoriesJson, new TypeReference<>() {
-
-            });
+            this.categories = CategoryDTO.parseJsonToHierarchy(categoriesJson);
+//            ObjectMapper objectMapper = new ObjectMapper();
+//
+//            Log.info(categoriesJson);
+//            this.categories = objectMapper.readValue(categoriesJson, new TypeReference<>() {
+//
+//            });
 
         } catch (Exception e) {
             Log.warn(e.getMessage());

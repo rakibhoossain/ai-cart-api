@@ -15,43 +15,43 @@ INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'S
 
 
 -- Inserting product category
--- Insert Root product_categories (Level 1)
-INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+-- Insert Root categories (Level 1)
+INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
 VALUES
     (1, 'Electronics', NULL, NOW(), NOW()),    -- ID 1
     (2, 'Furniture', NULL, NOW(), NOW()),      -- ID 2
     (3, 'Books', NULL, NOW(), NOW());           -- ID 3
 
 -- Insert Level 2 (Subcategories under root categories)
-INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (4, 'Computers', (SELECT id FROM product_categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 4
-    (5, 'Smartphones', (SELECT id FROM product_categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 5
-    (6, 'Chairs', (SELECT id FROM product_categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 6
-    (7, 'Tables', (SELECT id FROM product_categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 7
-    (8, 'Novels', (SELECT id FROM product_categories WHERE name = 'Books'), NOW(), NOW()),           -- ID 8
-    (9, 'Magazines', (SELECT id FROM product_categories WHERE name = 'Books'), NOW(), NOW());         -- ID 9
+    (4, 'Computers', (SELECT id FROM categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 4
+    (5, 'Smartphones', (SELECT id FROM categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 5
+    (6, 'Chairs', (SELECT id FROM categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 6
+    (7, 'Tables', (SELECT id FROM categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 7
+    (8, 'Novels', (SELECT id FROM categories WHERE name = 'Books'), NOW(), NOW()),           -- ID 8
+    (9, 'Magazines', (SELECT id FROM categories WHERE name = 'Books'), NOW(), NOW());         -- ID 9
 
 -- Insert Level 3 (Subcategories under the previous level)
-INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (10, 'Gaming', (SELECT id FROM product_categories WHERE name = 'Computers'), NOW(), NOW()),     -- ID 10
-    (11, 'Accessories', (SELECT id FROM product_categories WHERE name = 'Computers'), NOW(), NOW()), -- ID 11
-    (12, 'Office', (SELECT id FROM product_categories WHERE name = 'Chairs'), NOW(), NOW()),        -- ID 12
-    (13, 'Outdoor', (SELECT id FROM product_categories WHERE name = 'Tables'), NOW(), NOW());        -- ID 13
+    (10, 'Gaming', (SELECT id FROM categories WHERE name = 'Computers'), NOW(), NOW()),     -- ID 10
+    (11, 'Accessories', (SELECT id FROM categories WHERE name = 'Computers'), NOW(), NOW()), -- ID 11
+    (12, 'Office', (SELECT id FROM categories WHERE name = 'Chairs'), NOW(), NOW()),        -- ID 12
+    (13, 'Outdoor', (SELECT id FROM categories WHERE name = 'Tables'), NOW(), NOW());        -- ID 13
 
 -- Insert Level 4 (Subcategories under the previous level)
-INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (14, 'PCs', (SELECT id FROM product_categories WHERE name = 'Gaming'), NOW(), NOW()),  -- ID 14
-    (15, 'Consoles', (SELECT id FROM product_categories WHERE name = 'Gaming'), NOW(), NOW()), -- ID 15
-    (16, 'Gaming Accessories', (SELECT id FROM product_categories WHERE name = 'Accessories'), NOW(), NOW());  -- ID 16
+    (14, 'PCs', (SELECT id FROM categories WHERE name = 'Gaming'), NOW(), NOW()),  -- ID 14
+    (15, 'Consoles', (SELECT id FROM categories WHERE name = 'Gaming'), NOW(), NOW()), -- ID 15
+    (16, 'Gaming Accessories', (SELECT id FROM categories WHERE name = 'Accessories'), NOW(), NOW());  -- ID 16
 
 -- Insert Level 5 (Subcategories under the previous level)
-INSERT INTO product_categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (17, 'Desktop PCs', (SELECT id FROM product_categories WHERE name = 'PCs'), NOW(), NOW()), -- ID 17
-    (18, 'Laptop Accessories', (SELECT id FROM product_categories WHERE name = 'Gaming Accessories'), NOW(), NOW());  -- ID 18
+    (17, 'Desktop PCs', (SELECT id FROM categories WHERE name = 'PCs'), NOW(), NOW()), -- ID 17
+    (18, 'Laptop Accessories', (SELECT id FROM categories WHERE name = 'Gaming Accessories'), NOW(), NOW());  -- ID 18
 
 
 INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
@@ -117,32 +117,18 @@ INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
                                                                      (1, 17, 4),  -- Electronics -> Desktop PCs
                                                                      (1, 18, 4); -- Electronics -> Laptop Accessories
 
-
-
--- Inserting Category
-INSERT INTO categories (id) VALUES (1), (2);
-INSERT INTO categories (id, parent_category_id)
-VALUES (3, 1),
-       (4, 3),
-       (5, 4),
-       (6, 5),
-       (7, 6),
-       (8, 7),
-        (9, 8),
-        (10, 9);
-
 -- Inserting Category translations
-INSERT INTO category_translations (id, category_id, language_id, name)
-VALUES (1, 1, 1, 'First category'),
-       (2, 2, 1, 'Second category'),
-       (3, 3, 1, 'Third category'),
-        (4, 4, 1, 'Fourth category'),
-       (5, 5, 1, 'Fifth category'),
-       (6, 6, 1, 'Sixth category'),
-       (7, 7, 1, 'Seventh category'),
-       (8, 8, 1, 'Eight category'),
-       (9, 9, 1, 'Nine category'),
-       (10, 10, 1, 'Ten category');
+INSERT INTO category_translations (category_id, language_id, name)
+VALUES (1, 1, 'First category'),
+       (2, 1, 'Second category'),
+       (3, 1, 'Third category'),
+        (4, 1, 'Fourth category'),
+       (5, 1, 'Fifth category'),
+       (6, 1, 'Sixth category'),
+       (7, 1, 'Seventh category'),
+       (8, 1, 'Eight category'),
+       (9, 1, 'Nine category'),
+       (10, 1, 'Ten category');
 
 
 -- Inserting Attribute. Defines an attribute type like size or color.
@@ -181,8 +167,9 @@ VALUES (1, 1, 1, 'Test product 1', 'Test product description 1'),
 
 -- Inserting product category
 INSERT INTO product_category(product_id, category_id)
-VALUES (1, 1),
-       (2, 1);
+VALUES (1, 10),
+       (2, 12),
+       (2, 14);
 
 -- Inserting variants
 INSERT INTO product_variants(id, product_id, sku)

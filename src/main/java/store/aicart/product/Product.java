@@ -4,6 +4,7 @@ import java.util.Set;
 
 import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import store.aicart.product.entity.Category;
 
 @Entity(name = "products")
 public class Product extends PanacheEntity {

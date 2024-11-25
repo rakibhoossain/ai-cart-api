@@ -2,20 +2,31 @@ package store.aicart.product.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import store.aicart.product.Product;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "product_categories")
-public class ProductCategory extends PanacheEntity {
+@Table(name = "categories")
+public class Category extends PanacheEntity {
 
     @Column(name = "name", nullable = false, length = 100)
     public String name;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")
-    public ProductCategory parentCategory;
+    public Category parentCategory;
+
+    @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    public Set<Category> childCategories;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    public List<CategoryTranslation> translations;
+
+    @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
+    public Set<Product> products;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
@@ -29,7 +40,7 @@ public class ProductCategory extends PanacheEntity {
     }
 
     // Helper method to fetch child categories
-    public List<ProductCategory> getChildren() {
+    public List<Category> getChildren() {
         return find("parentCategory", this).list();
     }
 }

@@ -11,21 +11,21 @@ public class CategoryClosure extends PanacheEntityBase {
     public CategoryClosureId id;
 
     @MapsId("ancestorId")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ancestor_id", nullable = false)
-    public ProductCategory ancestor;
+    public Category ancestor;
 
     @MapsId("descendantId")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "descendant_id", nullable = false)
-    public ProductCategory descendant;
+    public Category descendant;
 
     @Column(nullable = false)
     public int depth;
 
     public CategoryClosure() {}
 
-    public CategoryClosure(ProductCategory ancestor, ProductCategory descendant, int depth) {
+    public CategoryClosure(Category ancestor, Category descendant, int depth) {
         this.id = new CategoryClosureId(ancestor.id, descendant.id);
         this.ancestor = ancestor;
         this.descendant = descendant;
