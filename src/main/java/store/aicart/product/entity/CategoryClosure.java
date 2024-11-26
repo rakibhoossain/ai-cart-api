@@ -5,11 +5,21 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "category_closure")
+@IdClass(CategoryClosureId.class)
 public class CategoryClosure extends PanacheEntityBase {
 
-    @EmbeddedId
-    public CategoryClosureId id;
+    @Id
+    @Column(name = "ancestor_id", nullable = false, updatable = false)
+    public Long ancestorId;
 
+    @Id
+    @Column(name = "descendant_id", nullable = false, updatable = false)
+    public Long descendantId;
+
+    @Column(nullable = false)
+    public int depth;
+
+    // Relationships
     @MapsId("ancestorId")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ancestor_id", nullable = false)
@@ -19,16 +29,4 @@ public class CategoryClosure extends PanacheEntityBase {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "descendant_id", nullable = false)
     public Category descendant;
-
-    @Column(nullable = false)
-    public int depth;
-
-    public CategoryClosure() {}
-
-    public CategoryClosure(Category ancestor, Category descendant, int depth) {
-        this.id = new CategoryClosureId(ancestor.id, descendant.id);
-        this.ancestor = ancestor;
-        this.descendant = descendant;
-        this.depth = depth;
-    }
 }

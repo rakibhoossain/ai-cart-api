@@ -1,31 +1,52 @@
 package store.aicart.product;
 
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import store.aicart.product.entity.Category;
 
 import java.util.List;
 
 @Path("/categories")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class CategoryResource {
 
     @Inject
-    EntityManager entityManager;
+    CategoryService categoryService;
+
+    @POST
+    public Response addCategory(@QueryParam("name") String name, @QueryParam("parentId") Long parentId) {
+        Category category = categoryService.addCategory(name, parentId);
+        return Response.ok(category.name).build();
+    }
+
+    @PUT
+    @Path("/{id}/parent")
+    public Response updateParent(@PathParam("id") Long id, @QueryParam("newParentId") Long newParentId) {
+        categoryService.updateParent(id, newParentId);
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/{id}")
+    public Response deleteCategory(@PathParam("id") Long id) {
+        categoryService.deleteCategory(id);
+        return Response.ok().build();
+    }
 
     @GET
-    @Path("/")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/{id}/descendants")
+    public Response getDescendants(@PathParam("id") Long id) {
+        List<Category> categories = categoryService.getDescendants(id);
+        return Response.ok(categories).build();
+    }
 
-    public List<Category> getCategories()
-    {
-        return this.entityManager.createQuery(
-                        "SELECT cc.ancestor FROM CategoryClosure cc", Category.class)
-                .getResultList();
+    @GET
+    @Path("/{id}/ancestors")
+    public Response getAncestors(@PathParam("id") Long id) {
+        List<Category> categories = categoryService.getAncestors(id);
+        return Response.ok(categories).build();
     }
 }

@@ -54,6 +54,8 @@ VALUES
     (18, 'Laptop Accessories', (SELECT id FROM categories WHERE name = 'Gaming Accessories'), NOW(), NOW());  -- ID 18
 
 
+SELECT setval(pg_get_serial_sequence('categories', 'id'), (SELECT MAX(id) FROM categories));
+
 INSERT INTO category_closure (ancestor_id, descendant_id, depth) VALUES
     (1, 1, 0),   -- Electronics (itself)
     (2, 2, 0),   -- Furniture (itself)
