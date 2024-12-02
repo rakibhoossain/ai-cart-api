@@ -1,7 +1,6 @@
 package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import store.aicart.product.entity.Category;
 import jakarta.transaction.Transactional;
@@ -11,6 +10,13 @@ import java.util.List;
 
 @ApplicationScoped
 public class CategoryRepository implements PanacheRepository<Category> {
+
+    public List<Category> getCategories(int page, int size) {
+
+        return Category.find("parentCategory IS NULL")
+                .page(page, size)
+                .list();
+    }
 
     @Transactional
     public Category addCategory(String name, Long parentId) {
@@ -68,14 +74,14 @@ public class CategoryRepository implements PanacheRepository<Category> {
         }
 
         // Reassign children to the deleted category's parent
-        List<Category> children = list("parent.id", id);
+        List<Category> children = list("parentCategory.id", id);
         for (Category child : children) {
             child.parentCategory = category.parentCategory;
             child.persist();
         }
 
-        delete("categoryId", id);
         CategoryClosure.delete("descendant.id", id);
+        delete("id", id);
     }
 
 

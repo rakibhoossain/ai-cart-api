@@ -1,6 +1,8 @@
 package store.aicart.product.entity;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import store.aicart.product.Product;
@@ -20,16 +22,20 @@ public class Category extends PanacheEntityBase {
     @Column(name = "name", nullable = false, length = 100)
     public String name;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")
     public Category parentCategory;
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     public Set<Category> childCategories;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<CategoryTranslation> translations;
 
+    @JsonIgnore
     @ManyToMany(mappedBy = "categories", fetch = FetchType.LAZY)
     public Set<Product> products;
 
@@ -42,10 +48,5 @@ public class Category extends PanacheEntityBase {
     @PreUpdate
     public void updateTimestamp() {
         updatedAt = LocalDateTime.now();
-    }
-
-    // Helper method to fetch child categories
-    public List<Category> getChildren() {
-        return find("parentCategory", this).list();
     }
 }

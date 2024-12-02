@@ -13,6 +13,10 @@ public class CategoryService {
     @Inject
     CategoryRepository categoryRepository;
 
+    public List<Category> getCategories(int page, int size) {
+        return categoryRepository.getCategories(page, size);
+    }
+
     public Category addCategory(String name, Long parentId) {
         return categoryRepository.addCategory(name, parentId);
     }

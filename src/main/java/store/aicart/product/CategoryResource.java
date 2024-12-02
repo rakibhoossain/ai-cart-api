@@ -1,10 +1,13 @@
 package store.aicart.product;
 
+import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import store.aicart.product.entity.Category;
+import jakarta.validation.Valid;
+import store.aicart.product.request.CategoryCreateRequest;
 
 import java.util.List;
 
@@ -16,15 +19,24 @@ public class CategoryResource {
     @Inject
     CategoryService categoryService;
 
+    @GET
+    public Response getCategories(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size
+    ) {
+        List<Category> categories = categoryService.getCategories(page, size);
+        return Response.ok(categories).build();
+    }
+
     @POST
-    public Response addCategory(@QueryParam("name") String name, @QueryParam("parentId") Long parentId) {
-        Category category = categoryService.addCategory(name, parentId);
+    public Response addCategory(@Valid CategoryCreateRequest request) {
+        Category category = categoryService.addCategory(request.getName(), request.getParentId());
         return Response.ok(category.name).build();
     }
 
     @PUT
-    @Path("/{id}/parent")
-    public Response updateParent(@PathParam("id") Long id, @QueryParam("newParentId") Long newParentId) {
+    @Path("/{id}/parent/{parentId}")
+    public Response updateParent(@PathParam("id") Long id, @PathParam("parentId") Long newParentId) {
         categoryService.updateParent(id, newParentId);
         return Response.ok().build();
     }
