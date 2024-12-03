@@ -64,7 +64,7 @@ public class ProductRepository {
                                        WHERE vp.variant_id = pv.id AND vp.country_id = :countryId
                                    ),
                                    'images', (
-                                       SELECT jsonb_agg(vi.url)
+                                       SELECT ARRAY_AGG(vi.url)
                                        FROM variant_images vi
                                        WHERE vi.variant_id = pv.id
                                    ),
