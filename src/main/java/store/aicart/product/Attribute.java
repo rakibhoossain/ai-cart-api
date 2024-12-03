@@ -1,10 +1,7 @@
 package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 
 import java.util.List;
 
@@ -14,6 +11,9 @@ import java.util.List;
 @Entity(name = "attributes")
 public class Attribute extends PanacheEntity {
 
+    @Column(length = 100, nullable = false)
+    public String name;
+    
     @OneToMany(mappedBy = "attribute", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<AttributeTranslation> translations;
 

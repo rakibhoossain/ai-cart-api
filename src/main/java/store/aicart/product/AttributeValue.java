@@ -11,6 +11,9 @@ import java.util.List;
 @Entity(name = "attribute_values")
 public class AttributeValue extends PanacheEntity {
 
+    @Column(length = 100, nullable = false)
+    public String value;
+
     @ManyToOne(fetch = FetchType.LAZY)
     public Attribute attribute;
 

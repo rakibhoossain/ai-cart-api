@@ -9,25 +9,34 @@ import io.quarkus.logging.Log;
 public class ProductItemDTO {
     private Long id;
     private String name;
+    private String slug;
+    private Long localeId;
+    private String sku;
     private List<CategoryDTO> categories;
+    private List<ProductVariantDTO> variants;
 
     // Constructor
-    public ProductItemDTO(Long id, String name, String categoriesJson) {
+    public ProductItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, String categoriesJson, String variantsJson) {
         this.id = id;
-        this.name = name;
+        this.name = localeId != null ? name : localeName;
+        this.slug = slug;
+        this.localeId = localeId;
+        this.sku = sku;
+
 
         try {
             this.categories = CategoryDTO.parseJsonToHierarchy(categoriesJson);
-//            ObjectMapper objectMapper = new ObjectMapper();
-//
-//            Log.info(categoriesJson);
-//            this.categories = objectMapper.readValue(categoriesJson, new TypeReference<>() {
-//
-//            });
-
         } catch (Exception e) {
             Log.warn(e.getMessage());
             this.categories = Collections.emptyList();
+        }
+
+
+        try {
+            this.variants = ProductVariantDTO.parseJson(variantsJson);
+        } catch (Exception e) {
+            Log.warn(e.getMessage());
+            this.variants = Collections.emptyList();
         }
     }
 
@@ -59,5 +68,37 @@ public class ProductItemDTO {
 
     public void setCategories(List<CategoryDTO> categories) {
         this.categories = categories;
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
+    }
+
+    public Long getLocaleId() {
+        return localeId;
+    }
+
+    public void setLocaleId(Long localeId) {
+        this.localeId = localeId;
+    }
+
+    public String getSku() {
+        return sku;
+    }
+
+    public void setSku(String sku) {
+        this.sku = sku;
+    }
+
+    public List<ProductVariantDTO> getVariants() {
+        return variants;
+    }
+
+    public void setVariants(List<ProductVariantDTO> variants) {
+        this.variants = variants;
     }
 }
