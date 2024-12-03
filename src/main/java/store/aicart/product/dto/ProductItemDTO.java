@@ -27,7 +27,6 @@ public class ProductItemDTO {
         try {
             this.categories = CategoryDTO.parseJsonToHierarchy(categoriesJson);
         } catch (Exception e) {
-            Log.warn(e.getMessage());
             this.categories = Collections.emptyList();
         }
 
@@ -35,7 +34,6 @@ public class ProductItemDTO {
         try {
             this.variants = ProductVariantDTO.parseJson(variantsJson);
         } catch (Exception e) {
-            Log.warn(e.getMessage());
             this.variants = Collections.emptyList();
         }
     }
