@@ -23,8 +23,17 @@ public class ProductResource {
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProductItemDTO> products(@QueryParam("lang") Integer lang) {
-        return productService.getPaginateProducts(lang);
+    public List<ProductItemDTO> products(@QueryParam("lang") Integer lang, @QueryParam("page") Integer page, @QueryParam("pageSize") Integer pageSize) {
+
+        if(page == null) {
+            page = 0;
+        }
+
+        if(pageSize == null) {
+            pageSize = 20;
+        }
+
+        return productService.getPaginateProducts(lang, page, pageSize);
     }
 
     @GET

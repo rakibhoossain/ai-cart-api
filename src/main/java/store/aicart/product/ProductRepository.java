@@ -1,6 +1,7 @@
 package store.aicart.product;
 
 
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -14,7 +15,7 @@ public class ProductRepository {
     @PersistenceContext
     EntityManager entityManager;
 
-    public List<ProductItemDTO> getPaginateProducts(Integer lang) {
+    public List<ProductItemDTO> getPaginateProducts(Integer lang, Integer page, Integer pageSize) {
         int languageId = lang != null ? lang : 1;
         int countryId = 1;
 
@@ -99,6 +100,8 @@ public class ProductRepository {
         List<ProductItemDTO> results = entityManager.createNativeQuery(queryStr, ProductItemDTO.class)
                 .setParameter("languageId", languageId)
                 .setParameter("countryId", countryId)
+                .setFirstResult(page * pageSize)
+                .setMaxResults(pageSize)
                 .getResultList();
 
             return results;

@@ -18,7 +18,7 @@ public class ProductItemDTO {
     // Constructor
     public ProductItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, String categoriesJson, String variantsJson) {
         this.id = id;
-        this.name = localeId != null ? name : localeName;
+        this.name = localeId != null ? localeName : name;
         this.slug = slug;
         this.localeId = localeId;
         this.sku = sku;

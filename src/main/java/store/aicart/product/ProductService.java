@@ -16,8 +16,8 @@ public class ProductService {
     ProductRepository productRepository;
 
 
-    public List<ProductItemDTO> getPaginateProducts(Integer lang) {
-        return productRepository.getPaginateProducts(lang);
+    public List<ProductItemDTO> getPaginateProducts(Integer lang, Integer page, Integer pageSize) {
+        return productRepository.getPaginateProducts(lang, page, pageSize);
     }
 
     public List<Map<String, Object>> getProductsWithCategories(int page, int pageSize) {
