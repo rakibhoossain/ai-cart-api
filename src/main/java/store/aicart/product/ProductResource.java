@@ -1,13 +1,16 @@
 package store.aicart.product;
 
+import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.aicart.util.QueryParamConverter;
 import store.aicart.product.dto.ProductItemDTO;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Path("/product")
 public class ProductResource {
@@ -23,17 +26,23 @@ public class ProductResource {
     @Path("/")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public List<ProductItemDTO> products(@QueryParam("lang") Integer lang, @QueryParam("page") Integer page, @QueryParam("pageSize") Integer pageSize) {
+    public List<ProductItemDTO> products(
+            @QueryParam("page") Integer page,
+            @QueryParam("pageSize") Integer pageSize,
+            @QueryParam("minPrice") Optional<Long> minPrice,
+            @QueryParam("maxPrice") Optional<Long> maxPrice,
+            @QueryParam("q") Optional<String> nameFilter,
+            @QueryParam("categoryIds") String categoryIds,
+            @QueryParam("brandIds") String brandIds
+    ) {
 
-        if(page == null) {
-            page = 0;
-        }
+        Optional<List<Long>> categoryList = Optional.ofNullable(categoryIds).map(QueryParamConverter::toLongList);
+        Optional<List<Long>> brandList = Optional.ofNullable(brandIds).map(QueryParamConverter::toLongList);
 
-        if(pageSize == null) {
-            pageSize = 20;
-        }
+        Integer pageNumber = (page == null) ? 0 : page;
+        Integer pageLimit = (pageSize == null) ? 20 : pageSize;
 
-        return productService.getPaginateProducts(lang, page, pageSize);
+        return productService.getPaginateProducts(pageNumber, pageLimit, minPrice, maxPrice, nameFilter, categoryList, brandList);
     }
 
     @GET

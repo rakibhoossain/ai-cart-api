@@ -16,8 +16,14 @@ public class ProductService {
     ProductRepository productRepository;
 
 
-    public List<ProductItemDTO> getPaginateProducts(Integer lang, Integer page, Integer pageSize) {
-        return productRepository.getPaginateProducts(lang, page, pageSize);
+    public List<ProductItemDTO> getPaginateProducts(            Integer page,
+                                                                Integer pageSize,
+                                                                Optional<Long> minPrice,
+                                                                Optional<Long> maxPrice,
+                                                                Optional<String> nameFilter,
+                                                                Optional<List<Long>> categoryIds,
+                                                                Optional<List<Long>> brandIds) {
+        return productRepository.getPaginateProducts(page, pageSize, minPrice, maxPrice, nameFilter, categoryIds, brandIds);
     }
 
     public List<Map<String, Object>> getProductsWithCategories(int page, int pageSize) {

@@ -1,13 +1,14 @@
 package store.aicart.product;
 
-
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import store.aicart.product.dto.ProductItemDTO;
 
 import java.util.List;
+import java.util.Optional;
 
 @ApplicationScoped
 public class ProductRepository {
@@ -15,13 +16,21 @@ public class ProductRepository {
     @PersistenceContext
     EntityManager entityManager;
 
-    public List<ProductItemDTO> getPaginateProducts(Integer lang, Integer page, Integer pageSize) {
-        int languageId = lang != null ? lang : 1;
-        int countryId = 1;
+    public List<ProductItemDTO> getPaginateProducts(
+            Integer page,
+            Integer pageSize,
+            Optional<Long> minPrice,
+            Optional<Long> maxPrice,
+            Optional<String> nameFilter,
+            Optional<List<Long>> categoryIds,
+            Optional<List<Long>> brandIds
+            ) {
 
-        String queryStr = """
-    
-                SELECT
+        int languageId = 1; // TODO Lang
+        int countryId = 1; // TODO country Id
+
+        StringBuilder queryBuilder = new StringBuilder("""
+        SELECT
         p.id AS product_id,
         p.name AS product_name,
         p.slug AS slug,
@@ -90,22 +99,78 @@ public class ProductRepository {
             FROM product_variants pv
             WHERE pv.product_id = p.id
         ) AS variants
-    FROM products p
-             LEFT JOIN product_translations locale
-                       ON p.id = locale.product_id AND locale.language_id = :languageId
-    ORDER BY p.id
-    """;
+        FROM products p
+                 LEFT JOIN product_translations locale
+                           ON p.id = locale.product_id AND locale.language_id = :languageId
+        WHERE 1 = 1
+        """);
 
 
-        List<ProductItemDTO> results = entityManager.createNativeQuery(queryStr, ProductItemDTO.class)
-                .setParameter("languageId", languageId)
-                .setParameter("countryId", countryId)
-                .setFirstResult(page * pageSize)
+        if (minPrice.isPresent()) {
+            queryBuilder.append("""
+                AND EXISTS (
+                    SELECT 1
+                    FROM variant_prices vp
+                             JOIN product_variants pv ON vp.variant_id = pv.id
+                    WHERE pv.product_id = p.id
+                      AND vp.price >= :minPrice
+                )
+            """);
+        }
+
+
+        if (maxPrice.isPresent()) {
+            queryBuilder.append("""
+                AND EXISTS (
+                    SELECT 1
+                    FROM variant_prices vp
+                             JOIN product_variants pv ON vp.variant_id = pv.id
+                    WHERE pv.product_id = p.id
+                      AND vp.price <= :maxPrice
+                )
+            """);
+        }
+
+        if (nameFilter.isPresent()) {
+            queryBuilder.append("""
+                AND (p.name ILIKE :nameFilter OR locale.name ILIKE :nameFilter)
+            """);
+        }
+
+        if (categoryIds.isPresent()) {
+            queryBuilder.append("""
+                AND EXISTS (
+                    SELECT 1
+                    FROM product_category pc
+                             JOIN categories c ON pc.category_id = c.id
+                    WHERE pc.product_id = p.id
+                      AND c.id = ANY(:categoryIds)
+                )
+            """);
+        }
+
+
+        queryBuilder.append(" ORDER BY p.id");
+
+        // Create query
+        Query nativeQuery = entityManager.createNativeQuery(queryBuilder.toString(), ProductItemDTO.class);
+
+        // Set parameters
+        nativeQuery.setParameter("languageId", languageId);
+        nativeQuery.setParameter("countryId", countryId);
+        minPrice.ifPresent(price -> nativeQuery.setParameter("minPrice", price));
+        maxPrice.ifPresent(price -> nativeQuery.setParameter("maxPrice", price));
+        nameFilter.ifPresent(filter -> nativeQuery.setParameter("nameFilter", "%" + filter + "%"));
+
+        if(categoryIds.isPresent())
+        {
+            Long[] categoryArray = categoryIds.get().toArray(new Long[0]);
+            nativeQuery.setParameter("categoryIds", categoryArray);
+        }
+        return nativeQuery.setFirstResult(page * pageSize)
                 .setMaxResults(pageSize)
                 .getResultList();
-
-            return results;
-        }
+    }
 
 
 
