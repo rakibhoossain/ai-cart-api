@@ -26,6 +26,11 @@ public class ProductService {
         return productRepository.getPaginateProducts(page, pageSize, minPrice, maxPrice, nameFilter, categoryIds, brandIds);
     }
 
+
+    public ProductItemDTO getProductBySlug(String slug) {
+        return productRepository.getProductBySlug(slug);
+    }
+
     public List<Map<String, Object>> getProductsWithCategories(int page, int pageSize) {
         // Step 1: Fetch paginated products
         List<Product> products = productRepository.findPaginatedProducts(page, pageSize);

@@ -134,12 +134,13 @@ VALUES (1, 1, 'First category'),
 
 
 -- Inserting Attribute. Defines an attribute type like size or color.
-INSERT INTO attributes (id, name) VALUES (1, 'Color'), (2, 'Size');
+INSERT INTO attributes (id, name) VALUES (1, 'Color'), (2, 'Size'), (3, 'Material');
 
 -- Inserting AttributeTranslation
 INSERT INTO attribute_translations(id, attribute_id, language_id, name)
 VALUES (1, 1, 1, 'Color'),
-        (2, 2, 1, 'Size');
+        (2, 2, 1, 'Size'),
+        (3, 3, 1, 'Material');
 
 -- Inserting AttributeValue
 INSERT INTO attribute_values(id, attribute_id, value)
@@ -147,7 +148,10 @@ VALUES (1, 1, 'Blue'),
        (2, 1, 'Red'),
        (3, 2, 'X'),
        (4, 2, 'XL'),
-       (5, 2, 'XXL');
+       (5, 2, 'XXL'),
+       (6, 3, 'Fiber'),
+       (7, 3, 'Cotton'),
+        (8, 1, 'Green');
 
 -- Inserting AttributeValueTranslation
 INSERT INTO attribute_value_translations(id, attribute_value_id, language_id, value)
@@ -155,7 +159,10 @@ VALUES (1, 1, 1, 'Blue'),
     (2, 2, 1, 'Red'),
     (3, 3, 1, 'X'),
     (4, 4, 1, 'XL'),
-    (5, 5, 1, 'XXL');
+    (5, 5, 1, 'XXL'),
+    (6, 6, 1, 'Fiber'),
+    (7, 7, 1, 'Cotton'),
+       (8, 8, 1, 'Green');
 
 -- Inserting Product
 INSERT INTO products(id, sku, name, slug, created_at, updated_at)
@@ -187,8 +194,12 @@ VALUES (1, 1),
        (1, 3),
        (2, 2),
        (2, 3),
-       (3, 1),
-       (3, 2);
+       (3, 2),
+       (3, 4),
+        (3, 5),
+        (3, 6),
+       (1, 7),
+       (1, 8);
 
 
 -- Inserting VariantStock

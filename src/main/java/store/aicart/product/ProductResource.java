@@ -1,6 +1,5 @@
 package store.aicart.product;
 
-import io.quarkus.logging.Log;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.*;
@@ -35,7 +34,6 @@ public class ProductResource {
             @QueryParam("categoryIds") String categoryIds,
             @QueryParam("brandIds") String brandIds
     ) {
-
         Optional<List<Long>> categoryList = Optional.ofNullable(categoryIds).map(QueryParamConverter::toLongList);
         Optional<List<Long>> brandList = Optional.ofNullable(brandIds).map(QueryParamConverter::toLongList);
 
@@ -44,6 +42,23 @@ public class ProductResource {
 
         return productService.getPaginateProducts(pageNumber, pageLimit, minPrice, maxPrice, nameFilter, categoryList, brandList);
     }
+
+    @GET
+    @Path("/detail/{slug}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response productDetail(@PathParam("slug") String slug) {
+
+        ProductItemDTO product = productService.getProductBySlug(slug);
+        if(product == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("No products found.")
+                    .build();
+        }
+
+        return Response.ok(product).build();
+    }
+
 
     @GET
     @Path("/paginated-with-categories")

@@ -1,6 +1,5 @@
 package store.aicart.product;
 
-import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -16,15 +15,14 @@ public class ProductRepository {
     @PersistenceContext
     EntityManager entityManager;
 
-    public List<ProductItemDTO> getPaginateProducts(
-            Integer page,
-            Integer pageSize,
+    private Query getProductQuery(
             Optional<Long> minPrice,
             Optional<Long> maxPrice,
             Optional<String> nameFilter,
             Optional<List<Long>> categoryIds,
-            Optional<List<Long>> brandIds
-            ) {
+            Optional<List<Long>> brandIds,
+            Optional<String> slugFilter
+    ) {
 
         int languageId = 1; // TODO Lang
         int countryId = 1; // TODO country Id
@@ -137,6 +135,15 @@ public class ProductRepository {
             """);
         }
 
+        if (slugFilter.isPresent()) {
+            queryBuilder.append("""
+                 AND (p.slug = :slugFilter)
+            """);
+        }
+
+
+
+
         if (categoryIds.isPresent()) {
             queryBuilder.append("""
                 AND EXISTS (
@@ -161,15 +168,42 @@ public class ProductRepository {
         minPrice.ifPresent(price -> nativeQuery.setParameter("minPrice", price));
         maxPrice.ifPresent(price -> nativeQuery.setParameter("maxPrice", price));
         nameFilter.ifPresent(filter -> nativeQuery.setParameter("nameFilter", "%" + filter + "%"));
+        slugFilter.ifPresent(filter -> nativeQuery.setParameter("slugFilter", slugFilter.get()));
 
         if(categoryIds.isPresent())
         {
             Long[] categoryArray = categoryIds.get().toArray(new Long[0]);
             nativeQuery.setParameter("categoryIds", categoryArray);
         }
-        return nativeQuery.setFirstResult(page * pageSize)
+
+        return nativeQuery;
+    }
+
+    public List<ProductItemDTO> getPaginateProducts(
+            Integer page,
+            Integer pageSize,
+            Optional<Long> minPrice,
+            Optional<Long> maxPrice,
+            Optional<String> nameFilter,
+            Optional<List<Long>> categoryIds,
+            Optional<List<Long>> brandIds
+            ) {
+
+        return getProductQuery(minPrice, maxPrice, nameFilter, categoryIds, brandIds, Optional.empty())
+                .setFirstResult(page * pageSize)
                 .setMaxResults(pageSize)
                 .getResultList();
+    }
+
+
+    public ProductItemDTO getProductBySlug(
+            String slugFilter
+    ) {
+        List<ProductItemDTO> resultList = getProductQuery(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.ofNullable(slugFilter))
+                .setMaxResults(1)
+                .getResultList();
+
+        return resultList.isEmpty() ? null : resultList.get(0);
     }
 
 
