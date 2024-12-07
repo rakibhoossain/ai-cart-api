@@ -154,6 +154,13 @@ public class ProductVariantDTO {
         return mapper.readValue(json, new TypeReference<List<ProductVariantDTO>>() {});
     }
 
+    public static ProductVariantDTO parseSingleJson(String json) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Parse and return the list of ProductVariantDTO
+        return mapper.readValue(json, new TypeReference<ProductVariantDTO>() {});
+    }
+
     public Long getStock() {
         return stock;
     }

@@ -5,7 +5,12 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import store.aicart.order.dto.AddToCartDTO;
 import store.aicart.order.dto.CartDTO;
+import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.entity.Cart;
+
+import java.sql.Array;
+import java.util.Collections;
+import java.util.List;
 
 @Path("/carts")
 @Produces(MediaType.APPLICATION_JSON)
@@ -18,11 +23,13 @@ public class CartResource {
     private final String sessionKey = "cart-session";
 
     @GET
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getCart(@Context HttpHeaders headers) {
-
         String sessionId = cartService.getSessionId(headers);
-        Cart cart = cartService.getCart(sessionId, null);
-        return Response.ok(cart).build();
+        List<CartItemDTO> cart = cartService.getCart(sessionId, null);
+
+        return Response.ok(cart != null ? cart : Collections.emptyList()).build();
     }
 
 

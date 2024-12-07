@@ -1,25 +1,30 @@
-package store.aicart.product.dto;
+package store.aicart.order.dto;
+
+import store.aicart.product.dto.CategoryDTO;
+import store.aicart.product.dto.ProductVariantDTO;
 
 import java.util.Collections;
 import java.util.List;
 
-public class ProductItemDTO {
+public class CartItemDTO {
     private Long id;
     private String name;
     private String slug;
     private Long localeId;
     private String sku;
+    private int quantity;
     private List<CategoryDTO> categories;
-    private List<ProductVariantDTO> variants;
+    private ProductVariantDTO variant;
+
 
     // Constructor
-    public ProductItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, String categoriesJson, String variantsJson) {
+    public CartItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, int quantity, String categoriesJson, String variantJson) {
         this.id = id;
         this.name = localeId != null ? localeName : name;
         this.slug = slug;
         this.localeId = localeId;
         this.sku = sku;
-
+        this.quantity = quantity;
 
         try {
             this.categories = CategoryDTO.parseJsonToHierarchy(categoriesJson);
@@ -29,13 +34,13 @@ public class ProductItemDTO {
 
 
         try {
-            this.variants = ProductVariantDTO.parseJson(variantsJson);
+            this.variant = ProductVariantDTO.parseSingleJson(variantJson);
         } catch (Exception e) {
-            this.variants = Collections.emptyList();
+            this.variant = null;
         }
     }
 
-    public ProductItemDTO(Long id, String name) {
+    public CartItemDTO(Long id, String name) {
         this.id = id;
         this.name = name;
     }
@@ -89,11 +94,19 @@ public class ProductItemDTO {
         this.sku = sku;
     }
 
-    public List<ProductVariantDTO> getVariants() {
-        return variants;
+    public ProductVariantDTO getVariant() {
+        return variant;
     }
 
-    public void setVariants(List<ProductVariantDTO> variants) {
-        this.variants = variants;
+    public void setVariant(ProductVariantDTO variant) {
+        this.variant = variant;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 }

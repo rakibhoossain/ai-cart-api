@@ -4,8 +4,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
+import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.entity.Cart;
 
+import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -16,12 +18,18 @@ public class CartService {
     @Inject
     CartRepository cartRepository;
 
-    public Cart getCart(String sessionId, Long userId) {
-        return cartRepository.getCart(sessionId, userId);
+    public List<CartItemDTO> getCart(String sessionId, Long userId) {
+        Cart cart = cartRepository.getCart(sessionId, userId);
+
+        if(cart != null) {
+            return cartRepository.getCartItems(cart);
+        }
+
+        return null;
     }
 
     public Cart firstOrCreate(String sessionId, Long userId) {
-        Cart cart = getCart(sessionId, userId);
+        Cart cart = cartRepository.getCart(sessionId, userId);
 
         if(cart == null) {
             return cartRepository.createNewCart(sessionId, null);
