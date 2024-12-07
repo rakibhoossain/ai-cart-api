@@ -1,6 +1,7 @@
 package store.aicart.order;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -9,6 +10,7 @@ import jakarta.transaction.Transactional;
 import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.entity.Cart;
 import store.aicart.order.entity.CartItem;
+import store.aicart.order.entity.StockReservation;
 import store.aicart.product.Product;
 import store.aicart.product.ProductVariant;
 import store.aicart.product.dto.ProductItemDTO;
@@ -46,7 +48,7 @@ public class CartRepository implements PanacheRepository<Cart> {
 
 
     @Transactional
-    public boolean checkVariantStock(Long cartId, Long productId, Long variantId, int quantity) {
+    public boolean checkVariantStock(Long cartId, Long productId, Long variantId, int quantity, boolean isReplace) {
         String queryBuilder = """
                     SELECT EXISTS (
                         SELECT 1
@@ -70,7 +72,10 @@ public class CartRepository implements PanacheRepository<Cart> {
                         WHERE p.id = :productId
                           AND pv.id = :variantId
                         GROUP BY pv.id
-                        HAVING COALESCE(SUM(vs.quantity), 0) - COALESCE(SUM(sr.reserved_quantity), 0) - COALESCE(SUM(ci.cart_quantity), 0) >= :quantity
+                        HAVING COALESCE(SUM(vs.quantity), 0)
+                                - COALESCE(SUM(sr.reserved_quantity), 0)
+                                - CASE WHEN :isReplace THEN 0 ELSE COALESCE(SUM(ci.cart_quantity), 0) END
+                                >= :quantity
                     ) AS is_available;
                 """;
 
@@ -79,6 +84,7 @@ public class CartRepository implements PanacheRepository<Cart> {
                 .setParameter("productId", productId)
                 .setParameter("variantId", variantId)
                 .setParameter("quantity", quantity)
+                .setParameter("isReplace", isReplace)
                 .getSingleResult();
 
         return isAvailable != null && isAvailable;
@@ -102,7 +108,7 @@ public class CartRepository implements PanacheRepository<Cart> {
     @Transactional
     public boolean addToCart(Cart cart, Long productId, Long variantId, int quantity)
     {
-        boolean isStockAvailable = checkVariantStock(cart.id, productId, variantId, quantity);
+        boolean isStockAvailable = checkVariantStock(cart.id, productId, variantId, quantity, false);
 
         if (!isStockAvailable) {
             throw new IllegalArgumentException("Insufficient stock or invalid product/variant");
@@ -218,6 +224,57 @@ public class CartRepository implements PanacheRepository<Cart> {
                 .setParameter("countryId", countryId)
                 .setParameter("cartId", cart.id)
                 .getResultList();
+    }
+
+    @Transactional
+    public boolean removeItemFromCart(Cart cart, Long itemId){
+        CartItem cartItem = CartItem.find("id = ?1 and cart.id = ?2", itemId, cart.id).firstResult();
+        if (cartItem != null) {
+            StockReservation.delete(
+                    "cart.id = :cartId AND product.id = :productId AND variant.id = :variantId",
+                    Parameters.with("cartId", cart.id)
+                            .and("productId", cartItem.product.id)
+                            .and("variantId", cartItem.variant.id)
+            );
+            cartItem.delete();
+
+            // Check if the cart is now empty
+            long remainingItems = CartItem.count("cart.id = ?1", cart.id);
+            if (remainingItems == 0) {
+                // Remove the cart if no items are left
+                cart.delete();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+    @Transactional
+    public boolean updateCartQuantity(Cart cart, CartItem cartItem, int quantity) {
+        // Check stock availability before updating the cart
+        boolean isStockAvailable = checkVariantStock(cart.id, cartItem.product.id, cartItem.variant.id, quantity, true);
+
+        if (!isStockAvailable) {
+            throw new IllegalArgumentException("Insufficient stock or invalid product/variant");
+        }
+
+        // Raw SQL query to update cart item quantity
+        String updateQuery = """
+        UPDATE cart_items
+        SET quantity = :quantity, updated_at = NOW()
+        WHERE id = :cartItemId AND cart_id = :cartId
+        """;
+
+        int updatedRows = em.createNativeQuery(updateQuery)
+                .setParameter("quantity", quantity)
+                .setParameter("cartItemId", cartItem.id)
+                .setParameter("cartId", cart.id)
+                .executeUpdate();
+
+        return updatedRows > 0;
     }
 
 }

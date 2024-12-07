@@ -6,6 +6,7 @@ import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.entity.Cart;
+import store.aicart.order.entity.CartItem;
 
 import java.util.List;
 import java.util.UUID;
@@ -56,5 +57,15 @@ public class CartService {
 
     public String getSessionKey() {
         return sessionKey;
+    }
+
+
+    public boolean removeItemFromCart(Cart cart, Long itemId){
+        return cartRepository.removeItemFromCart(cart, itemId);
+    }
+
+    public boolean updateCartQuantity(Cart cart, Long itemId, int quantity){
+        CartItem cartItem = CartItem.findById(itemId);
+        return cartRepository.updateCartQuantity(cart, cartItem, quantity);
     }
 }
