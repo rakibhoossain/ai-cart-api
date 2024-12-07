@@ -217,6 +217,7 @@ public class CartRepository implements PanacheRepository<Cart> {
                          LEFT JOIN product_translations locale
                                    ON p.id = locale.product_id AND locale.language_id = :languageId
                 WHERE cit.cart_id = :cartId
+                ORDER BY cit.id DESC
                 """;
 
         return em.createNativeQuery(query, CartItemDTO.class)
