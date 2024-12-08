@@ -5,7 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
-import org.aicart.country.Language;
+import org.aicart.entity.Language;
 
 @Entity(name = "attribute_translations")
 public class AttributeTranslation extends PanacheEntity {

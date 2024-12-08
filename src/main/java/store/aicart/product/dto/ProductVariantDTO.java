@@ -1,101 +1,10 @@
 package store.aicart.product.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.List;
-
-class VariantPriceDTO {
-    private Integer price;
-    private Integer discount;
-
-    @JsonProperty("tax_rate")
-    private Integer taxRate;
-
-    @JsonProperty("currency_id")
-    private Integer currencyId;
-
-    // Getters and Setters
-    public Integer getPrice() {
-        return price;
-    }
-
-    public void setPrice(Integer price) {
-        this.price = price;
-    }
-
-    public Integer getDiscount() {
-        return discount;
-    }
-
-    public void setDiscount(Integer discount) {
-        this.discount = discount;
-    }
-
-    public Integer getTaxRate() {
-        return taxRate;
-    }
-
-    public void setTaxRate(Integer taxRate) {
-        this.taxRate = taxRate;
-    }
-
-    public Integer getCurrencyId() {
-        return currencyId;
-    }
-
-    public void setCurrencyId(Integer currencyId) {
-        this.currencyId = currencyId;
-    }
-}
-
-class AttributeDTO {
-    private String value;
-
-    @JsonProperty("value_id")
-    private int valueId;
-
-    @JsonProperty("attribute_id")
-    private int attributeId;
-
-    @JsonProperty("attribute_name")
-    private String attributeName;
-
-    // Getters and Setters
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public int getValueId() {
-        return valueId;
-    }
-
-    public void setValueId(int valueId) {
-        this.valueId = valueId;
-    }
-
-    public int getAttributeId() {
-        return attributeId;
-    }
-
-    public void setAttributeId(int attributeId) {
-        this.attributeId = attributeId;
-    }
-
-    public String getAttributeName() {
-        return attributeName;
-    }
-
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
-    }
-}
 
 public class ProductVariantDTO {
     private Long id;

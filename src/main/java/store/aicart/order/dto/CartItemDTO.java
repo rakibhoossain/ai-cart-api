@@ -8,6 +8,8 @@ import java.util.List;
 
 public class CartItemDTO {
     private Long id;
+    private Long productId;
+    private Long variantId;
     private String name;
     private String slug;
     private Long localeId;
@@ -18,8 +20,10 @@ public class CartItemDTO {
 
 
     // Constructor
-    public CartItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, int quantity, String categoriesJson, String variantJson) {
+    public CartItemDTO(Long id, Long productId, Long variantId, String name, String slug, Long localeId, String localeName, String sku, int quantity, String categoriesJson, String variantJson) {
         this.id = id;
+        this.productId = productId;
+        this.variantId = variantId;
         this.name = localeId != null ? localeName : name;
         this.slug = slug;
         this.localeId = localeId;
@@ -108,5 +112,21 @@ public class CartItemDTO {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+
+    public Long getVariantId() {
+        return variantId;
+    }
+
+    public void setVariantId(Long variantId) {
+        this.variantId = variantId;
     }
 }

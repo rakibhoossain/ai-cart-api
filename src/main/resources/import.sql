@@ -1,7 +1,7 @@
 -- This file allow to write SQL commands that will be emitted in test and dev.
 
 -- Inserting Country (United States, Spain)
-INSERT INTO countries (id, code, name) VALUES (1, 'usa', 'United States'), (2, 'es', 'Spain');
+INSERT INTO countries (id, code, name, tax_rate) VALUES (1, 'usa', 'United States', 20), (2, 'es', 'Spain', 22);
 
 -- Inserting WarehouseLocation
 INSERT INTO warehouse_locations (id, name, address_line1, city, postal_code, country_id, contact_number, is_active)

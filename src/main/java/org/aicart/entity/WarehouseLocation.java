@@ -1,4 +1,4 @@
-package org.aicart.country;
+package org.aicart.entity;
 
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;

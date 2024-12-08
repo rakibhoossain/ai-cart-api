@@ -143,7 +143,9 @@ public class CartRepository implements PanacheRepository<Cart> {
 
         String query = """
                 SELECT
-                    cit.id AS product_id,
+                    cit.id AS id,
+                    p.id AS product_id,
+                    cit.variant_id AS variant_id,
                     p.name AS product_name,
                     p.slug AS slug,
                     locale.id AS locale_id,
@@ -252,6 +254,27 @@ public class CartRepository implements PanacheRepository<Cart> {
         return false;
     }
 
+    @Transactional
+    public boolean removeItemFromCart(Cart cart){
+
+//        if(cart == null) return false;
+
+        CartItem.delete("cart.id = :cartId",
+                Parameters.with("cartId", cart.id)
+        );
+
+        StockReservation.delete(
+                "cart.id = :cartId",
+                Parameters.with("cartId", cart.id)
+        );
+
+        Cart.delete("id = :cartId", Parameters.with("cartId", cart.id));
+
+//        cart.delete();
+
+        return true;
+    }
+
 
     @Transactional
     public boolean updateCartQuantity(Cart cart, CartItem cartItem, int quantity) {
@@ -277,5 +300,39 @@ public class CartRepository implements PanacheRepository<Cart> {
 
         return updatedRows > 0;
     }
+
+
+
+    @Transactional
+    public void reserveStock(Long productId, Long variantId, int quantity) {
+        long expiresAt = System.currentTimeMillis() / 1000 + 15 * 60; // Unix time + 15 minutes
+
+        em.createNativeQuery("""
+        INSERT INTO stock_reservations (product_id, variant_id, quantity, expires_at)
+        VALUES (:productId, :variantId, :quantity, :expiresAt)
+    """)
+                .setParameter("productId", productId)
+                .setParameter("variantId", variantId)
+                .setParameter("quantity", quantity)
+                .setParameter("expiresAt", expiresAt)
+                .executeUpdate();
+    }
+
+
+    @Transactional
+    public void cleanupExpiredReservations() {
+        long currentTime = System.currentTimeMillis() / 1000;
+
+        em.createNativeQuery("DELETE FROM stock_reservations WHERE expires_at <= :currentTime")
+                .setParameter("currentTime", currentTime)
+                .executeUpdate();
+    }
+
+
+
+
+
+
+
 
 }

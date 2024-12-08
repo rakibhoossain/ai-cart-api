@@ -2,7 +2,7 @@ package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import org.aicart.country.WarehouseLocation;
+import org.aicart.entity.WarehouseLocation;
 
 @Entity
 @Table(

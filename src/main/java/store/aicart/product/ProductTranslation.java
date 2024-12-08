@@ -2,7 +2,7 @@ package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import org.aicart.country.Language;
+import org.aicart.entity.Language;
 
 @Entity(name = "product_translations")
 public class ProductTranslation extends PanacheEntity {

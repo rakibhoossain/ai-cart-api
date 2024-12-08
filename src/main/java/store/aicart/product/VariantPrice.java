@@ -2,8 +2,8 @@ package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import org.aicart.country.Country;
-import org.aicart.country.Currency;
+import org.aicart.entity.Country;
+import org.aicart.entity.Currency;
 
 import java.math.BigInteger;
 
