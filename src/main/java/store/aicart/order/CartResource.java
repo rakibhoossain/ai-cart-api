@@ -5,6 +5,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import store.aicart.order.dto.*;
 import store.aicart.order.entity.Cart;
+import store.aicart.order.entity.CartItem;
 import store.aicart.order.entity.Order;
 
 import java.util.Collections;
@@ -83,6 +84,13 @@ public class CartResource {
     @Path("/confirm/{cartId}")
     public Response confirmOrder(@PathParam("cartId") Long cartId, CartCheckoutRequestDTO checkoutRequestDTO) {
         Cart cart = Cart.findById(cartId);
+        if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
+
+        long remainingItems = CartItem.count("cart.id = ?1", cart.id);
+        if (remainingItems == 0) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
         Order order = orderService.convertCartToOrder(cart, checkoutRequestDTO.getBilling(), checkoutRequestDTO.getShipping());
         orderService.clearCart(cart);
         return Response.ok(order.id).status(Response.Status.CREATED).build();
