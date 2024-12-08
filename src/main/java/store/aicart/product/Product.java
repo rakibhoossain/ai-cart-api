@@ -2,9 +2,9 @@ package store.aicart.product;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-import com.github.slugify.Slugify;
 import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import org.aicart.util.StringSlugifier;
 import store.aicart.product.entity.Category;
 
 @Entity(name = "products")
@@ -48,8 +48,7 @@ public class Product extends PanacheEntity {
         updatedAt = LocalDateTime.now();
 
         if (this.slug == null || this.slug.isEmpty()) {
-            final Slugify slg = Slugify.builder().build();
-            final String baseSlug = slg.slugify(this.name);
+            final String baseSlug = StringSlugifier.slugify(this.name);
             String uniqueSlug = baseSlug;
             int counter = 1;
 

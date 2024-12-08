@@ -3,13 +3,12 @@ package store.aicart.order;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import org.aicart.sslcommerz.SslcommerzResponse;
+import org.aicart.sslcommerz.SslcommerzService;
 import store.aicart.order.dto.*;
 import store.aicart.order.entity.Cart;
 import store.aicart.order.entity.CartItem;
 import store.aicart.order.entity.Order;
-
-import java.util.Collections;
-import java.util.List;
 
 @Path("/carts")
 @Produces(MediaType.APPLICATION_JSON)
@@ -22,14 +21,22 @@ public class CartResource {
     @Inject
     OrderService orderService;
 
+    @Inject
+    SslcommerzService sslcommerzService;
+
     private final String sessionKey = "cart-session";
 
     @GET
     public Response getCart(@Context HttpHeaders headers) {
         String sessionId = cartService.getSessionId(headers);
-        List<CartItemDTO> cart = cartService.getCart(sessionId, null);
+        CartResponseDTO cart = cartService.getCart(sessionId, null);
 
-        return Response.ok(cart != null ? cart : Collections.emptyList()).build();
+        if(cart == null)
+        {
+            return Response.noContent().build();
+        }
+
+        return Response.ok(cart).build();
     }
 
 
@@ -95,5 +102,19 @@ public class CartResource {
         orderService.clearCart(cart);
         return Response.ok(order.id).status(Response.Status.CREATED).build();
 
+    }
+
+
+    @GET
+    @Path("/sslcommerz-payment-verify/{valId}")
+    public Response sslcommerzPaymentVerify(@PathParam("valId") String valId) {
+
+        SslcommerzResponse response = sslcommerzService.sslcommerzPaymentVerify(valId);
+        if(response.isValid())
+        {
+            return Response.ok(response).build();
+        }
+
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

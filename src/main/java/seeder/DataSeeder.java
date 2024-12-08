@@ -1,6 +1,5 @@
 package seeder;
 
-import com.github.javafaker.Faker;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -11,8 +10,6 @@ import jakarta.ws.rs.Path;
 @Path("/seed")
 @ApplicationScoped
 public class DataSeeder {
-
-    private final Faker faker = new Faker();
 
     @Inject
     EntityManager em;
@@ -37,7 +34,7 @@ public class DataSeeder {
     private void insertProducts(int numberOfProducts) {
         for (int i = 6; i <= numberOfProducts; i++) {
             String sku = "SKU_" + i;
-            String name = faker.commerce().productName();
+            String name = "Test product " + i;
             String slug = name.toLowerCase().replace(" ", "-")+i;
 
             em.createNativeQuery("INSERT INTO products(id, sku, name, slug, created_at, updated_at) VALUES (:id, :sku, :name, :slug, NOW(), NOW())")
@@ -67,7 +64,7 @@ public class DataSeeder {
 
     private void insertVariantPrices() {
         for (int i = 6; i <= range; i++) {
-            double price = faker.number().randomDouble(2, 10, 5000); // Random price between 10 and 5000
+            double price = 1345; // Random price between 10 and 5000
             em.createNativeQuery("INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, tax_rate, is_active) VALUES (:id, 1, :variantId, 1, :price, 0, 0, TRUE)")
                     .setParameter("id", i)
                     .setParameter("variantId", i)

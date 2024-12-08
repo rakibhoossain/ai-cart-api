@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
 import store.aicart.order.dto.CartItemDTO;
+import store.aicart.order.dto.CartResponseDTO;
 import store.aicart.order.entity.Cart;
 import store.aicart.order.entity.CartItem;
 
@@ -19,11 +20,12 @@ public class CartService {
     @Inject
     CartRepository cartRepository;
 
-    public List<CartItemDTO> getCart(String sessionId, Long userId) {
+    public CartResponseDTO getCart(String sessionId, Long userId) {
         Cart cart = cartRepository.getCart(sessionId, userId);
 
         if(cart != null) {
-            return cartRepository.getCartItems(cart);
+            List<CartItemDTO> cartItems = cartRepository.getCartItems(cart);
+            return new CartResponseDTO(cart.id, cartItems, "USD");
         }
 
         return null;
