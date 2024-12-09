@@ -1,5 +1,8 @@
 package store.aicart.order.dto;
 
+/**
+ * @deprecated
+ */
 public class CartCheckoutRequestDTO {
     private OrderBillingDTO billing;
     private OrderShippingDTO shipping;

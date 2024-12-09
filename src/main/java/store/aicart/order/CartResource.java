@@ -102,7 +102,7 @@ public class CartResource {
 
     @POST
     @Path("/confirm/{cartId}")
-    public Response confirmOrder(@PathParam("cartId") Long cartId, CartCheckoutRequestDTO checkoutRequestDTO) {
+    public Response confirmOrder(@PathParam("cartId") Long cartId) {
         Cart cart = Cart.findById(cartId);
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
@@ -111,7 +111,7 @@ public class CartResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Order order = orderService.convertCartToOrder(cart, checkoutRequestDTO.getBilling(), checkoutRequestDTO.getShipping());
+        Order order = orderService.convertCartToOrder(cart, cart.billing, cart.shipping);
         orderService.clearCart(cart);
         return Response.ok(order.id).status(Response.Status.CREATED).build();
 
