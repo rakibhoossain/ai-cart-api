@@ -2,6 +2,11 @@ package store.aicart.order.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+import org.hibernate.type.SqlTypes;
+import store.aicart.order.dto.OrderBillingDTO;
+import store.aicart.order.dto.OrderShippingDTO;
 import store.aicart.user.entity.User;
 
 import java.time.LocalDateTime;
@@ -20,6 +25,15 @@ public class Cart extends PanacheEntity {
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<CartItem> items;
+
+    @Column(name = "billing", columnDefinition = "jsonb", nullable = true)
+    @JdbcTypeCode(SqlTypes.JSON)
+    public OrderBillingDTO billing;
+
+    @Column(name = "shipping", columnDefinition = "jsonb", nullable = true)
+    @JdbcTypeCode(SqlTypes.JSON)
+    public OrderShippingDTO shipping;
+
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();

@@ -5,15 +5,14 @@ import io.quarkus.panache.common.Parameters;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
 import jakarta.transaction.Transactional;
+import store.aicart.order.dto.CartAddressRequestDTO;
 import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.entity.Cart;
 import store.aicart.order.entity.CartItem;
 import store.aicart.order.entity.StockReservation;
 import store.aicart.product.Product;
 import store.aicart.product.ProductVariant;
-import store.aicart.product.dto.ProductItemDTO;
 import store.aicart.user.entity.User;
 
 import java.util.List;
@@ -326,6 +325,21 @@ public class CartRepository implements PanacheRepository<Cart> {
         em.createNativeQuery("DELETE FROM stock_reservations WHERE expires_at <= :currentTime")
                 .setParameter("currentTime", currentTime)
                 .executeUpdate();
+    }
+
+    @Transactional
+    public CartAddressRequestDTO updateCartAddress(Cart cart, CartAddressRequestDTO addressRequest) {
+
+        cart.billing = addressRequest.getBilling();
+        if(!addressRequest.isUseShippingAsBilling()) {
+            cart.shipping = addressRequest.getShipping();
+        } else {
+            cart.shipping = null;
+        }
+
+        em.merge(cart);
+
+        return addressRequest;
     }
 
 

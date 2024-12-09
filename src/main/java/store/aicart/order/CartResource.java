@@ -87,6 +87,19 @@ public class CartResource {
     }
 
 
+    @PUT
+    @Path("/update-cart-address/{cartId}")
+    public Response updateCartAddress(@PathParam("cartId") Long cartId, CartAddressRequestDTO addressRequest) {
+
+        Cart cart = Cart.findById(cartId);
+        if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
+
+        CartAddressRequestDTO results = cartService.updateCartAddress(cart, addressRequest);
+
+        return Response.ok(results).build();
+    }
+
+
     @POST
     @Path("/confirm/{cartId}")
     public Response confirmOrder(@PathParam("cartId") Long cartId, CartCheckoutRequestDTO checkoutRequestDTO) {

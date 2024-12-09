@@ -2,8 +2,11 @@ package store.aicart.order;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.Response;
+import store.aicart.order.dto.CartAddressRequestDTO;
 import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.dto.CartResponseDTO;
 import store.aicart.order.entity.Cart;
@@ -25,7 +28,7 @@ public class CartService {
 
         if(cart != null) {
             List<CartItemDTO> cartItems = cartRepository.getCartItems(cart);
-            return new CartResponseDTO(cart.id, cartItems, "USD");
+            return new CartResponseDTO(cart.id, cartItems, "USD", cart.billing, cart.shipping);
         }
 
         return null;
@@ -69,5 +72,10 @@ public class CartService {
     public boolean updateCartQuantity(Cart cart, Long itemId, int quantity){
         CartItem cartItem = CartItem.findById(itemId);
         return cartRepository.updateCartQuantity(cart, cartItem, quantity);
+    }
+
+
+    public CartAddressRequestDTO updateCartAddress(Cart cart, CartAddressRequestDTO addressRequest) {
+        return cartRepository.updateCartAddress(cart, addressRequest);
     }
 }
