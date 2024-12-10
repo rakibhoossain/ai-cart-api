@@ -23,6 +23,18 @@ public class Cart extends PanacheEntity {
     @Column(name = "session_id", nullable = true)
     public String sessionId; // UUID for guest users
 
+    @Column(name = "step", nullable = false)
+    public int step = 0;
+
+    @Column(name = "delivery_method", nullable = true)
+    public String deliveryMethod;
+
+    @Column(name = "payment_method", nullable = true)
+    public String paymentMethod;
+
+    @Column(name = "coupon_code", nullable = true)
+    public String couponCode;
+
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<CartItem> items;
 
@@ -33,7 +45,6 @@ public class Cart extends PanacheEntity {
     @Column(name = "shipping", columnDefinition = "jsonb", nullable = true)
     @JdbcTypeCode(SqlTypes.JSON)
     public OrderShippingDTO shipping;
-
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();

@@ -10,6 +10,7 @@ import store.aicart.order.dto.CartAddressRequestDTO;
 import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.dto.CartResponseDTO;
 import store.aicart.order.entity.Cart;
+import store.aicart.order.entity.CartDeliveryRequestDTO;
 import store.aicart.order.entity.CartItem;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class CartService {
 
         if(cart != null) {
             List<CartItemDTO> cartItems = cartRepository.getCartItems(cart);
-            return new CartResponseDTO(cart.id, cartItems, "USD", cart.billing, cart.shipping);
+            return new CartResponseDTO(cart, cartItems);
         }
 
         return null;
@@ -77,5 +78,10 @@ public class CartService {
 
     public CartAddressRequestDTO updateCartAddress(Cart cart, CartAddressRequestDTO addressRequest) {
         return cartRepository.updateCartAddress(cart, addressRequest);
+    }
+
+
+    public CartDeliveryRequestDTO updateDeliveryInfo(Cart cart, CartDeliveryRequestDTO deliveryRequest) {
+        return cartRepository.updateDeliveryInfo(cart, deliveryRequest);
     }
 }

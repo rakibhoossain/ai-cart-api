@@ -7,6 +7,7 @@ import org.aicart.sslcommerz.SslcommerzResponse;
 import org.aicart.sslcommerz.SslcommerzService;
 import store.aicart.order.dto.*;
 import store.aicart.order.entity.Cart;
+import store.aicart.order.entity.CartDeliveryRequestDTO;
 import store.aicart.order.entity.CartItem;
 import store.aicart.order.entity.Order;
 
@@ -95,6 +96,27 @@ public class CartResource {
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         CartAddressRequestDTO results = cartService.updateCartAddress(cart, addressRequest);
+
+        return Response.ok(results).build();
+    }
+
+
+    @GET
+    @Path("/verify-coupon/{cartId}")
+    public Response verifyCoupon(@PathParam("cartId") Long cartId, @QueryParam("couponCode") String couponCode) {
+        Cart cart = Cart.findById(cartId);
+        if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
+
+        return Response.ok(couponCode).build();
+    }
+
+    @PUT
+    @Path("/update-delivery-info/{cartId}")
+    public Response updateDeliveryInfo(@PathParam("cartId") Long cartId, CartDeliveryRequestDTO deliveryRequest) {
+        Cart cart = Cart.findById(cartId);
+        if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
+
+        CartDeliveryRequestDTO results = cartService.updateDeliveryInfo(cart, deliveryRequest);
 
         return Response.ok(results).build();
     }

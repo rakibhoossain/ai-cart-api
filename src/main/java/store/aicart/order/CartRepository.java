@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import store.aicart.order.dto.CartAddressRequestDTO;
 import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.entity.Cart;
+import store.aicart.order.entity.CartDeliveryRequestDTO;
 import store.aicart.order.entity.CartItem;
 import store.aicart.order.entity.StockReservation;
 import store.aicart.product.Product;
@@ -36,6 +37,7 @@ public class CartRepository implements PanacheRepository<Cart> {
         // Create a new Cart and associate it with the session ID
         Cart newCart = new Cart();
         newCart.sessionId = sessionId;
+        newCart.step = 0;
 
         if(user != null) {
             newCart.user = user;
@@ -330,6 +332,7 @@ public class CartRepository implements PanacheRepository<Cart> {
     @Transactional
     public CartAddressRequestDTO updateCartAddress(Cart cart, CartAddressRequestDTO addressRequest) {
 
+        cart.step = 1;
         cart.billing = addressRequest.getBilling();
         if(!addressRequest.isUseShippingAsBilling()) {
             cart.shipping = addressRequest.getShipping();
@@ -342,11 +345,17 @@ public class CartRepository implements PanacheRepository<Cart> {
         return addressRequest;
     }
 
+    @Transactional
+    public CartDeliveryRequestDTO updateDeliveryInfo(Cart cart, CartDeliveryRequestDTO deliveryRequest) {
 
+        cart.step = 2;
+        cart.deliveryMethod = deliveryRequest.getDeliveryMethod();
+        cart.paymentMethod = deliveryRequest.getPaymentMethod();
+        cart.couponCode = deliveryRequest.getCouponCode();
 
+        em.merge(cart);
 
-
-
-
+        return deliveryRequest;
+    }
 
 }
