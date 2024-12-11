@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import store.aicart.order.OrderService;
 import store.aicart.order.entity.Cart;
 
@@ -20,7 +21,8 @@ public class WebhookResource {
     @Inject
     OrderService orderService;
 
-    final String WEBHOOK_SECRET_KEY = "whsec_95ce0281a7c58b3635b9b75ce69dfe90c99a5c8cfc8e6f9501704fdc3085cfaf";
+    @ConfigProperty(name = "stripe.webhookSecret")
+    String webhookSecret;
 
     @POST
     @Path("/webhook")
@@ -28,9 +30,8 @@ public class WebhookResource {
 
         Event event;
         try {
-            event = Webhook.constructEvent(payload, sigHeader, WEBHOOK_SECRET_KEY);
+            event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
         } catch (SignatureVerificationException e) {
-            System.out.println("Failed signature verification");
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
 
