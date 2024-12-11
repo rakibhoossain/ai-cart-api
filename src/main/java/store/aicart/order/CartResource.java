@@ -152,7 +152,6 @@ public class CartResource {
             if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
             orderService.convertCartToOrder(cart, cart.billing, cart.shipping);
-            orderService.clearCart(cart);
 
             return Response.ok(response).status(Response.Status.CREATED).build();
         }
