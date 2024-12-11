@@ -145,9 +145,16 @@ public class CartResource {
     public Response sslcommerzPaymentVerify(@PathParam("valId") String valId) {
 
         SslcommerzResponse response = sslcommerzService.sslcommerzPaymentVerify(valId);
-        if(response.isValid())
+        if(response.isValid() && response.getTran_id() != null)
         {
-            return Response.ok(response).build();
+            String cartId = response.getTran_id();
+            Cart cart = Cart.findById(cartId);
+            if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
+
+            orderService.convertCartToOrder(cart, cart.billing, cart.shipping);
+            orderService.clearCart(cart);
+
+            return Response.ok(response).status(Response.Status.CREATED).build();
         }
 
         return Response.status(Response.Status.NOT_FOUND).build();
