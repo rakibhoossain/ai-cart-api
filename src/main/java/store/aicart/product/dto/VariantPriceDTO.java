@@ -86,6 +86,22 @@ public class VariantPriceDTO {
         return price;  // If no discount is provided, return the original price
     }
 
+
+    /**
+     * Calculates the discount based on discountType (either "PERCENTAGE" or "FIXED").
+     *
+     * @return discount amount based on the discount type
+     */
+    @JsonProperty("discount_percentage")
+    public Integer getDiscountPercentage() {
+
+        if (discount != null && "PERCENTAGE".equalsIgnoreCase(discountType)) {
+            return discount;
+        }
+
+        return null;
+    }
+
     public Long getDiscountEndAt() {
         return discountEndAt;
     }
