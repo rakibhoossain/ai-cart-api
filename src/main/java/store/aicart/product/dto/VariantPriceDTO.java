@@ -12,6 +12,12 @@ public class VariantPriceDTO {
     @JsonProperty("currency_id")
     private Integer currencyId;
 
+    @JsonProperty("discount_end_at")
+    private Long discountEndAt;
+
+    @JsonProperty("discount_type")
+    private String discountType;
+
     // Getters and Setters
     public Integer getPrice() {
         return price;

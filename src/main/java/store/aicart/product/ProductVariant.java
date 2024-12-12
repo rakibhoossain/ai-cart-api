@@ -2,6 +2,7 @@ package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import store.aicart.product.entity.Discount;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,4 +39,7 @@ public class ProductVariant extends PanacheEntity {
 
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<VariantImage> images;
+
+    @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY)
+    public List<Discount> discounts; // Variant-specific discounts
 }

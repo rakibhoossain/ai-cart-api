@@ -1,7 +1,11 @@
 -- This file allow to write SQL commands that will be emitted in test and dev.
 
 -- Inserting Country (United States, Spain)
-INSERT INTO countries (id, code, name, tax_rate) VALUES (1, 'usa', 'United States', 20), (2, 'es', 'Spain', 22);
+INSERT INTO countries (id, code, name) VALUES (1, 'usa', 'United States'), (2, 'es', 'Spain');
+
+-- Insert Tax
+INSERT INTO taxes (id, country_id, name, tax_rate, is_default) VALUES (1, 1, 'Full Tax', 2000, TRUE);
+
 
 -- Inserting WarehouseLocation
 INSERT INTO warehouse_locations (id, name, address_line1, city, postal_code, country_id, contact_number, is_active)
@@ -209,10 +213,10 @@ VALUES (1, 1, 100, 1),
        (3, 3, 200, 1);
 
 -- Insert VariantPrice
-INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, tax_rate, is_active)
-VALUES (1, 1, 1, 1, 1200, 0, 0, TRUE),
-       (2, 1, 2, 1,1700, 0, 0, TRUE),
-       (3, 1, 3, 1,1700, 0, 0, TRUE);
+INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, is_active)
+VALUES (1, 1, 1, 1, 1200, 0, TRUE),
+       (2, 1, 2, 1,1700, 0, TRUE),
+       (3, 1, 3, 1,1700, 0, TRUE);
 
 
 -- Insert VariantImage

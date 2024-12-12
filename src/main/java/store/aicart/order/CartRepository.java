@@ -139,94 +139,106 @@ public class CartRepository implements PanacheRepository<Cart> {
     @Transactional
     public List<CartItemDTO> getCartItems(Cart cart) {
 
-        int languageId = 1; // TODO Lang
-        int countryId = 1; // TODO country Id
+        int languageId = 1; // Static language ID for now
+        int countryId = 1; // Static country ID for now
+        long currentTimestamp = System.currentTimeMillis() / 1000L; // Static Unix timestamp for now
 
         String query = """
-                SELECT
-                    cit.id AS id,
-                    p.id AS product_id,
-                    cit.variant_id AS variant_id,
-                    p.name AS product_name,
-                    p.slug AS slug,
-                    locale.id AS locale_id,
-                    locale.name AS locale_name,
-                    p.sku AS sku,
-                    cit.quantity AS quantity,
-                    (
-                        SELECT jsonb_agg(
-                                       jsonb_build_object(
-                                               'id', c.id,
-                                               'name', c.name,
-                                               'category_id', pc.category_id,
-                                               'depth', cc.depth
-                                       )
-                               )
-                        FROM product_category pc
-                                 JOIN category_closure cc
-                                      ON pc.category_id = cc.descendant_id
-                                 JOIN categories c
-                                      ON cc.ancestor_id = c.id
-                        WHERE pc.product_id = p.id
-                    ) AS categories,
-                    (
-                        SELECT
-                                       jsonb_build_object(
-                                               'id', pv.id,
-                                               'sku', pv.sku,
-                                               'stock', (
-                                                   SELECT SUM(vs.quantity)
-                                                   FROM variant_stocks vs
-                                                   WHERE vs.variant_id = pv.id
-                                               ),
-                                               'price', (
-                                                   SELECT jsonb_build_object(
-                                                                  'currency_id', vp.currency_id,
-                                                                  'price', vp.price,
-                                                                  'discount', vp.discount,
-                                                                  'tax_rate', vp.tax_rate
-                                                          )
-                                                   FROM variant_prices vp
-                                                   WHERE vp.variant_id = pv.id AND vp.country_id = :countryId
-                                               ),
-                                               'images', (
-                                                   SELECT ARRAY_AGG(vi.url)
-                                                   FROM variant_images vi
-                                                   WHERE vi.variant_id = pv.id
-                                               ),
-                                               'attributes', (
-                                                   SELECT jsonb_agg(
-                                                                  jsonb_build_object(
-                                                                          'attribute_name', a.name,
-                                                                          'value', av.value,
-                                                                          'attribute_id', av.attribute_id,
-                                                                          'value_id', av.id
-                                                                  )
-                                                          )
-                                                   FROM product_variant_value pvv
-                                                            JOIN attribute_values av
-                                                                 ON pvv.attribute_value_id = av.id
-                                                            JOIN attributes a
-                                                                 ON av.attribute_id = a.id
-                                                   WHERE pvv.variant_id = pv.id
-                                               )
-                                       )
-                        FROM product_variants pv
-                        WHERE pv.product_id = p.id
-                        AND pv.id = cit.variant_id
-                    ) AS variant
-                FROM products p
-                    JOIN cart_items cit ON p.id = cit.product_id
-                         LEFT JOIN product_translations locale
-                                   ON p.id = locale.product_id AND locale.language_id = :languageId
-                WHERE cit.cart_id = :cartId
-                ORDER BY cit.id DESC
-                """;
+            SELECT
+                cit.id AS id,
+                p.id AS product_id,
+                cit.variant_id AS variant_id,
+                COALESCE(locale.name, p.name) AS product_name,
+                p.slug AS slug,
+                locale.id AS locale_id,
+                locale.name AS locale_name,
+                p.sku AS sku,
+                cit.quantity AS quantity,
+                (
+                    SELECT jsonb_agg(
+                                   jsonb_build_object(
+                                           'id', c.id,
+                                           'name', c.name,
+                                           'category_id', pc.category_id,
+                                           'depth', cc.depth
+                                   )
+                           )
+                    FROM product_category pc
+                             JOIN category_closure cc
+                                  ON pc.category_id = cc.descendant_id
+                             JOIN categories c
+                                  ON cc.ancestor_id = c.id
+                    WHERE pc.product_id = p.id
+                ) AS categories,
+                (
+                    SELECT jsonb_build_object(
+                                   'id', pv.id,
+                                   'sku', pv.sku,
+                                   'stock', (
+                                       SELECT SUM(vs.quantity)
+                                       FROM variant_stocks vs
+                                       WHERE vs.variant_id = pv.id
+                                   ),
+                                   'price', (
+                                       SELECT jsonb_build_object(
+                                                      'currency_id', vp.currency_id,
+                                                      'price', vp.price,
+                                                      'discount', COALESCE(d.amount, 0),
+                                                      'discount_end_at', d.end_at,
+                                                      'discount_type', d.discount_type,
+                                                      'tax_rate', COALESCE(t.tax_rate, 0)
+                                              )
+                                       FROM variant_prices vp
+                                       LEFT JOIN discounts d
+                                            ON (d.variant_id = pv.id OR (d.variant_id IS NULL AND d.product_id = p.id))
+                                            AND d.is_active = true
+                                            AND (d.start_at IS NULL OR d.start_at <= :currentTimestamp)
+                                            AND (d.end_at IS NULL OR d.end_at >= :currentTimestamp)
+                                       LEFT JOIN product_tax pt ON pt.product_id = p.id
+                                            AND pt.country_id = :countryId
+                                            LEFT JOIN taxes t
+                                            ON pt.tax_id = t.id
+                                       WHERE vp.variant_id = pv.id AND vp.country_id = :countryId
+                                   ),
+                                   'images', (
+                                       SELECT ARRAY_AGG(vi.url)
+                                       FROM variant_images vi
+                                       WHERE vi.variant_id = pv.id
+                                   ),
+                                   'attributes', (
+                                       SELECT jsonb_agg(
+                                                      jsonb_build_object(
+                                                              'attribute_name', a.name,
+                                                              'value', av.value,
+                                                              'attribute_id', av.attribute_id,
+                                                              'value_id', av.id
+                                                      )
+                                                  )
+                                       FROM product_variant_value pvv
+                                                JOIN attribute_values av
+                                                     ON pvv.attribute_value_id = av.id
+                                                JOIN attributes a
+                                                     ON av.attribute_id = a.id
+                                       WHERE pvv.variant_id = pv.id
+                                   )
+                           )
+                    FROM product_variants pv
+                    WHERE pv.product_id = p.id
+                    AND pv.id = cit.variant_id
+                ) AS variant
+            FROM products p
+                JOIN cart_items cit ON p.id = cit.product_id
+                     LEFT JOIN product_translations locale
+                               ON p.id = locale.product_id AND locale.language_id = :languageId
+            WHERE cit.cart_id = :cartId
+            ORDER BY cit.id DESC
+            """;
 
         return em.createNativeQuery(query, CartItemDTO.class)
                 .setParameter("languageId", languageId)
                 .setParameter("countryId", countryId)
                 .setParameter("cartId", cart.id)
+                .setParameter("currentTimestamp", currentTimestamp)
                 .getResultList();
     }
 

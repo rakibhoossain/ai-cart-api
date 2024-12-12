@@ -8,11 +8,8 @@ import jakarta.persistence.Entity;
 public class Country extends PanacheEntity {
 
     @Column(length = 4, nullable = false, unique = true)
-    public String code; // e.g., "usa", "es"
+    public String code; // e.g., "USA", "ES"
 
     @Column(length = 50, nullable = false)
     public String name; // e.g., "United States", "Spain"
-
-    @Column(name = "tax_rate", nullable = false)
-    public int taxRate;
 }

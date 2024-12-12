@@ -26,9 +26,6 @@ public class VariantPrice extends PanacheEntity {
 
     public BigInteger discount = BigInteger.ZERO;
 
-    @Column(name = "tax_rate", nullable = false)
-    public BigInteger taxRate = BigInteger.ZERO;
-
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     public Boolean isActive = Boolean.FALSE;
 }

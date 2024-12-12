@@ -26,6 +26,7 @@ public class ProductRepository {
 
         int languageId = 1; // TODO Lang
         int countryId = 1; // TODO country Id
+        long currentTimestamp = System.currentTimeMillis() / 1000L; // Static Unix timestamp for now
 
         StringBuilder queryBuilder = new StringBuilder("""
         SELECT
@@ -65,10 +66,21 @@ public class ProductRepository {
                                        SELECT jsonb_build_object(
                                                       'currency_id', vp.currency_id,
                                                       'price', vp.price,
-                                                      'discount', vp.discount,
-                                                      'tax_rate', vp.tax_rate
+                                                      'discount', COALESCE(d.amount, 0),
+                                                      'discount_end_at', d.end_at,
+                                                      'discount_type', d.discount_type,
+                                                      'tax_rate', COALESCE(t.tax_rate, 0)
                                               )
                                        FROM variant_prices vp
+                                       LEFT JOIN discounts d
+                                            ON (d.variant_id = pv.id OR (d.variant_id IS NULL AND d.product_id = p.id))
+                                            AND d.is_active = true
+                                            AND (d.start_at IS NULL OR d.start_at <= :currentTimestamp)
+                                            AND (d.end_at IS NULL OR d.end_at >= :currentTimestamp)
+                                       LEFT JOIN product_tax pt ON pt.product_id = p.id
+                                            AND pt.country_id = :countryId
+                                            LEFT JOIN taxes t
+                                            ON pt.tax_id = t.id
                                        WHERE vp.variant_id = pv.id AND vp.country_id = :countryId
                                    ),
                                    'images', (
@@ -165,6 +177,7 @@ public class ProductRepository {
         // Set parameters
         nativeQuery.setParameter("languageId", languageId);
         nativeQuery.setParameter("countryId", countryId);
+        nativeQuery.setParameter("currentTimestamp", currentTimestamp);
         minPrice.ifPresent(price -> nativeQuery.setParameter("minPrice", price));
         maxPrice.ifPresent(price -> nativeQuery.setParameter("maxPrice", price));
         nameFilter.ifPresent(filter -> nativeQuery.setParameter("nameFilter", "%" + filter + "%"));

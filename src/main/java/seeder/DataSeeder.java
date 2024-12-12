@@ -65,7 +65,7 @@ public class DataSeeder {
     private void insertVariantPrices() {
         for (int i = 6; i <= range; i++) {
             double price = 1345; // Random price between 10 and 5000
-            em.createNativeQuery("INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, tax_rate, is_active) VALUES (:id, 1, :variantId, 1, :price, 0, 0, TRUE)")
+            em.createNativeQuery("INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, is_active) VALUES (:id, 1, :variantId, 1, :price, 0, TRUE)")
                     .setParameter("id", i)
                     .setParameter("variantId", i)
                     .setParameter("price", price)

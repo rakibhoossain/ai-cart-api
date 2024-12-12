@@ -32,8 +32,8 @@ public class OrderItem extends PanacheEntity {
     public BigInteger discount;
 
     @Column(name = "tax", nullable = false)
-    public BigInteger tax;
+    public BigInteger tax; // Order item tax
 
     @Column(name = "tax_rate", nullable = false)
-    public int taxRate;
+    public int taxRate; // Order tax rate
 }

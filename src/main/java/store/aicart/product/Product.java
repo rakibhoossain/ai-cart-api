@@ -5,7 +5,9 @@ import java.util.Set;
 import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.aicart.util.StringSlugifier;
+import store.aicart.order.entity.ProductTaxRate;
 import store.aicart.product.entity.Category;
+import store.aicart.product.entity.Discount;
 
 @Entity(name = "products")
 public class Product extends PanacheEntity {
@@ -35,6 +37,12 @@ public class Product extends PanacheEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<ProductVariant> variants;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    public List<ProductTaxRate> productTaxRates; // Link to ProductTaxRate
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    public List<Discount> discounts;  // Global discounts
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
