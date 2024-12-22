@@ -17,14 +17,14 @@ public class NavigationMenuService {
     @Inject
     NavigationMenuMapper mapper;
 
-    public List<PublicNavigationMenuItemDTO> getNavigationMenu(String name, String lang, String fallbackLang) {
+    public List<PublicNavigationMenuItemDTO> getNavigationMenu(String name, String lang) {
         NavigationMenu menu = NavigationMenu.find("name", name).firstResult();
 
         if (menu == null) {
             throw new RuntimeException("Navigation menu not found");
         }
 
-        return mapper.toPublicDTO(menu, lang, fallbackLang);
+        return mapper.toPublicDTO(menu, lang);
     }
 
     public List<NavigationMenu> listAllMenus() {

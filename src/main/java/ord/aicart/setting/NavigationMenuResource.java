@@ -33,10 +33,9 @@ public class NavigationMenuResource {
     @Path("/public/{name}")
     public List<PublicNavigationMenuItemDTO> getMenu(
             @PathParam("name") String name,
-            @QueryParam("lang") @DefaultValue("en") String lang,
-            @QueryParam("fallbackLang") @DefaultValue("en") String fallbackLang
+            @QueryParam("lang") @DefaultValue("en") String lang
     ) {
-        return service.getNavigationMenu(name, lang, fallbackLang);
+        return service.getNavigationMenu(name, lang);
     }
 
     @POST
