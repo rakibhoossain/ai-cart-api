@@ -5,6 +5,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import ord.aicart.setting.dto.CreateNavigationMenuRequestDTO;
+import ord.aicart.setting.dto.NavigationMenuDTO;
 import ord.aicart.setting.dto.PublicNavigationMenuItemDTO;
 import ord.aicart.setting.entity.NavigationMenu;
 
@@ -25,8 +26,16 @@ public class NavigationMenuResource {
 
     @GET
     @Path("/{id}")
-    public NavigationMenu getMenu(@PathParam("id") Long id) {
-        return service.getMenuById(id);
+    public Response getMenu(@PathParam("id") Long id) {
+        NavigationMenu menu = service.getMenuById(id);
+
+        if (menu == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        NavigationMenuDTO menuDto = NavigationMenuDTO.fromEntity(menu);
+
+        return Response.ok(menuDto).build();
     }
 
     @GET
