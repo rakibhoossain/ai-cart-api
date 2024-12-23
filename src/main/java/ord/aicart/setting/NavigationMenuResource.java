@@ -9,7 +9,9 @@ import ord.aicart.setting.dto.NavigationMenuDTO;
 import ord.aicart.setting.dto.PublicNavigationMenuItemDTO;
 import ord.aicart.setting.entity.NavigationMenu;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Path("/navigation-menus")
 @Produces(MediaType.APPLICATION_JSON)
@@ -58,7 +60,11 @@ public class NavigationMenuResource {
         }
 
         service.createOrUpdateMenu(null, request.name, request.value);
-        return Response.status(Response.Status.CREATED).build();
+        Map<String, String> data = new HashMap<>();
+        data.put("message", "Resource created successfully");
+        return Response.status(Response.Status.CREATED)
+                .entity(data)
+                .type(MediaType.APPLICATION_JSON).build();
     }
 
     @PUT
