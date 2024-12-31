@@ -51,6 +51,16 @@ Or, if you don't have GraalVM installed, you can run the native executable build
 
 You can then execute your native executable with: `./target/ai-cart-api-1.0.0-SNAPSHOT-runner`
 
+Run using docker
+
+```shell script
+docker build -f src/main/docker/Dockerfile.native-micro -t quarkus/ai-cart-api .
+```
+
+```shell script
+ docker run -i --rm -p 8080:8080 quarkus/ai-cart-api -Dquarkus.datasource.jdbc.url=jdbc:postgresql://host.docker.internal:5432/ai_cart
+```
+
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
 ## Related Guides
