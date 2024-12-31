@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 import org.aicart.entity.Language;
 
 @Entity(name = "category_translations")
+@Table(
+        name = "category_translations",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"category_id", "language_id"})
+)
 public class CategoryTranslation extends PanacheEntityBase {
 
     @EmbeddedId

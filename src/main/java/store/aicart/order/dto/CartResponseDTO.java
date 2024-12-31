@@ -41,7 +41,7 @@ public class CartResponseDTO {
         this.cartId = cart.id;
         this.step = cart.step;
         this.cartItems = cartItems;
-        this.currency = "EUR";
+        this.currency = "EUR"; // TODO:: need to be dynamic
         this.paymentMethod = cart.paymentMethod;
         this.deliveryMethod = cart.deliveryMethod;
         this.couponCode = cart.couponCode;

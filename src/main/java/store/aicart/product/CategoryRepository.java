@@ -1,10 +1,12 @@
 package store.aicart.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import store.aicart.product.entity.Category;
 import jakarta.transaction.Transactional;
 import store.aicart.product.entity.CategoryClosure;
+import store.aicart.product.entity.CategoryClosureId;
 
 import java.util.List;
 
@@ -105,6 +107,7 @@ public class CategoryRepository implements PanacheRepository<Category> {
             List<CategoryClosure> parentClosures = CategoryClosure.list("descendant.id", parent.id);
             for (CategoryClosure closure : parentClosures) {
                 CategoryClosure newClosure = new CategoryClosure();
+                newClosure.id = new CategoryClosureId(closure.ancestor.id, category.id);
                 newClosure.ancestor = closure.ancestor;
                 newClosure.descendant = category;
                 newClosure.depth = closure.depth + 1;
@@ -114,6 +117,7 @@ public class CategoryRepository implements PanacheRepository<Category> {
 
         // Add self-relationship
         CategoryClosure selfClosure = new CategoryClosure();
+        selfClosure.id = new CategoryClosureId(category.id, category.id);
         selfClosure.ancestor = category;
         selfClosure.descendant = category;
         selfClosure.depth = 0;

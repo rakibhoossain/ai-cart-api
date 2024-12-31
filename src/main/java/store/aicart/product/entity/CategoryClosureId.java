@@ -1,8 +1,11 @@
 package store.aicart.product.entity;
 
+import jakarta.persistence.Embeddable;
+
 import java.io.Serializable;
 import java.util.Objects;
 
+@Embeddable
 public class CategoryClosureId implements Serializable {
     private Long ancestorId;
     private Long descendantId;
