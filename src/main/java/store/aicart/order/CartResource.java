@@ -11,6 +11,9 @@ import store.aicart.order.entity.CartDeliveryRequestDTO;
 import store.aicart.order.entity.CartItem;
 import store.aicart.order.entity.Order;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Path("/carts")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -60,7 +63,11 @@ public class CartResource {
 
         CartDTO data = new CartDTO(cart.id, cart.sessionId);
 
-        return Response.ok(data).cookie(cookie).build();
+        HashMap<String, String> response = new HashMap<>();
+        response.put("sessionId", data.getSessionId());
+        response.put("id", data.getId().toString());
+
+        return Response.ok(response).cookie(cookie).build();
     }
 
     @DELETE

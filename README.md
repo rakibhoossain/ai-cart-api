@@ -58,6 +58,10 @@ docker build -f src/main/docker/Dockerfile.native-micro -t quarkus/ai-cart-api .
 ```
 
 ```shell script
+docker image tag quarkus/ai-cart-api rakibhoossain/ai-cart-api:v1
+```
+
+```shell script
  docker run -i --rm -p 8080:8080 quarkus/ai-cart-api -Dquarkus.datasource.jdbc.url=jdbc:postgresql://host.docker.internal:5432/ai_cart
 ```
 
