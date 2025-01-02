@@ -46,7 +46,7 @@ You can create a native executable using:
 Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
 
 ```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+./mvnw package -Dnative -Dquarkus.native.container-build=true 
 ```
 
 You can then execute your native executable with: `./target/ai-cart-api-1.0.0-SNAPSHOT-runner`
@@ -54,13 +54,10 @@ You can then execute your native executable with: `./target/ai-cart-api-1.0.0-SN
 Run using docker
 
 ```shell script
-docker build -f src/main/docker/Dockerfile.native-micro -t quarkus/ai-cart-api .
+docker build -f src/main/docker/Dockerfile.native-micro -t rakibhoossain/ai-cart-api --push .
 ```
 
-```shell script
-docker image tag quarkus/ai-cart-api rakibhoossain/ai-cart-api:v1
-```
-
+# Local run
 ```shell script
  docker run -i --rm -p 8080:8080 quarkus/ai-cart-api -Dquarkus.datasource.jdbc.url=jdbc:postgresql://host.docker.internal:5432/ai_cart
 ```
