@@ -1,85 +1,73 @@
 package org.aicart.auth;
 
-import io.quarkus.security.Authenticated;
-import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.InternalServerErrorException;
-import jakarta.ws.rs.Path;
-
-import java.util.Arrays;
-import java.util.HashSet;
-
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.*;
+import java.util.*;
+import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.jwt.Claims;
-
 import io.smallrye.jwt.build.Jwt;
-
-//import org.jboss.resteasy.reactive.NoCache;
-//
-//import io.quarkus.security.Authenticated;
-//import io.quarkus.security.identity.SecurityIdentity;
-//import jakarta.inject.Inject;
-//import jakarta.ws.rs.GET;
-//import jakarta.ws.rs.Path;
-//import org.jboss.resteasy.reactive.NoCache;
-
-import org.eclipse.microprofile.jwt.JsonWebToken;
+import store.aicart.user.dto.LoginCredentialDTO;
+import store.aicart.user.entity.User;
 
 @Path("/auth")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {
 
-    @Inject
-    SecurityIdentity identity;
+    @Context
+    UriInfo uriInfo; // Provides request context
 
-    @Inject
-    JsonWebToken jwt;
-
-    @GET
+    @POST
     @Path("/login")
-    public String login() {
-        String token =
-                Jwt.issuer("https://quarkus.io/using-jwt-rbac")
-                        .subject("1234")
-                        .upn("jdoe@quarkus.io") // User principal name (username)
-                        .groups(new HashSet<>(Arrays.asList("User", "Admin"))) // User roles
-                        .claim(Claims.exp, Long.MAX_VALUE)
-                        .sign();
-        return token;
-    }
+    public Response login(LoginCredentialDTO loginCredentialDTO) {
 
+        System.out.println("loginCredentialDTO.getEmail()");
+        System.out.println(loginCredentialDTO.getEmail());
 
-    @GET
-    @Path("roles-allowed")
-//    @RolesAllowed({ "User", "Admin" })
-    @Produces(MediaType.TEXT_PLAIN)
-    public String helloRolesAllowed(@Context SecurityContext ctx) {
-        return getResponseString(ctx) + ", birthdate: " + jwt.getClaim("birthdate").toString();
-    }
+        // Find the user by email
+        User user = User.find("email", loginCredentialDTO.getEmail()).firstResult();
 
+        // Define roles
+        List<String> realmRoles = Arrays.asList("offline_access", "default-roles-aicart", "uma_authorization");
+        List<String> resourceRoles = Arrays.asList("manage-account", "manage-account-links", "view-profile");
 
-    private String getResponseString(SecurityContext ctx) {
-        String name;
-        if (ctx.getUserPrincipal() == null) {
-            name = "anonymous";
-        } else if (!ctx.getUserPrincipal().getName().equals(jwt.getName())) {
-            throw new InternalServerErrorException("Principal and JsonWebToken names do not match");
-        } else {
-            name = ctx.getUserPrincipal().getName();
-        }
-        return String.format("hello %s,"
-                        + " isHttps: %s,"
-                        + " authScheme: %s,"
-                        + " hasJWT: %s",
-                name, ctx.isSecure(), ctx.getAuthenticationScheme(), hasJwt());
-    }
+        // Prepare `realm_access` claim as a map
+        Map<String, Object> realmAccess = new HashMap<>();
+        realmAccess.put("roles", realmRoles);
 
-    private boolean hasJwt() {
-        return jwt.getClaimNames() != null;
+        // Prepare `resource_access` claim as a map
+        Map<String, Object> resourceAccessRoles = new HashMap<>();
+        resourceAccessRoles.put("roles", resourceRoles);
+        Map<String, Object> resourceAccess = new HashMap<>();
+        resourceAccess.put("account", resourceAccessRoles);
+
+        // Build the JWT token
+        String token = Jwt.issuer(uriInfo.getBaseUri().toString())
+                .subject(user.id.toString())
+                .claim(Claims.exp, Long.MAX_VALUE)
+                .claim(Claims.iat, System.currentTimeMillis() / 1000)
+                .claim(Claims.auth_time, System.currentTimeMillis() / 1000)
+                .claim("typ", "Bearer") // Custom claim for type
+                .claim("allowed_origins", List.of("*"))
+                .claim("realm_access", realmAccess)
+                .claim("resource_access", resourceAccess)
+                .claim("scope", "openid profile email") // Custom claim for scope
+                .claim("email_verified", false)
+                .claim("name", user.name)
+                .claim("preferred_username", user.name)
+                .claim("given_name", user.name)
+                .claim("family_name", user.name)
+                .claim("email", user.email)
+                .sign();
+
+        // Build the response object
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("id", user.id);
+        response.put("email", user.email);
+        response.put("name", user.name);
+
+        // Return the token
+        return Response.ok(response).build();
     }
 }
 

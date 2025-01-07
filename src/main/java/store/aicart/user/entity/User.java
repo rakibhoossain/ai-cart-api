@@ -18,12 +18,14 @@ public class User extends PanacheEntity {
     @Column(name = "email", nullable = false, unique = true)
     public String email;
 
+    @Column(name = "password", nullable = false)
+    public String password; // Hashed password for authentication
+
     @OneToMany(mappedBy = "user")
     public List<Cart> carts;
 
     @OneToMany(mappedBy = "user")
     public List<Order> orders;
-
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
