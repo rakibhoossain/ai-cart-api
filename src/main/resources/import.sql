@@ -221,8 +221,8 @@ VALUES (1, 1, 1, 1, 1200, 0, TRUE),
 
 -- Insert VariantImage
 INSERT INTO variant_images(id, variant_id, url)
-VALUES (1, 1, 'https://laravel.pixelstrap.net/multikart/storage/49/fashion_173.jpg'),
-       (2, 1, 'https://laravel.pixelstrap.net/multikart/storage/70/fashion_71.jpg'),
-       (3, 2, 'https://laravel.pixelstrap.net/multikart/storage/13/fashion_311.jpg'),
-        (4, 2, 'https://laravel.pixelstrap.net/multikart/storage/161/fashion_0122.jpg'),
-       (5, 3, 'https://laravel.pixelstrap.net/multikart/storage/161/fashion_0122.jpg');
+VALUES (1, 1, 'https://storage.aicart.store/ai-cart/temp/fashion_173.jpg'),
+       (2, 1, 'https://storage.aicart.store/ai-cart/temp/fashion_71.jpg'),
+       (3, 2, 'https://storage.aicart.store/ai-cart/temp/fashion_311.jpg'),
+        (4, 2, 'https://storage.aicart.store/ai-cart/temp/fashion_0122.jpg'),
+       (5, 3, 'https://storage.aicart.store/ai-cart/temp/fashion_0122.jpg');

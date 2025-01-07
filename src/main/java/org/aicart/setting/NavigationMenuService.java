@@ -1,11 +1,11 @@
-package ord.aicart.setting;
+package org.aicart.setting;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import ord.aicart.setting.dto.NavigationMenuItemDTO;
-import ord.aicart.setting.dto.PublicNavigationMenuItemDTO;
-import ord.aicart.setting.entity.NavigationMenu;
+import org.aicart.setting.dto.NavigationMenuItemDTO;
+import org.aicart.setting.dto.PublicNavigationMenuItemDTO;
+import org.aicart.setting.entity.NavigationMenu;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.postgresql.util.PGobject;
 
@@ -32,7 +32,7 @@ public class NavigationMenuService {
     }
 
     public NavigationMenu getMenuById(Long id) {
-        return NavigationMenu.findById(id);
+        return NavigationMenu.find("ORDER BY id DESC").firstResult(); // findById(id);
     }
 
     @Transactional

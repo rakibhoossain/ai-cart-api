@@ -1,13 +1,13 @@
-package ord.aicart.setting;
+package org.aicart.setting;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import ord.aicart.setting.dto.CreateNavigationMenuRequestDTO;
-import ord.aicart.setting.dto.NavigationMenuDTO;
-import ord.aicart.setting.dto.PublicNavigationMenuItemDTO;
-import ord.aicart.setting.entity.NavigationMenu;
+import org.aicart.setting.dto.CreateNavigationMenuRequestDTO;
+import org.aicart.setting.dto.NavigationMenuDTO;
+import org.aicart.setting.dto.PublicNavigationMenuItemDTO;
+import org.aicart.setting.entity.NavigationMenu;
 
 import java.util.HashMap;
 import java.util.List;

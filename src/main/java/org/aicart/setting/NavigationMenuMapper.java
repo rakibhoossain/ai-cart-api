@@ -1,11 +1,11 @@
-package ord.aicart.setting;
+package org.aicart.setting;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.enterprise.context.ApplicationScoped;
-import ord.aicart.setting.dto.NavigationMenuItemDTO;
-import ord.aicart.setting.dto.PublicNavigationMenuItemDTO;
-import ord.aicart.setting.entity.NavigationMenu;
+import org.aicart.setting.dto.NavigationMenuItemDTO;
+import org.aicart.setting.dto.PublicNavigationMenuItemDTO;
+import org.aicart.setting.entity.NavigationMenu;
 
 import java.util.List;
 import java.util.stream.Collectors;

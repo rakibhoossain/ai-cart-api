@@ -62,6 +62,26 @@ docker build -f src/main/docker/Dockerfile.native-micro -t rakibhoossain/ai-cart
  docker run -i --rm -p 8080:8080 quarkus/ai-cart-api -Dquarkus.datasource.jdbc.url=jdbc:postgresql://host.docker.internal:5432/ai_cart
 ```
 
+## Creating the public and private keys
+
+First, it is necessary to generate a base key to be signed:
+
+```shell script
+openssl genrsa -out baseKey.pem
+```
+
+From the base key generate the PKCS#8 private key:
+
+```shell script
+openssl pkcs8 -topk8 -inform PEM -in baseKey.pem -out privateKey.pem -nocrypt
+```
+
+Using the private key you could generate a public (and distributable) key
+
+```shell script
+openssl rsa -in baseKey.pem -pubout -outform PEM -out publicKey.pem
+```
+
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
 ## Related Guides

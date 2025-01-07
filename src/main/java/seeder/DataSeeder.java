@@ -75,7 +75,7 @@ public class DataSeeder {
 
     private void insertVariantImages() {
         for (int i = 6; i <= range; i++) {
-            String imageUrl = "https://laravel.pixelstrap.net/multikart/storage/49/fashion_173.jpg"; // Random image URL
+            String imageUrl = "https://storage.aicart.store/ai-cart/temp/fashion_173.jpg"; // Random image URL
             em.createNativeQuery("INSERT INTO variant_images(id, variant_id, url) VALUES (:id, :variantId, :url)")
                     .setParameter("id", i)
                     .setParameter("variantId", i)

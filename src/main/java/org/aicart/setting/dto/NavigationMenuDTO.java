@@ -1,8 +1,8 @@
-package ord.aicart.setting.dto;
+package org.aicart.setting.dto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ord.aicart.setting.entity.NavigationMenu;
+import org.aicart.setting.entity.NavigationMenu;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

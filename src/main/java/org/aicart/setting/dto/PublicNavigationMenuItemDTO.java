@@ -1,4 +1,4 @@
-package ord.aicart.setting.dto;
+package org.aicart.setting.dto;
 
 import java.util.List;
 
