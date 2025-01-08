@@ -1,12 +1,17 @@
 package org.aicart.auth;
 
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import java.util.*;
 import jakarta.ws.rs.core.*;
 import org.eclipse.microprofile.jwt.Claims;
 import io.smallrye.jwt.build.Jwt;
-import store.aicart.user.dto.LoginCredentialDTO;
+import org.aicart.auth.dto.LoginCredentialDTO;
+import org.jboss.resteasy.reactive.NoCache;
+import org.aicart.auth.dto.RegistrationDTO;
 import store.aicart.user.entity.User;
+import io.quarkus.elytron.security.common.BcryptUtil;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -18,13 +23,22 @@ public class AuthResource {
 
     @POST
     @Path("/login")
-    public Response login(LoginCredentialDTO loginCredentialDTO) {
+    public Response login(@Valid LoginCredentialDTO loginCredentialDTO) {
 
-        System.out.println("loginCredentialDTO.getEmail()");
-        System.out.println(loginCredentialDTO.getEmail());
+        if (loginCredentialDTO == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "Request body is required"))
+                    .build();
+        }
 
         // Find the user by email
         User user = User.find("email", loginCredentialDTO.getEmail()).firstResult();
+
+        if (user == null || !BcryptUtil.matches(loginCredentialDTO.getPassword(), user.password)) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(Map.of("message", "Invalid email or password"))
+                    .build();
+        }
 
         // Define roles
         List<String> realmRoles = Arrays.asList("offline_access", "default-roles-aicart", "uma_authorization");
@@ -68,6 +82,39 @@ public class AuthResource {
 
         // Return the token
         return Response.ok(response).build();
+    }
+
+
+    @POST
+    @Path("/register")
+    @NoCache
+    @Transactional
+    public Response register(@Valid RegistrationDTO registrationDTO) {
+        if (registrationDTO == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "Request body is required"))
+                    .build();
+        }
+
+        String hashedPassword = BcryptUtil.bcryptHash(registrationDTO.getPassword());
+
+        // Check if the email already exists
+        if (User.find("email", registrationDTO.getEmail()).firstResultOptional().isPresent()) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(Map.of("error", "Email is already registered"))
+                    .build();
+        }
+
+        // Create and persist the new user
+        User user = new User();
+        user.name = registrationDTO.getName();
+        user.email = registrationDTO.getEmail();
+        user.password = hashedPassword; // Ensure your `User` entity has this field
+        user.persist();
+
+        return Response.status(Response.Status.CREATED)
+                .entity(Map.of("message", "User registered successfully"))
+                .build();
     }
 }
 
