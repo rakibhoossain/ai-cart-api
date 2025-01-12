@@ -37,4 +37,7 @@ public class User extends PanacheEntity {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    @Column(name = "verified_at")
+    public long verifiedAt;
 }
