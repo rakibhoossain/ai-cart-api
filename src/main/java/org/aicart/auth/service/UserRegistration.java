@@ -38,7 +38,7 @@ public class UserRegistration {
         User user = new User();
         user.name = registrationDTO.getName();
         user.email = registrationDTO.getEmail();
-        user.password = hashedPassword; // Ensure your `User` entity has this field
+        user.password = hashedPassword;
         user.persist();
 
         emailVerifyService.sendMail(user);

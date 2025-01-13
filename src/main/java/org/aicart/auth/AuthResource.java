@@ -6,6 +6,8 @@ import jakarta.ws.rs.*;
 import java.util.*;
 import jakarta.ws.rs.core.*;
 import org.aicart.auth.dto.ChangePasswordDTO;
+import org.aicart.auth.dto.ResetPasswordDTO;
+import org.aicart.auth.service.ResetPassword;
 import org.aicart.auth.service.UserLogin;
 import org.aicart.auth.service.UserRegistration;
 import org.aicart.auth.dto.LoginCredentialDTO;
@@ -22,6 +24,9 @@ public class AuthResource {
 
     @Inject
     EmailVerifyService emailVerifyService;
+
+    @Inject
+    ResetPassword resetPassword;
 
     @Inject
     ChangePasswordService changePasswordService;
@@ -68,6 +73,20 @@ public class AuthResource {
         }
 
         return changePasswordService.changePassword(changePasswordDTO.getCurrentPassword(), changePasswordDTO.getPassword());
+    }
+
+
+    @GET
+    @Path("/reset-password")
+    public Response resetPassword(@QueryParam("email") String email) {
+        return resetPassword.resetPassword(email);
+
+    }
+
+    @POST
+    @Path("/update-password")
+    public Response updatePassword(@Valid ResetPasswordDTO resetPasswordDTO) {
+        return resetPassword.updatePassword(resetPasswordDTO);
     }
 }
 

@@ -47,7 +47,7 @@ public class EmailVerifyService {
     }
 
 
-    public void storeToken(User user, String otp, long expiredAt) {
+    private void storeToken(User user, String otp, long expiredAt) {
         EmailVerification emailVerification = EmailVerification.find("userId", user.id).firstResult();
 
         if (emailVerification == null) {
@@ -69,7 +69,7 @@ public class EmailVerifyService {
         String token = TokenGenerator.generateToken(user.id, user.email, expiredAt);
         String otp = generateOtp();
 
-        TemplateInstance otpInstance = verifyMailTemplate.data("name", user.name)
+        TemplateInstance verifyMailInstance = verifyMailTemplate.data("name", user.name)
                 .data("code", otp)
                 .data("token", token)
                 .data("expiryMinutes", 10);
@@ -78,7 +78,7 @@ public class EmailVerifyService {
 
         Mail mail = Mail.withHtml(user.email,
                 "Test Email from Quarkus",
-                otpInstance.render());
+                verifyMailInstance.render());
 
         storeToken(user, otp, expiredAt);
         reactiveMailer.send(mail).subscribe().with(
@@ -107,6 +107,13 @@ public class EmailVerifyService {
         }
 
         User user = User.findById(emailVerification.userId);
+
+        if(user == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Code expired"))
+                    .build();
+        }
+        
         user.verifiedAt = currentTime;
         user.persist();
 
