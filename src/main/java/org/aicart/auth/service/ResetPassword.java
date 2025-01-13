@@ -9,7 +9,9 @@ import io.quarkus.qute.TemplateInstance;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 import org.aicart.auth.dto.ResetPasswordDTO;
 import org.aicart.auth.dto.TokenUser;
 import org.aicart.auth.entity.PasswordReset;
@@ -27,6 +29,9 @@ public class ResetPassword {
     @Location("mail/reset-password.html")
     Template resetPasswordMailTemplate;
 
+    @Context
+    SecurityContext securityContext;  // To check the authentication status
+
 
     private void storeToken(User user, String token, long expiredAt) {
         PasswordReset passwordReset = PasswordReset.find("userId", user.id).firstResult();
@@ -43,6 +48,15 @@ public class ResetPassword {
 
     @Transactional
     public Response resetPassword(String email) {
+
+        // Check if the user is authenticated
+        if (securityContext.getUserPrincipal() != null) {
+            // If authenticated, block access to this route
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity(Map.of("message", "Authenticated users cannot reset their password."))
+                    .build();
+        }
+
         User user = User.find("where email = ?1", email).firstResult();
 
         if(user == null) {
@@ -90,12 +104,20 @@ public class ResetPassword {
     @Transactional
     public Response updatePassword(ResetPasswordDTO resetPasswordDTO) {
 
+        // Check if the user is authenticated
+        if (securityContext.getUserPrincipal() != null) {
+            // If authenticated, block access to this route
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity("Authenticated users cannot reset their password.")
+                    .build();
+        }
+
         long currentTime = System.currentTimeMillis() / 1000;
 
         TokenUser tokenUser = TokenGenerator.getTokenUser(resetPasswordDTO.getToken());
         if(tokenUser == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Link expired"))
+                    .entity(Map.of("message", "Authenticated users cannot reset their password."))
                     .build();
         }
 
