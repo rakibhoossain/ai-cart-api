@@ -3,6 +3,7 @@ package org.aicart.auth.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.aicart.auth.validation.UniqueEmail;
 
 public class RegistrationDTO {
 
@@ -13,6 +14,7 @@ public class RegistrationDTO {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
+    @UniqueEmail
     private String email;
 
     @NotBlank(message = "Password is required")

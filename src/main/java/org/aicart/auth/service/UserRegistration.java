@@ -27,13 +27,6 @@ public class UserRegistration {
 
         String hashedPassword = BcryptUtil.bcryptHash(registrationDTO.getPassword());
 
-        // Check if the email already exists
-        if (User.find("email", registrationDTO.getEmail()).firstResultOptional().isPresent()) {
-            return Response.status(Response.Status.CONFLICT)
-                    .entity(Map.of("error", "Email is already registered"))
-                    .build();
-        }
-
         // Create and persist the new user
         User user = new User();
         user.name = registrationDTO.getName();
