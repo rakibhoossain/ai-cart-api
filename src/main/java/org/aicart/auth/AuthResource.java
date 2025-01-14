@@ -44,8 +44,8 @@ public class AuthResource {
     @POST
     @Path("/register")
     @NoCache
-    public Response register(@Valid RegistrationDTO registrationDTO) {
-        return userRegistration.register(registrationDTO);
+    public Response register(@Valid RegistrationDTO registrationDTO, @HeaderParam("Origin") String origin) {
+        return userRegistration.register(registrationDTO, origin);
     }
 
 
@@ -77,16 +77,19 @@ public class AuthResource {
 
 
     @GET
-    @Path("/reset-password")
-    public Response resetPassword(@QueryParam("email") String email) {
-        return resetPassword.resetPassword(email);
+    @Path("/forget-password")
+    public Response forgetPassword(@QueryParam("email") String email, @HeaderParam("Origin") String origin, @HeaderParam("Referer") String referer) {
+
+        System.out.println("Origin: " + origin + "\nReferer: " + referer);
+
+        return resetPassword.forgetPassword(email, origin);
 
     }
 
     @POST
-    @Path("/update-password")
-    public Response updatePassword(@Valid ResetPasswordDTO resetPasswordDTO) {
-        return resetPassword.updatePassword(resetPasswordDTO);
+    @Path("/reset-password")
+    public Response resetPassword(@Valid ResetPasswordDTO resetPasswordDTO) {
+        return resetPassword.resetPassword(resetPasswordDTO);
     }
 }
 

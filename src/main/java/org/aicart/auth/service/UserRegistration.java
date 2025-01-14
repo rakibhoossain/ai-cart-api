@@ -18,7 +18,7 @@ public class UserRegistration {
     EmailVerifyService emailVerifyService;
 
     @Transactional
-    public Response register(RegistrationDTO registrationDTO) {
+    public Response register(RegistrationDTO registrationDTO, String origin) {
         if (registrationDTO == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("error", "Request body is required"))
@@ -41,7 +41,7 @@ public class UserRegistration {
         user.password = hashedPassword;
         user.persist();
 
-        emailVerifyService.sendMail(user);
+        emailVerifyService.sendMail(user, origin);
 
         return Response.status(Response.Status.CREATED)
                 .entity(Map.of("message", "User registered successfully"))

@@ -61,7 +61,7 @@ public class EmailVerifyService {
     }
 
 
-    public void sendMail(User user) {
+    public void sendMail(User user, String origin) {
 
         final long expiryDuration = 10 * 60L;
         long expiredAt = System.currentTimeMillis() / 1000L + expiryDuration;
@@ -69,7 +69,9 @@ public class EmailVerifyService {
         String token = TokenGenerator.generateToken(user.id, user.email, expiredAt);
         String otp = generateOtp();
 
-        TemplateInstance verifyMailInstance = verifyMailTemplate.data("name", user.name)
+        TemplateInstance verifyMailInstance = verifyMailTemplate
+                .data("origin", origin)
+                .data("name", user.name)
                 .data("code", otp)
                 .data("token", token)
                 .data("expiryMinutes", 10);

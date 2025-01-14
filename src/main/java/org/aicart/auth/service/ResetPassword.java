@@ -47,7 +47,10 @@ public class ResetPassword {
     }
 
     @Transactional
-    public Response resetPassword(String email) {
+    public Response forgetPassword(String email, String origin) {
+
+
+        System.out.println("origin: "+ origin);
 
         // Check if the user is authenticated
         if (securityContext.getUserPrincipal() != null) {
@@ -64,7 +67,7 @@ public class ResetPassword {
                     .entity(Map.of("message", "Invalid email address.")).build();
         }
 
-        sendMail(user);
+        sendMail(user, origin);
 
         return Response.status(Response.Status.OK)
                 .entity(Map.of("message", "Reset link sent successfully"))
@@ -72,14 +75,16 @@ public class ResetPassword {
     }
 
 
-    private void sendMail(User user) {
+    private void sendMail(User user, String origin) {
 
         final long expiryDuration = 10 * 60L;
         long expiredAt = System.currentTimeMillis() / 1000L + expiryDuration;
 
         String token = TokenGenerator.generateToken(user.id, user.email, expiredAt);
 
-        TemplateInstance resetPasswordMailInstance = resetPasswordMailTemplate.data("name", user.name)
+        TemplateInstance resetPasswordMailInstance = resetPasswordMailTemplate
+                .data("origin", origin)
+                .data("name", user.name)
                 .data("token", token)
                 .data("expiryMinutes", 10);
 
@@ -102,7 +107,7 @@ public class ResetPassword {
     }
 
     @Transactional
-    public Response updatePassword(ResetPasswordDTO resetPasswordDTO) {
+    public Response resetPassword(ResetPasswordDTO resetPasswordDTO) {
 
         // Check if the user is authenticated
         if (securityContext.getUserPrincipal() != null) {
@@ -117,7 +122,7 @@ public class ResetPassword {
         TokenUser tokenUser = TokenGenerator.getTokenUser(resetPasswordDTO.getToken());
         if(tokenUser == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Authenticated users cannot reset their password."))
+                    .entity(Map.of("message", "Link expired"))
                     .build();
         }
 
