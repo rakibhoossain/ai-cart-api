@@ -37,7 +37,7 @@ public class UserLogin {
 
         if (loginCredentialDTO == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("error", "Request body is required"))
+                    .entity(Map.of("message", "Request body is required"))
                     .build();
         }
 
@@ -58,7 +58,7 @@ public class UserLogin {
     public Response oauthLogin(OauthLoginDTO oauthLoginDTO) {
         if (oauthLoginDTO == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("error", "Request body is required"))
+                    .entity(Map.of("message", "Request body is required"))
                     .build();
         }
 
@@ -69,13 +69,13 @@ public class UserLogin {
                 return validateGitHubToken(oauthLoginDTO);
             } else {
                 return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(Map.of("error", "Request body is required"))
-                        .entity("Invalid provider name").build();
+                        .entity(Map.of("message", "Request body is required"))
+                        .build();
             }
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(Map.of("error", "Request body is required"))
-                    .entity("Validation failed: " + e.getMessage()).build();
+                    .entity(Map.of("message", "Request body is required"))
+                    .build();
         }
     }
 
@@ -100,12 +100,12 @@ public class UserLogin {
             }
         } catch (Exception e) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(Map.of("error", "Invalid Google token"))
+                    .entity(Map.of("message", "Invalid Google token"))
                     .build();
         }
 
         return Response.status(Response.Status.UNAUTHORIZED)
-                .entity(Map.of("error", "Invalid Google token"))
+                .entity(Map.of("message", "Invalid Google token"))
                 .build();
     }
 
@@ -128,12 +128,12 @@ public class UserLogin {
             }
         } catch (Exception e) {
             return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(Map.of("error", "Invalid GitHub token"))
+                    .entity(Map.of("message", "Invalid GitHub token"))
                     .build();
         }
 
         return Response.status(Response.Status.UNAUTHORIZED)
-                .entity(Map.of("error", "Invalid GitHub token"))
+                .entity(Map.of("message", "Invalid GitHub token"))
                 .build();
     }
 

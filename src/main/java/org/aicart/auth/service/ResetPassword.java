@@ -113,7 +113,7 @@ public class ResetPassword {
         if (securityContext.getUserPrincipal() != null) {
             // If authenticated, block access to this route
             return Response.status(Response.Status.FORBIDDEN)
-                    .entity("Authenticated users cannot reset their password.")
+                    .entity(Map.of("message", "Authenticated users cannot reset their password."))
                     .build();
         }
 

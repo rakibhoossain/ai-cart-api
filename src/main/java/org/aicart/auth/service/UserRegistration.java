@@ -21,7 +21,7 @@ public class UserRegistration {
     public Response register(RegistrationDTO registrationDTO, String origin) {
         if (registrationDTO == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("error", "Request body is required"))
+                    .entity(Map.of("message", "Request body is required"))
                     .build();
         }
 

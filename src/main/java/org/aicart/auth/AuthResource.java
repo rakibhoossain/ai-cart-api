@@ -74,7 +74,7 @@ public class AuthResource {
     public Response changePassword(@Valid ChangePasswordDTO changePasswordDTO) {
         if (changePasswordDTO == null) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("error", "Request body is required"))
+                    .entity(Map.of("message", "Request body is required"))
                     .build();
         }
 
