@@ -10,6 +10,7 @@ import org.aicart.auth.service.ResetPassword;
 import org.aicart.auth.service.UserLogin;
 import org.aicart.auth.service.UserRegistration;
 import org.jboss.resteasy.reactive.NoCache;
+import io.smallrye.faulttolerance.api.RateLimit;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
@@ -83,6 +84,7 @@ public class AuthResource {
 
     @GET
     @Path("/forget-password")
+    @RateLimit(value = 3, window = 20) // 3 requests per 20 seconds
     public Response forgetPassword(@QueryParam("email") String email, @HeaderParam("Origin") String origin, @HeaderParam("Referer") String referer) {
 
         // Log all headers
