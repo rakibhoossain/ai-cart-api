@@ -13,9 +13,6 @@ public class OauthLoginDTO {
     @JsonProperty("access_token")
     private String accessToken;
 
-    @NotBlank(message = "Provider account ID is required")
-    private String providerAccountId;
-
     @NotBlank(message = "Name is required")
     private String name;
 
@@ -38,14 +35,6 @@ public class OauthLoginDTO {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
-    }
-
-    public String getProviderAccountId() {
-        return providerAccountId;
-    }
-
-    public void setProviderAccountId(String providerAccountId) {
-        this.providerAccountId = providerAccountId;
     }
 
     public String getName() {
