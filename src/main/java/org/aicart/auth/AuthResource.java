@@ -5,19 +5,19 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import java.util.*;
 import jakarta.ws.rs.core.*;
-import org.aicart.auth.dto.ChangePasswordDTO;
-import org.aicart.auth.dto.ResetPasswordDTO;
+import org.aicart.auth.dto.*;
 import org.aicart.auth.service.ResetPassword;
 import org.aicart.auth.service.UserLogin;
 import org.aicart.auth.service.UserRegistration;
-import org.aicart.auth.dto.LoginCredentialDTO;
 import org.jboss.resteasy.reactive.NoCache;
-import org.aicart.auth.dto.RegistrationDTO;
 
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {
+
+    @Inject
+    HttpHeaders httpHeaders;
 
     @Inject
     UserLogin userLogin;
@@ -40,6 +40,11 @@ public class AuthResource {
         return userLogin.login(loginCredentialDTO);
     }
 
+    @POST
+    @Path("/oauth-login")
+    public Response oauthLogin(@Valid OauthLoginDTO oauthLoginDTO) {
+        return userLogin.oauthLogin(oauthLoginDTO);
+    }
 
     @POST
     @Path("/register")
@@ -79,6 +84,11 @@ public class AuthResource {
     @GET
     @Path("/forget-password")
     public Response forgetPassword(@QueryParam("email") String email, @HeaderParam("Origin") String origin, @HeaderParam("Referer") String referer) {
+
+        // Log all headers
+        httpHeaders.getRequestHeaders().forEach((key, value) -> {
+            System.out.println("Header: " + key + " -> Value: " + value);
+        });
 
         System.out.println("Origin: " + origin + "\nReferer: " + referer);
 
