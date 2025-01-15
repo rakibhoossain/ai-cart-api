@@ -2,16 +2,16 @@ package store.aicart.order;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.PathParam;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
-import jakarta.ws.rs.core.Response;
 import store.aicart.order.dto.CartAddressRequestDTO;
 import store.aicart.order.dto.CartItemDTO;
 import store.aicart.order.dto.CartResponseDTO;
 import store.aicart.order.entity.Cart;
 import store.aicart.order.entity.CartDeliveryRequestDTO;
 import store.aicart.order.entity.CartItem;
+import store.aicart.user.entity.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,8 +24,12 @@ public class CartService {
     @Inject
     CartRepository cartRepository;
 
-    public CartResponseDTO getCart(String sessionId, Long userId) {
-        Cart cart = cartRepository.getCart(sessionId, userId);
+    public Cart getCartEntity(String sessionId) {
+        return cartRepository.getCart(sessionId);
+    }
+
+    public CartResponseDTO getCart(String sessionId) {
+        Cart cart = cartRepository.getCart(sessionId);
 
         if(cart != null) {
             List<CartItemDTO> cartItems = cartRepository.getCartItems(cart);
@@ -35,11 +39,21 @@ public class CartService {
         return null;
     }
 
+    @Transactional
     public Cart firstOrCreate(String sessionId, Long userId) {
-        Cart cart = cartRepository.getCart(sessionId, userId);
+        Cart cart = cartRepository.getCart(sessionId);
 
         if(cart == null) {
-            return cartRepository.createNewCart(sessionId, null);
+            User user = userId != null ? User.find("id", userId).firstResult() : null;
+            return cartRepository.createNewCart(sessionId, user);
+        }
+
+        if(cart.user == null) {
+            User user = userId != null ? User.find("id", userId).firstResult() : null;
+            if(user != null) {
+                cart.user = user;
+                cart.persist();
+            }
         }
 
         return cart;

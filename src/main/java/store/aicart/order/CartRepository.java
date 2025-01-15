@@ -24,15 +24,10 @@ public class CartRepository implements PanacheRepository<Cart> {
     @PersistenceContext
     EntityManager em;
 
-    public Cart getCart(String sessionId, Long userId) {
-        if (userId != null) {
-            return find("user.id", userId).firstResult();  // Find Cart by userId
-        } else {
-            return find("sessionId", sessionId).firstResult();  // Find Cart by guestSessionId
-        }
+    public Cart getCart(String sessionId) {
+        return find("sessionId", sessionId).firstResult();  // Find Cart by guestSessionId
     }
 
-    @Transactional
     public Cart createNewCart(String sessionId, User user) {
         // Create a new Cart and associate it with the session ID
         Cart newCart = new Cart();

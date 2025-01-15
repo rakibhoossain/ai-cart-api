@@ -1,15 +1,19 @@
 package store.aicart.order;
 
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.aicart.sslcommerz.SslcommerzResponse;
 import org.aicart.sslcommerz.SslcommerzService;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import store.aicart.order.dto.*;
 import store.aicart.order.entity.Cart;
 import store.aicart.order.entity.CartDeliveryRequestDTO;
 import store.aicart.order.entity.CartItem;
 import store.aicart.order.entity.Order;
+import store.aicart.user.entity.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,12 +32,15 @@ public class CartResource {
     @Inject
     SslcommerzService sslcommerzService;
 
+    @Inject
+    JsonWebToken jwt;
+
     private final String sessionKey = "cart-session";
 
     @GET
     public Response getCart(@Context HttpHeaders headers) {
         String sessionId = cartService.getSessionId(headers);
-        CartResponseDTO cart = cartService.getCart(sessionId, null);
+        CartResponseDTO cart = cartService.getCart(sessionId);
 
         if(cart == null)
         {
@@ -47,7 +54,10 @@ public class CartResource {
     @POST
     public Response addItemToCart(@Context HttpHeaders headers, AddToCartDTO addToCartDTO) {
         String sessionId = cartService.getSessionId(headers);
-        Cart cart = cartService.firstOrCreate(sessionId, null);
+
+        String subject = jwt.getSubject();
+
+        Cart cart = cartService.firstOrCreate(sessionId, subject != null ? Long.valueOf(subject) : null);
 
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
@@ -75,7 +85,9 @@ public class CartResource {
     public Response removeItemFromCart(@Context HttpHeaders headers, @PathParam("itemId") Long itemId) {
 
         String sessionId = cartService.getSessionId(headers);
-        Cart cart = cartService.firstOrCreate(sessionId, null);
+        String subject = jwt.getSubject();
+
+        Cart cart = cartService.firstOrCreate(sessionId, subject != null ? Long.valueOf(subject) : null);
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         boolean affected = cartService.removeItemFromCart(cart, itemId);
@@ -87,7 +99,9 @@ public class CartResource {
     public Response updateCartQuantity(@Context HttpHeaders headers, @PathParam("itemId") Long itemId, CartUpdateDTO cartUpdateDTO) {
 
         String sessionId = cartService.getSessionId(headers);
-        Cart cart = cartService.firstOrCreate(sessionId, null);
+
+        String subject = jwt.getSubject();
+        Cart cart = cartService.firstOrCreate(sessionId, subject != null ? Long.valueOf(subject) : null);
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         boolean affected = cartService.updateCartQuantity(cart, itemId, cartUpdateDTO.getQuantity());
@@ -164,5 +178,26 @@ public class CartResource {
         }
 
         return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    @POST
+    @Path("/merge-guest")
+    @Authenticated
+    @Transactional
+    public Response mergeGuest(@Context HttpHeaders headers) {
+        String sessionId = cartService.getSessionId(headers);
+        Cart cart = cartService.getCartEntity(sessionId);
+
+        String subject = jwt.getSubject();
+
+        if(cart != null && cart.user == null && subject != null) {
+            User user = User.find("id", subject).firstResult();
+            if(user != null) {
+                cart.user = user;
+                cart.persist();
+            }
+        }
+
+        return Response.ok().build();
     }
 }
