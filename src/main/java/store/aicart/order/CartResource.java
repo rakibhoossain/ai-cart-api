@@ -3,6 +3,7 @@ package store.aicart.order;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.aicart.sslcommerz.SslcommerzResponse;
@@ -111,7 +112,7 @@ public class CartResource {
 
     @PUT
     @Path("/update-cart-address/{cartId}")
-    public Response updateCartAddress(@PathParam("cartId") Long cartId, CartAddressRequestDTO addressRequest) {
+    public Response updateCartAddress(@PathParam("cartId") Long cartId, @Valid CartAddressRequestDTO addressRequest) {
 
         Cart cart = Cart.findById(cartId);
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();

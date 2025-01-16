@@ -23,7 +23,7 @@ public class ChangePasswordService {
 
         String subject = jwt.getSubject();
 
-        // Find the user by email
+        // Find the user by id
         User user = User.find("id", subject).firstResult();
 
         if (user == null || !BcryptUtil.matches(oldPassword, user.password)) {

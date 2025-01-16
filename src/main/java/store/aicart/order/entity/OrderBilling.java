@@ -7,7 +7,7 @@ import org.aicart.entity.Currency;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "order_billing")
+@Table(name = "order_billing", uniqueConstraints = @UniqueConstraint(columnNames = "order_id"))
 public class OrderBilling extends PanacheEntity {
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)

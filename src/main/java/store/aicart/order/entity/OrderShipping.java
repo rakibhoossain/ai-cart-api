@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "order_shipping")
+@Table(name = "order_shipping", uniqueConstraints = @UniqueConstraint(columnNames = "order_id"))
 public class OrderShipping extends PanacheEntity {
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
