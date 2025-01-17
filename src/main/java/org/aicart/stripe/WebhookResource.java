@@ -80,6 +80,6 @@ public class WebhookResource {
     {
         Cart cart = Cart.findById(cartId);
         if (cart == null) return;
-        orderService.convertCartToOrder(cart, cart.billing, cart.shipping);
+        orderService.convertCartToOrder(cart, cart.billing, cart.shipping, null);
     }
 }

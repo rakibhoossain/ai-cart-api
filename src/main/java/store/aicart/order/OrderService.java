@@ -14,6 +14,7 @@ import store.aicart.product.Product;
 import store.aicart.product.ProductVariant;
 import store.aicart.product.dto.ProductVariantDTO;
 import store.aicart.product.dto.VariantPriceDTO;
+import store.aicart.user.entity.User;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,7 +30,12 @@ public class OrderService {
     @Transactional
     public Order convertCartToOrder(Cart cart,
                                     OrderBillingDTO billingDetails,
-                                    OrderShippingDTO shippingDetails) {
+                                    OrderShippingDTO shippingDetails,
+                                    String subject) {
+
+        User user = subject != null
+                ? User.find("id", subject).firstResult()
+                : null;
 
 
         // 1. Validate Cart
@@ -53,6 +59,12 @@ public class OrderService {
         order.paymentType = PaymentTypeEnum.CASH_ON_DELIVERY;
         order.paymentStatus = PaymentStatusEnum.PENDING;
         order.status = OrderStatusEnum.PENDING;
+
+        if(user != null) {
+            order.user = user;
+        } else if(cart.user != null) {
+            order.user = cart.user;
+        }
 
         order.currency = "EUR";
 

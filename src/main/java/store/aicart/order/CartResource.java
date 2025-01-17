@@ -17,7 +17,6 @@ import store.aicart.order.entity.Order;
 import store.aicart.user.entity.User;
 
 import java.util.HashMap;
-import java.util.Map;
 
 @Path("/carts")
 @Produces(MediaType.APPLICATION_JSON)
@@ -35,6 +34,9 @@ public class CartResource {
 
     @Inject
     JsonWebToken jwt;
+
+    @Context
+    SecurityContext securityContext;
 
     private final String sessionKey = "cart-session";
 
@@ -155,7 +157,11 @@ public class CartResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Order order = orderService.convertCartToOrder(cart, cart.billing, cart.shipping);
+        String subject = securityContext.getUserPrincipal() != null ?
+                jwt.getSubject()
+                : null;
+
+        Order order = orderService.convertCartToOrder(cart, cart.billing, cart.shipping, subject);
         orderService.clearCart(cart);
         return Response.ok(order.id).status(Response.Status.CREATED).build();
 
@@ -173,7 +179,7 @@ public class CartResource {
             Cart cart = Cart.findById(cartId);
             if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
-            orderService.convertCartToOrder(cart, cart.billing, cart.shipping);
+            orderService.convertCartToOrder(cart, cart.billing, cart.shipping, null);
 
             return Response.ok(response).status(Response.Status.CREATED).build();
         }
