@@ -2,6 +2,7 @@ package store.aicart.user;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import org.aicart.auth.dto.UserProfileDTO;
 import store.aicart.order.dto.OrderBillingDTO;
 import store.aicart.order.dto.OrderShippingDTO;
 import store.aicart.user.entity.User;
@@ -64,5 +65,12 @@ public class UserService {
         shipping.persist();
 
         return shipping;
+    }
+
+    public User updateProfile(User user, UserProfileDTO userProfileDTO) {
+        user.name = userProfileDTO.getName();
+        user.persist();
+
+        return user;
     }
 }

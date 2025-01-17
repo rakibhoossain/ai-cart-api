@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.aicart.auth.dto.UserProfileDTO;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.NoCache;
 import store.aicart.order.dto.OrderBillingDTO;
@@ -95,6 +96,35 @@ public class UserResource {
 
         return Response.status(Response.Status.OK)
                 .entity(Map.of("message", "Shipping address saved successfully"))
+                .build();
+    }
+
+    @PUT
+    @Path("/update-profile")
+    @Transactional
+    public Response updateProfile(@Valid UserProfileDTO userProfileDTO) {
+
+        if (userProfileDTO == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Request body is required"))
+                    .build();
+        }
+
+        String subject = jwt.getSubject();
+
+        // Find the user by id
+        User user = User.find("id", subject).firstResult();
+
+        if (user == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Invalid action"))
+                    .build();
+        }
+
+        userService.updateProfile(user, userProfileDTO);
+
+        return Response.status(Response.Status.OK)
+                .entity(Map.of("message", "Profile saved successfully"))
                 .build();
     }
 }
