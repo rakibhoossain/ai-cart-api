@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotNull;
 
 public class FileRequestDTO {
 
-    @NotBlank(message = "URL is required")
-    private String url;
+    @NotBlank(message = "Object Key is required")
+    private String objectKey;
 
     @NotNull(message = "File size is required")
     private long fileSize;
@@ -17,12 +17,12 @@ public class FileRequestDTO {
     @NotBlank(message = "Mime type is required")
     private String mimeType;
 
-    public String getUrl() {
-        return url;
+    public String getObjectKey() {
+        return objectKey;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setObjectKey(String objectKey) {
+        this.objectKey = objectKey;
     }
 
     public long getFileSize() {

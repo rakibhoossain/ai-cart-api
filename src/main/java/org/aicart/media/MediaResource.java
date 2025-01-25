@@ -31,8 +31,13 @@ public class MediaResource {
                     .build();
         }
 
-        FileStorage file = mediaService.store(fileRequestDTO);
-
-        return Response.ok(file).build();
+        try {
+            FileStorage file = mediaService.store(fileRequestDTO);
+            return Response.ok(file).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        }
     }
 }

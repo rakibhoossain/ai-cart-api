@@ -5,22 +5,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.aicart.media.dto.FileRequestDTO;
+import org.aicart.media.dto.MediaDTO;
 import org.aicart.media.entity.FileStorage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -28,6 +19,9 @@ public class MediaService {
 
     @ConfigProperty(name = "minio.bucket-name")
     String bucketName;
+
+    @ConfigProperty(name = "quarkus.minio.url")
+    String minioUrl;
 
     @Inject
     MinioClient minioClient;
@@ -39,38 +33,42 @@ public class MediaService {
     ImageService imageService;
 
 
-    @Transactional
-    public FileStorage store(FileRequestDTO fileRequestDTO) {
+    public FileStorage store(FileRequestDTO fileRequestDTO) throws Exception {
 
         // Explicitly register TwelveMonkeys plugins
         ImageIO.scanForPlugins();
 
         // Get object from source bucket
-        GetObjectArgs getRequest = buildGetRequest("products/c9d1045f-0221-4d22-8d87-8cd3c96060f9-Screenshot_2025-01-14_at_2.11.14_PM.png");
-
-        System.out.println(getRequest);
+        GetObjectArgs getRequest = buildGetRequest(fileRequestDTO.getObjectKey());
 
         try (InputStream inputStream = minioClient.getObject(getRequest) // Waits for the result in a blocking fashion
         ) {
 
-            processAndUploadImage(inputStream);
-//            String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-//            System.out.println(content);
+            MediaDTO mediaDTO = processAndUploadImage(fileRequestDTO, inputStream);
+            removeObject(fileRequestDTO.getObjectKey());
+            
+            return storeMedia(mediaDTO);
 
         } catch (Exception e) {
-            System.out.println(e);
+            throw new Exception(e.getMessage());
         }
+    }
 
-//        System.out.println(s3Object);
 
+    @Transactional
+    public FileStorage storeMedia(MediaDTO mediaDTO) {
         FileStorage file = new FileStorage();
-        file.originalUrl = fileRequestDTO.getUrl();
-        file.fileSize = fileRequestDTO.getFileSize();
-        file.fileName = fileRequestDTO.getFileName();
-        file.fileType = "image";
-        file.mimeType = fileRequestDTO.getMimeType();
-
-        file.storageLocation = "minio";
+        file.fileName = mediaDTO.getFileName();
+        file.fileType = mediaDTO.getFileType();
+        file.mimeType = mediaDTO.getMimeType();
+        file.originalUrl = mediaDTO.getOriginalUrl();
+        file.thumbnailUrl = mediaDTO.getThumbnailUrl();
+        file.mediumUrl = mediaDTO.getMediumUrl();
+        file.fileSize = mediaDTO.getFileSize();
+        file.width = mediaDTO.getWidth();
+        file.height = mediaDTO.getHeight();
+        file.altText = mediaDTO.getAltText();
+        file.storageLocation = mediaDTO.getStorageLocation();
 
         file.persist();
 
@@ -78,129 +76,76 @@ public class MediaService {
     }
 
 
-    public void processAndUploadImage(InputStream inputStream) throws IOException {
+    public MediaDTO processAndUploadImage(FileRequestDTO fileRequestDTO, InputStream inputStream) throws Exception {
         BufferedImage originalImage = ImageIO.read(inputStream);
         String baseFileName = UUID.randomUUID().toString();
 
+        byte[] outputByteStream = imageService.resizeAndConvertToWebp(originalImage, originalImage.getWidth(), originalImage.getHeight());
+
+        byte[] outputByteStreamThumbnail = imageService.resizeAndConvertToWebp(originalImage, 450);
+
+        byte[] outputByteStreamSmall =imageService.resizeAndConvertToWebp(originalImage, 150);
+
         // Original WebP
-        uploadWebP(originalImage, baseFileName + "_original", originalImage.getWidth(), originalImage.getHeight());
+        String originalUrl = uploadWebP(outputByteStream, baseFileName);
 
-//        // Thumbnail
-        uploadWebP(originalImage, baseFileName + "_thumbnail", 150);
-//
-//        // Medium image
-        uploadWebP(originalImage, baseFileName + "_medium", 450);
-    }
+        // Thumbnail
+        String thumbnailUrl = uploadWebP(outputByteStreamThumbnail, baseFileName + "_450");
 
-    private void uploadWebP(BufferedImage originalImage, String objectName, int targetWidth) throws IOException {
-        uploadWebP(originalImage, objectName,
-                Math.min(originalImage.getWidth(), targetWidth),
-                (int)((double)targetWidth / originalImage.getWidth() * originalImage.getHeight())
-        );
-    }
+        // Medium image
+        String mediumUrl = uploadWebP(outputByteStreamSmall, baseFileName + "_150");
 
-    private void uploadWebP(BufferedImage originalImage, String objectName, int width, int height) {
+        MediaDTO mediaDTO = new MediaDTO();
+        mediaDTO.setFileName(fileRequestDTO.getFileName());
+        mediaDTO.setFileType("image");
+        mediaDTO.setMimeType(fileRequestDTO.getMimeType());
+        mediaDTO.setOriginalUrl(originalUrl);
+        mediaDTO.setThumbnailUrl(thumbnailUrl);
+        mediaDTO.setMediumUrl(mediumUrl);
+        mediaDTO.setFileSize((long) outputByteStream.length);
+        mediaDTO.setWidth(originalImage.getWidth());
+        mediaDTO.setHeight(originalImage.getHeight());
+        mediaDTO.setAltText(fileRequestDTO.getFileName());
+        mediaDTO.setStorageLocation(minioUrl + "/" + bucketName);
 
-        // Upload with detailed logging
-        try {
-            byte[] outputByteStream = imageService.resizeAndConvertToWebp(originalImage, width, height);
-
-            // Convert to InputStream for MinIO upload
-            InputStream inputStream = new ByteArrayInputStream(outputByteStream);
-            long size = outputByteStream.length;
-
-            // Create local directory if not exists
-            Path localDir = Paths.get("./temp_images");
-            Files.createDirectories(localDir);
-
-            // Generate local file path
-            String fullFileName = objectName + ".png";
-            Path localFilePath = localDir.resolve(fullFileName);
-
-
-            Files.write(localFilePath, outputByteStream);
-
-            String fullObjectName = "products/" + objectName + ".png";
-
-
-            System.out.println("size");
-            System.out.println(size);
-
-            minioClient.putObject(
-                    PutObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(fullObjectName)
-                            .stream(inputStream, size, -1)
-                            .contentType("image/png")
-                            .build());
-
-            System.out.println("Successfully uploaded: " + fullObjectName);
-        } catch (Exception e) {
-            System.err.println(e);
-            e.printStackTrace();
-        }
+        return mediaDTO;
     }
 
 
-//    private void uploadWebP(BufferedImage originalImage, String objectName, int width, int height) {
-//
-//        // Upload with detailed logging
-//        try {
-//
-//            System.out.println(Arrays.toString(ImageIO.getWriterFormatNames()));
-//
-//            // Resize and convert
-//            BufferedImage resizedImage = Scalr.resize(
-//                    originalImage,
-//                    Scalr.Method.QUALITY,
-//                    Scalr.Mode.FIT_EXACT,
-//                    width,
-//                    height
-//            );
-//
-//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//            ImageIO.write(resizedImage, "png", outputStream);
-//
-//            // Convert to InputStream for MinIO upload
-//            InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
-//            long size = outputStream.size();
-//
-//            // Create local directory if not exists
-//            Path localDir = Paths.get("./temp_images");
-//            Files.createDirectories(localDir);
-//
-//            // Generate local file path
-//            String fullFileName = objectName + ".png";
-//            Path localFilePath = localDir.resolve(fullFileName);
-//
-//
-//            Files.write(localFilePath, outputStream.toByteArray());
-//
-//            String fullObjectName = "products/" + objectName + ".png";
-//
-//
-//            System.out.println("size");
-//            System.out.println(size);
-//
-//            minioClient.putObject(
-//                    PutObjectArgs.builder()
-//                    .bucket(bucketName)
-//                            .object(fullObjectName)
-//                            .stream(inputStream, size, -1)
-//                            .contentType("image/png")
-//                            .build());
-//
-//            System.out.println("Successfully uploaded: " + fullObjectName);
-//        } catch (Exception e) {
-//            System.err.println(e);
-//            e.printStackTrace();
-//        }
-//    }
+    private String uploadWebP(byte[] outputByteStream, String objectName) throws Exception {
+        // Convert to InputStream for MinIO upload
+        InputStream inputStream = new ByteArrayInputStream(outputByteStream);
+        long size = outputByteStream.length;
+
+        String fullObjectName = "products/" + objectName + ".webp";
+
+        minioClient.putObject(
+                PutObjectArgs.builder()
+                        .bucket(bucketName)
+                        .object(fullObjectName)
+                        .stream(inputStream, size, -1)
+                        .contentType("image/webp")
+                        .build());
+
+        return fullObjectName;
+    }
 
     private GetObjectArgs buildGetRequest(String objectKey) {
         return GetObjectArgs.builder()
                 .bucket(bucketName)
                 .object(objectKey)
                 .build();
+    }
+
+    private void removeObject(String objectKey) {
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectKey)
+                            .build());
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
     }
 }
