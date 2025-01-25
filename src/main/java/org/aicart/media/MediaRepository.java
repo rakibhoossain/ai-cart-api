@@ -1,15 +1,14 @@
-package store.aicart.order;
+package org.aicart.media;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import store.aicart.order.entity.Order;
+import org.aicart.media.entity.FileStorage;
 
 @ApplicationScoped
-public class OrderRepository implements PanacheRepository<Order>  {
+public class MediaRepository implements PanacheRepository<FileStorage> {
 
     @PersistenceContext
     EntityManager em;
-
 }
