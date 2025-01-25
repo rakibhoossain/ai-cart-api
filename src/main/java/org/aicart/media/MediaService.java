@@ -1,6 +1,7 @@
 package org.aicart.media;
 
 import io.minio.*;
+import com.sksamuel.scrimage.ImmutableImage;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -8,7 +9,6 @@ import org.aicart.media.dto.FileRequestDTO;
 import org.aicart.media.dto.MediaDTO;
 import org.aicart.media.entity.FileStorage;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -35,18 +35,18 @@ public class MediaService {
 
     public FileStorage store(FileRequestDTO fileRequestDTO) throws Exception {
 
-        // Explicitly register TwelveMonkeys plugins
-        ImageIO.scanForPlugins();
-
         // Get object from source bucket
         GetObjectArgs getRequest = buildGetRequest(fileRequestDTO.getObjectKey());
+
+
+        System.out.println(fileRequestDTO.getObjectKey());
 
         try (InputStream inputStream = minioClient.getObject(getRequest) // Waits for the result in a blocking fashion
         ) {
 
             MediaDTO mediaDTO = processAndUploadImage(fileRequestDTO, inputStream);
             removeObject(fileRequestDTO.getObjectKey());
-            
+
             return storeMedia(mediaDTO);
 
         } catch (Exception e) {
@@ -77,7 +77,13 @@ public class MediaService {
 
 
     public MediaDTO processAndUploadImage(FileRequestDTO fileRequestDTO, InputStream inputStream) throws Exception {
-        BufferedImage originalImage = ImageIO.read(inputStream);
+
+        // Use ImmutableImage to read the InputStream
+        ImmutableImage immutableImage = ImmutableImage.loader().fromStream(inputStream);
+
+        // BufferedImage
+        BufferedImage originalImage = immutableImage.awt();
+
         String baseFileName = UUID.randomUUID().toString();
 
         byte[] outputByteStream = imageService.resizeAndConvertToWebp(originalImage, originalImage.getWidth(), originalImage.getHeight());
