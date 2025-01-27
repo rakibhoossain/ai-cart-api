@@ -26,7 +26,6 @@ public class DataSeeder {
         // Insert other data like variants, stocks, prices, images etc.
         insertVariants(range);
         insertVariantPrices();
-        insertVariantImages();
     }
 
 
@@ -69,17 +68,6 @@ public class DataSeeder {
                     .setParameter("id", i)
                     .setParameter("variantId", i)
                     .setParameter("price", price)
-                    .executeUpdate();
-        }
-    }
-
-    private void insertVariantImages() {
-        for (int i = 6; i <= range; i++) {
-            String imageUrl = "https://storage.aicart.store/ai-cart/temp/fashion_173.jpg"; // Random image URL
-            em.createNativeQuery("INSERT INTO variant_images(id, variant_id, url) VALUES (:id, :variantId, :url)")
-                    .setParameter("id", i)
-                    .setParameter("variantId", i)
-                    .setParameter("url", imageUrl)
                     .executeUpdate();
         }
     }

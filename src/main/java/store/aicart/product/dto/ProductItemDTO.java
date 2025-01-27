@@ -9,11 +9,12 @@ public class ProductItemDTO {
     private String slug;
     private Long localeId;
     private String sku;
+    private List<ImageDTO> images;
     private List<CategoryDTO> categories;
     private List<ProductVariantDTO> variants;
 
     // Constructor
-    public ProductItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, String categoriesJson, String variantsJson) {
+    public ProductItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, String imagesJson, String categoriesJson, String variantsJson) {
         this.id = id;
         this.name = localeId != null ? localeName : name;
         this.slug = slug;
@@ -32,6 +33,12 @@ public class ProductItemDTO {
             this.variants = ProductVariantDTO.parseJson(variantsJson);
         } catch (Exception e) {
             this.variants = Collections.emptyList();
+        }
+
+        try {
+            this.images = ImageDTO.parseJson(imagesJson);
+        } catch (Exception e) {
+            this.images = Collections.emptyList();
         }
     }
 
@@ -63,6 +70,14 @@ public class ProductItemDTO {
 
     public void setCategories(List<CategoryDTO> categories) {
         this.categories = categories;
+    }
+
+    public List<ImageDTO> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ImageDTO> images) {
+        this.images = images;
     }
 
     public String getSlug() {

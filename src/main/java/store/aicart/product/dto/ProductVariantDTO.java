@@ -1,5 +1,6 @@
 package store.aicart.product.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +12,10 @@ public class ProductVariantDTO {
     private String sku;
     private VariantPriceDTO price;
     private Long stock;
-    private String[] images;
+
+    @JsonProperty("image_id")
+    private Long imageId;
+
     private AttributeDTO[] attributes;
 
     // Getters and Setters
@@ -39,12 +43,12 @@ public class ProductVariantDTO {
         this.price = price;
     }
 
-    public String[] getImages() {
-        return images;
+    public Long getImageId() {
+        return imageId;
     }
 
-    public void setImages(String[] images) {
-        this.images = images;
+    public void setImageId(Long imageId) {
+        this.imageId = imageId;
     }
 
     public AttributeDTO[] getAttributes() {

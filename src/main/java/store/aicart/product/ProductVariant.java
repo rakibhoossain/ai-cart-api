@@ -17,6 +17,9 @@ public class ProductVariant extends PanacheEntity {
     @Column(unique = true, nullable = false)
     public String sku;
 
+    @Column(name = "image_id")
+    public Long imageId;
+
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     public LocalDateTime createdAt = LocalDateTime.now();
 
@@ -36,9 +39,6 @@ public class ProductVariant extends PanacheEntity {
 
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<VariantPrice> prices;
-
-    @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<VariantImage> images;
 
     @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY)
     public List<Discount> discounts; // Variant-specific discounts

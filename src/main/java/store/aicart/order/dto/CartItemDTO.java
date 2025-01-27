@@ -1,6 +1,7 @@
 package store.aicart.order.dto;
 
 import store.aicart.product.dto.CategoryDTO;
+import store.aicart.product.dto.ImageDTO;
 import store.aicart.product.dto.ProductVariantDTO;
 
 import java.util.Collections;
@@ -15,12 +16,13 @@ public class CartItemDTO {
     private Long localeId;
     private String sku;
     private int quantity;
+    private List<ImageDTO> images;
     private List<CategoryDTO> categories;
     private ProductVariantDTO variant;
 
 
     // Constructor
-    public CartItemDTO(Long id, Long productId, Long variantId, String name, String slug, Long localeId, String localeName, String sku, int quantity, String categoriesJson, String variantJson) {
+    public CartItemDTO(Long id, Long productId, Long variantId, String name, String slug, Long localeId, String localeName, String sku, int quantity, String imagesJson, String categoriesJson, String variantJson) {
         this.id = id;
         this.productId = productId;
         this.variantId = variantId;
@@ -41,6 +43,12 @@ public class CartItemDTO {
             this.variant = ProductVariantDTO.parseSingleJson(variantJson);
         } catch (Exception e) {
             this.variant = null;
+        }
+
+        try {
+            this.images = ImageDTO.parseJson(imagesJson);
+        } catch (Exception e) {
+            this.images = Collections.emptyList();
         }
     }
 
@@ -72,6 +80,14 @@ public class CartItemDTO {
 
     public void setCategories(List<CategoryDTO> categories) {
         this.categories = categories;
+    }
+
+    public List<ImageDTO> getImages() {
+        return images;
+    }
+
+    public void setImages(List<ImageDTO> images) {
+        this.images = images;
     }
 
     public String getSlug() {

@@ -152,6 +152,22 @@ public class CartRepository implements PanacheRepository<Cart> {
                 (
                     SELECT jsonb_agg(
                                    jsonb_build_object(
+                                           'id', fs.id,
+                                           'relation_id', fsr.id,
+                                           'original_url', fs.original_url,
+                                           'medium_url', fs.medium_url,
+                                           'storage_location', fs.storage_location,
+                                           'score', fsr.score
+                                   )
+                           )
+                    FROM file_storage_relation fsr
+                             JOIN file_storage fs
+                                  ON fsr.file_id = fs.id
+                    WHERE fsr.associated_id = p.id AND fsr.associated_type = 1
+                ) AS images,
+                (
+                    SELECT jsonb_agg(
+                                   jsonb_build_object(
                                            'id', c.id,
                                            'name', c.name,
                                            'category_id', pc.category_id,
@@ -195,11 +211,7 @@ public class CartRepository implements PanacheRepository<Cart> {
                                             ON pt.tax_id = t.id
                                        WHERE vp.variant_id = pv.id AND vp.country_id = :countryId
                                    ),
-                                   'images', (
-                                       SELECT ARRAY_AGG(vi.url)
-                                       FROM variant_images vi
-                                       WHERE vi.variant_id = pv.id
-                                   ),
+                                    'image_id', pv.image_id,
                                    'attributes', (
                                        SELECT jsonb_agg(
                                                       jsonb_build_object(
