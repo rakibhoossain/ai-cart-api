@@ -4,7 +4,7 @@ import io.smallrye.jwt.build.Jwt;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.jwt.Claims;
-import store.aicart.user.entity.User;
+import org.aicart.store.user.entity.User;
 
 import java.util.Arrays;
 import java.util.HashMap;

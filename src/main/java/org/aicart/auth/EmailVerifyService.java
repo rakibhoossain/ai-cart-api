@@ -15,7 +15,7 @@ import org.aicart.auth.dto.TokenUser;
 import org.aicart.auth.entity.EmailVerification;
 import org.aicart.auth.service.TokenGenerator;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import store.aicart.user.entity.User;
+import org.aicart.store.user.entity.User;
 
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;

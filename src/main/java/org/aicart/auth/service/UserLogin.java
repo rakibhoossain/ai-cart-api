@@ -10,7 +10,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.aicart.auth.dto.LoginCredentialDTO;
 import org.aicart.auth.dto.OauthLoginDTO;
-import store.aicart.user.entity.User;
+import org.aicart.store.user.entity.User;
 import java.security.SecureRandom;
 import java.net.URI;
 import java.net.http.HttpClient;

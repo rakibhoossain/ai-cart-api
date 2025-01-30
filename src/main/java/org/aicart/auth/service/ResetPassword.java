@@ -15,7 +15,7 @@ import jakarta.ws.rs.core.SecurityContext;
 import org.aicart.auth.dto.ResetPasswordDTO;
 import org.aicart.auth.dto.TokenUser;
 import org.aicart.auth.entity.PasswordReset;
-import store.aicart.user.entity.User;
+import org.aicart.store.user.entity.User;
 
 import java.util.Map;
 

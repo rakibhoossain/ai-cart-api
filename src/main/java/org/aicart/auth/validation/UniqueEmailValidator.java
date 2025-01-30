@@ -2,7 +2,7 @@ package org.aicart.auth.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import store.aicart.user.entity.User;
+import org.aicart.store.user.entity.User;
 
 public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, String> {
 

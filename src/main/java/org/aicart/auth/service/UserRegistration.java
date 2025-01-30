@@ -7,7 +7,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.aicart.auth.EmailVerifyService;
 import org.aicart.auth.dto.RegistrationDTO;
-import store.aicart.user.entity.User;
+import org.aicart.store.user.entity.User;
 
 import java.util.Map;
 

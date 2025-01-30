@@ -7,7 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import store.aicart.user.entity.User;
+import org.aicart.store.user.entity.User;
 
 import java.util.Map;
 

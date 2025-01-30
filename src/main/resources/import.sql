@@ -195,6 +195,9 @@ VALUES (1,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.3
        (4,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_0122.jpg', 'fashion_0122.jpg', 'temp/fashion_0122.jpg', 'temp/fashion_0122.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_0122.jpg', null),
        (5,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_0122.jpg', 'fashion_0122.jpg', 'temp/fashion_0122.jpg', 'temp/fashion_0122.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_0122.jpg', null);
 
+
+SELECT setval(pg_get_serial_sequence('file_storage', 'id'), (SELECT MAX(id) FROM categories));
+
 -- Insert product image
 INSERT INTO file_storage_relation (id, file_id, associated_id, associated_type)
 VALUES (1, 1,1, 1),

@@ -8,8 +8,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import store.aicart.order.OrderService;
-import store.aicart.order.entity.Cart;
+import org.aicart.store.order.OrderService;
+import org.aicart.store.order.entity.Cart;
 
 import java.util.Map;
 
