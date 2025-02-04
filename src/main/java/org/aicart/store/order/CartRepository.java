@@ -12,8 +12,8 @@ import org.aicart.store.order.entity.Cart;
 import org.aicart.store.order.entity.CartDeliveryRequestDTO;
 import org.aicart.store.order.entity.CartItem;
 import org.aicart.store.order.entity.StockReservation;
-import org.aicart.store.product.Product;
-import org.aicart.store.product.ProductVariant;
+import org.aicart.store.product.entity.Product;
+import org.aicart.store.product.entity.ProductVariant;
 import org.aicart.store.user.entity.User;
 
 import java.util.List;

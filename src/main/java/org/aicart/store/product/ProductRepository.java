@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import org.aicart.store.product.dto.ProductItemDTO;
+import org.aicart.store.product.entity.Product;
 
 import java.util.List;
 import java.util.Optional;

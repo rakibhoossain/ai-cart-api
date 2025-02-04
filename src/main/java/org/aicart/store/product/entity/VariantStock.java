@@ -1,4 +1,4 @@
-package org.aicart.store.product;
+package org.aicart.store.product.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;

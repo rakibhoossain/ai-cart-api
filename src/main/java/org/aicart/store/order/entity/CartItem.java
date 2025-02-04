@@ -2,8 +2,8 @@ package org.aicart.store.order.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import org.aicart.store.product.Product;
-import org.aicart.store.product.ProductVariant;
+import org.aicart.store.product.entity.Product;
+import org.aicart.store.product.entity.ProductVariant;
 
 import java.time.LocalDateTime;
 import java.util.List;

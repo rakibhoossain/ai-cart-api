@@ -1,4 +1,4 @@
-package org.aicart.store.product;
+package org.aicart.store.product.entity;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -6,8 +6,6 @@ import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.aicart.util.StringSlugifier;
 import org.aicart.store.order.entity.ProductTaxRate;
-import org.aicart.store.product.entity.Category;
-import org.aicart.store.product.entity.Discount;
 
 @Entity(name = "products")
 public class Product extends PanacheEntity {

@@ -1,4 +1,4 @@
-package org.aicart.store.product;
+package org.aicart.store.product.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import java.util.List;
 
 /**
- * Defines an attribute type like size or color
+ * Defines an attribute type like Size or Color
  */
 @Entity(name = "attributes")
 public class Attribute extends PanacheEntity {

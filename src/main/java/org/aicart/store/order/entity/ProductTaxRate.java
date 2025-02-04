@@ -6,7 +6,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import org.aicart.entity.Country;
 import org.aicart.entity.Tax;
-import org.aicart.store.product.Product;
+import org.aicart.store.product.entity.Product;
 
 @Entity
 public class ProductTaxRate extends PanacheEntity {

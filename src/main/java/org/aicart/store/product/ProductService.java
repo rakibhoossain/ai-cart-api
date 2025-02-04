@@ -5,6 +5,7 @@ import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.aicart.store.product.dto.ProductItemDTO;
+import org.aicart.store.product.entity.Product;
 
 import java.util.*;
 import java.util.stream.Collectors;

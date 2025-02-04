@@ -140,6 +140,9 @@ VALUES (1, 1, 'First category'),
 -- Inserting Attribute. Defines an attribute type like size or color.
 INSERT INTO attributes (id, name) VALUES (1, 'Color'), (2, 'Size'), (3, 'Material');
 
+SELECT setval(pg_get_serial_sequence('attributes', 'id'), (SELECT MAX(id) FROM attributes));
+
+
 -- Inserting AttributeTranslation
 INSERT INTO attribute_translations(id, attribute_id, language_id, name)
 VALUES (1, 1, 1, 'Color'),
@@ -147,15 +150,15 @@ VALUES (1, 1, 1, 'Color'),
         (3, 3, 1, 'Material');
 
 -- Inserting AttributeValue
-INSERT INTO attribute_values(id, attribute_id, value)
-VALUES (1, 1, 'Blue'),
-       (2, 1, 'Red'),
-       (3, 2, 'X'),
-       (4, 2, 'XL'),
-       (5, 2, 'XXL'),
-       (6, 3, 'Fiber'),
-       (7, 3, 'Cotton'),
-        (8, 1, 'Green');
+INSERT INTO attribute_values(id, attribute_id, value, color)
+VALUES (1, 1, 'Blue', 'blue'),
+       (2, 1, 'Red', 'red'),
+       (3, 2, 'X', null),
+       (4, 2, 'XL', null),
+       (5, 2, 'XXL', null),
+       (6, 3, 'Fiber', null),
+       (7, 3, 'Cotton', null),
+        (8, 1, 'Green', 'green');
 
 -- Inserting AttributeValueTranslation
 INSERT INTO attribute_value_translations(id, attribute_value_id, language_id, value)
@@ -189,21 +192,23 @@ VALUES (1, 10),
 
 -- Insert files
 INSERT INTO file_storage (id, height, width, created_at, file_size, updated_at, file_type, mime_type, alt_text, file_name, medium_url, original_url, storage_location, thumbnail_url, metadata)
-VALUES (1,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_173.jpg', 'fashion_173.jpg', 'temp/fashion_173.jpg', 'temp/fashion_173.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_173.jpg', null),
+VALUES (10,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_173.jpg', 'fashion_173.jpg', 'temp/fashion_173.jpg', 'temp/fashion_173.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_173.jpg', null),
        (2,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_71.jpg', 'fashion_71.jpg', 'temp/fashion_71.jpg', 'temp/fashion_71.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_71.jpg', null),
        (3,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_311.jpg', 'fashion_311.jpg', 'temp/fashion_311.jpg', 'temp/fashion_311.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_311.jpg', null),
        (4,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_0122.jpg', 'fashion_0122.jpg', 'temp/fashion_0122.jpg', 'temp/fashion_0122.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_0122.jpg', null),
        (5,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_0122.jpg', 'fashion_0122.jpg', 'temp/fashion_0122.jpg', 'temp/fashion_0122.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_0122.jpg', null);
 
 
-SELECT setval(pg_get_serial_sequence('file_storage', 'id'), (SELECT MAX(id) FROM categories));
+SELECT setval(pg_get_serial_sequence('file_storage', 'id'), (SELECT MAX(id) FROM file_storage) + 1);
 
 -- Insert product image
 INSERT INTO file_storage_relation (id, file_id, associated_id, associated_type)
-VALUES (1, 1,1, 1),
+VALUES (1, 10,1, 1),
        (2, 2,1, 1),
        (3, 3,2, 1),
        (4, 4,2, 1);
+
+SELECT setval(pg_get_serial_sequence('file_storage_relation', 'id'), (SELECT MAX(id) FROM file_storage_relation) + 1);
 
 -- Inserting variants
 INSERT INTO product_variants(id, product_id, sku, image_id)

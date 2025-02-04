@@ -4,7 +4,6 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.aicart.entity.Country;
 import org.aicart.entity.Tax;
-import org.aicart.store.product.Product;
 
 @Entity(name = "product_tax")
 @Table(

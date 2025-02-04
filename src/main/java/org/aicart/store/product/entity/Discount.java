@@ -2,8 +2,6 @@ package org.aicart.store.product.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import org.aicart.store.product.Product;
-import org.aicart.store.product.ProductVariant;
 
 import java.math.BigInteger;
 
