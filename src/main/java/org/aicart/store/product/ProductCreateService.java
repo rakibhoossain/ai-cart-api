@@ -12,6 +12,7 @@ import org.aicart.store.product.dto.product.AttributeDTO;
 import org.aicart.store.product.dto.product.ProductCreateRequestDTO;
 import org.aicart.store.product.dto.product.VariantDTO;
 import org.aicart.store.product.entity.*;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.*;
 
@@ -47,6 +48,7 @@ public class ProductCreateService {
             }).toList();
         }
 
+        product.shop = Shop.findById(1); // Shop
         Country country = Country.findById(1); // Sell location
         Currency currency = Currency.findById(1); // Price currency
         WarehouseLocation warehouseLocation = WarehouseLocation.findById(1); // Warehouse Location
