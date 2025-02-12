@@ -5,11 +5,16 @@ import java.util.Set;
 import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.aicart.media.entity.FileStorageRelation;
+import org.aicart.store.user.entity.Shop;
 import org.aicart.util.StringSlugifier;
 import org.aicart.store.order.entity.ProductTaxRate;
 
 @Entity(name = "products")
 public class Product extends PanacheEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
 
     @Column(unique = true, nullable = false)
     public String sku;

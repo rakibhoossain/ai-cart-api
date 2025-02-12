@@ -1,5 +1,13 @@
 -- This file allow to write SQL commands that will be emitted in test and dev.
 
+-- Inserting users
+INSERT INTO users (id, name, email, password, created_at, updated_at)
+VALUES (1, 'Rakib', 'admin@mail.com', '123456', NOW(), NOW());
+
+-- Inserting Shops
+INSERT INTO shops (id, user_id, name, domain)
+VALUES (1, 1, 'Rakib Shop', 'localhost');
+
 -- Inserting Country (United States, Spain)
 INSERT INTO countries (id, code, name) VALUES (1, 'usa', 'United States'), (2, 'es', 'Spain');
 
@@ -172,9 +180,9 @@ VALUES (1, 1, 1, 'Blue'),
        (8, 8, 1, 'Green');
 
 -- Inserting Product
-INSERT INTO products(id, sku, name, slug, created_at, updated_at)
-VALUES (1, 'SKU_1', 'Test product 1', 'test-product-1', NOW(), NOW()),
-       (2, 'SKU_2', 'Test product 2', 'test-product-2', NOW(), NOW());
+INSERT INTO products(id, sku, shop_id, name, slug, created_at, updated_at)
+VALUES (1,  'SKU_1', 1, 'Test product 1', 'test-product-1', NOW(), NOW()),
+       (2,  'SKU_2', 1, 'Test product 2', 'test-product-2', NOW(), NOW());
 
 -- Inserting translations
 INSERT INTO product_translations(id, product_id, language_id, name, description)
