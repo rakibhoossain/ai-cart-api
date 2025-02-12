@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.aicart.store.product.dto.product.ProductCreateRequestDTO;
 import org.aicart.util.QueryParamConverter;
 import org.aicart.store.product.dto.ProductItemDTO;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 
 @Path("/product")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class ProductResource {
 
     @Inject
@@ -20,11 +23,12 @@ public class ProductResource {
     @Inject
     ProductService productService;
 
+    @Inject
+    ProductCreateService productCreateService;
+
 
     @GET
     @Path("/")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public List<ProductItemDTO> products(
             @QueryParam("page") Integer page,
             @QueryParam("pageSize") Integer pageSize,
@@ -45,8 +49,6 @@ public class ProductResource {
 
     @GET
     @Path("/detail/{slug}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
     public Response productDetail(@PathParam("slug") String slug) {
 
         ProductItemDTO product = productService.getProductBySlug(slug);
@@ -57,6 +59,13 @@ public class ProductResource {
         }
 
         return Response.ok(product).build();
+    }
+
+
+    @POST
+    @Path("/")
+    public Response productCreate(ProductCreateRequestDTO productDTO) {
+        return productCreateService.productCreate(productDTO);
     }
 
 

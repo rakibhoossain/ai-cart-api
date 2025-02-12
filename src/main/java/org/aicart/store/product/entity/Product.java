@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
+import org.aicart.media.entity.FileStorageRelation;
 import org.aicart.util.StringSlugifier;
 import org.aicart.store.order.entity.ProductTaxRate;
 
@@ -35,6 +36,9 @@ public class Product extends PanacheEntity {
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<ProductVariant> variants;
+
+    @OneToMany(mappedBy = "associatedId", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<FileStorageRelation> fileRelations;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     public List<ProductTaxRate> productTaxRates; // Link to ProductTaxRate
