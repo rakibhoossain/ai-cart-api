@@ -20,10 +20,12 @@ public class FileStorageRelation extends PanacheEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "associated_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @Transient
     public Product product; // Explicit relationship
 
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "associated_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @Transient
     public Category category; // Explicit relationship
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -34,6 +36,7 @@ public class FileStorageRelation extends PanacheEntity {
     public int score = 0;
 
     @PrePersist
+    @PreUpdate
     public void prePersist() {
         if (product != null) {
             associatedId = product.id;
@@ -43,4 +46,5 @@ public class FileStorageRelation extends PanacheEntity {
             associatedType = FileAssociation.CATEGORY.getValue();
         }
     }
+
 }

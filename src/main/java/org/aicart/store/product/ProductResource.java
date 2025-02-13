@@ -8,6 +8,8 @@ import jakarta.ws.rs.core.Response;
 import org.aicart.store.product.dto.product.ProductCreateRequestDTO;
 import org.aicart.util.QueryParamConverter;
 import org.aicart.store.product.dto.ProductItemDTO;
+
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +26,7 @@ public class ProductResource {
     ProductService productService;
 
     @Inject
-    ProductCreateService productCreateService;
+    ProductStoreService productCreateService;
 
 
     @GET
@@ -68,6 +70,12 @@ public class ProductResource {
         return productCreateService.productCreate(productDTO);
     }
 
+
+    @PUT
+    @Path("/update/{productId}")
+    public Response productUpdate(@PathParam("productId") BigInteger productId, ProductCreateRequestDTO productDTO) {
+        return productCreateService.productUpdate(productId, productDTO);
+    }
 
     @GET
     @Path("/paginated-with-categories")

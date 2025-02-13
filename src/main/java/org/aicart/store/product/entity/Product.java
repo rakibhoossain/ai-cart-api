@@ -36,10 +36,10 @@ public class Product extends PanacheEntity {
     )
     public Set<Category> categories;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<ProductVariant> variants;
 
-    @OneToMany(mappedBy = "associatedId", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "associatedId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<FileStorageRelation> fileRelations;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
