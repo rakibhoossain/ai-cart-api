@@ -16,9 +16,6 @@ public class Product extends PanacheEntity {
     @JoinColumn(name = "shop_id", nullable = false)
     public Shop shop;
 
-    @Column(unique = true, nullable = false)
-    public String sku;
-
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<ProductTranslation> translations;
 

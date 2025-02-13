@@ -22,14 +22,13 @@ public class CartItemDTO {
 
 
     // Constructor
-    public CartItemDTO(Long id, Long productId, Long variantId, String name, String slug, Long localeId, String localeName, String sku, int quantity, String imagesJson, String categoriesJson, String variantJson) {
+    public CartItemDTO(Long id, Long productId, Long variantId, String name, String slug, Long localeId, String localeName, int quantity, String imagesJson, String categoriesJson, String variantJson) {
         this.id = id;
         this.productId = productId;
         this.variantId = variantId;
         this.name = localeId != null ? localeName : name;
         this.slug = slug;
         this.localeId = localeId;
-        this.sku = sku;
         this.quantity = quantity;
 
         try {
@@ -41,6 +40,7 @@ public class CartItemDTO {
 
         try {
             this.variant = ProductVariantDTO.parseSingleJson(variantJson);
+            this.sku = this.variant.getSku();
         } catch (Exception e) {
             this.variant = null;
         }

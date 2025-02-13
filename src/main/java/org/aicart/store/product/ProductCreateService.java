@@ -24,8 +24,6 @@ public class ProductCreateService {
         Product product = new Product();
         product.name = productDTO.getName();
         product.description = productDTO.getDescription();
-        product.sku = "fake_n2" + UUID.randomUUID().toString().substring(0, 8);
-
 
         // Handle categories
         if (productDTO.getCategories() != null && !productDTO.getCategories().isEmpty()) {

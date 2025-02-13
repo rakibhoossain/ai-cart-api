@@ -180,9 +180,9 @@ VALUES (1, 1, 1, 'Blue'),
        (8, 8, 1, 'Green');
 
 -- Inserting Product
-INSERT INTO products(id, sku, shop_id, name, slug, created_at, updated_at)
-VALUES (1,  'SKU_1', 1, 'Test product 1', 'test-product-1', NOW(), NOW()),
-       (2,  'SKU_2', 1, 'Test product 2', 'test-product-2', NOW(), NOW());
+INSERT INTO products(id, shop_id, name, slug, created_at, updated_at)
+VALUES (1, 1, 'Test product 1', 'test-product-1', NOW(), NOW()),
+       (2, 1, 'Test product 2', 'test-product-2', NOW(), NOW());
 
 -- Inserting translations
 INSERT INTO product_translations(id, product_id, language_id, name, description)

@@ -8,19 +8,16 @@ public class ProductItemDTO {
     private String name;
     private String slug;
     private Long localeId;
-    private String sku;
     private List<ImageDTO> images;
     private List<CategoryDTO> categories;
     private List<ProductVariantDTO> variants;
 
     // Constructor
-    public ProductItemDTO(Long id, String name, String slug, Long localeId, String localeName, String sku, String imagesJson, String categoriesJson, String variantsJson) {
+    public ProductItemDTO(Long id, String name, String slug, Long localeId, String localeName, String imagesJson, String categoriesJson, String variantsJson) {
         this.id = id;
         this.name = localeId != null ? localeName : name;
         this.slug = slug;
         this.localeId = localeId;
-        this.sku = sku;
-
 
         try {
             this.categories = CategoryDTO.parseJsonToHierarchy(categoriesJson);
@@ -94,14 +91,6 @@ public class ProductItemDTO {
 
     public void setLocaleId(Long localeId) {
         this.localeId = localeId;
-    }
-
-    public String getSku() {
-        return sku;
-    }
-
-    public void setSku(String sku) {
-        this.sku = sku;
     }
 
     public List<ProductVariantDTO> getVariants() {

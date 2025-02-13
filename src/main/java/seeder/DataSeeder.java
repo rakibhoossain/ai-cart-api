@@ -32,13 +32,11 @@ public class DataSeeder {
 
     private void insertProducts(int numberOfProducts) {
         for (int i = 6; i <= numberOfProducts; i++) {
-            String sku = "SKU_" + i;
             String name = "Test product " + i;
             String slug = name.toLowerCase().replace(" ", "-")+i;
 
-            em.createNativeQuery("INSERT INTO products(id, sku, name, slug, created_at, updated_at) VALUES (:id, :sku, :name, :slug, NOW(), NOW())")
+            em.createNativeQuery("INSERT INTO products(id, name, slug, created_at, updated_at) VALUES (:id, :name, :slug, NOW(), NOW())")
                     .setParameter("id", i)
-                    .setParameter("sku", sku)
                     .setParameter("name", name)
                     .setParameter("slug", slug)
                     .executeUpdate();

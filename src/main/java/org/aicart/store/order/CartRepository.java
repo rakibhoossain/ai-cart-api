@@ -147,7 +147,6 @@ public class CartRepository implements PanacheRepository<Cart> {
                 p.slug AS slug,
                 locale.id AS locale_id,
                 locale.name AS locale_name,
-                p.sku AS sku,
                 cit.quantity AS quantity,
                 (
                     SELECT jsonb_agg(

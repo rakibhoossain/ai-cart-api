@@ -36,7 +36,6 @@ public class ProductRepository {
         p.slug AS slug,
         locale.id AS locale_id,
         locale.name AS locale_name,
-        p.sku AS sku,
         (
             SELECT jsonb_agg(
                            jsonb_build_object(
