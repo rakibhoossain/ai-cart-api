@@ -4,27 +4,35 @@
 INSERT INTO users (id, name, email, password, created_at, updated_at)
 VALUES (1, 'Rakib', 'admin@mail.com', '123456', NOW(), NOW());
 
--- Inserting Shops
-INSERT INTO shops (id, user_id, name, domain)
-VALUES (1, 1, 'Rakib Shop', 'localhost');
+-- Inserting Currency (USD, EUR)
+INSERT INTO currencies (id, code, name, symbol) VALUES (1, 'USD', 'US Dollar', '$'), (2, 'EUR', 'Euro', '€');
 
 -- Inserting Country (United States, Spain)
-INSERT INTO countries (id, code, name) VALUES (1, 'usa', 'United States'), (2, 'es', 'Spain');
+INSERT INTO countries (id, code, name, currency_id) VALUES (1, 'usa', 'United States', 1), (2, 'es', 'Spain', 2);
+
+-- Inserting Language (English, Spanish)
+INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'Spanish');
+
+-- Inserting Shops
+INSERT INTO shops (id, user_id, name, primary_country, currency_id)
+VALUES (1, 1, 'Rakib Shop', 1, 1);
+
+-- Shop country
+INSERT INTO shop_country (shop_id, country_id)
+VALUES (1, 1), (1, 2);
 
 -- Insert Tax
 INSERT INTO taxes (id, country_id, name, tax_rate, is_default) VALUES (1, 1, 'Full Tax', 2000, TRUE);
 
 
 -- Inserting WarehouseLocation
-INSERT INTO warehouse_locations (id, name, address_line1, city, postal_code, country_id, contact_number, is_active)
-VALUES (1, 'EU First', 'Line 1', 'Berlin', 1216, 1, '0123456789', TRUE);
+INSERT INTO warehouse_locations (id, shop_id, name, address_line1, city, postal_code, country_id, contact_number, is_active)
+VALUES (1, 1, 'EU First', 'Line 1', 'Berlin', 1216, 1, '0123456789', TRUE);
 
--- Inserting Currency (USD, EUR)
-INSERT INTO currencies (id, code, name) VALUES (1, 'USD', 'US Dollar'), (2, 'EUR', 'Euro');
 
--- Inserting Language (English, Spanish)
-INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'Spanish');
-
+-- Warehouse sell country
+INSERT INTO warehouse_sell_country (warehouse_id, country_id)
+VALUES (1, 1), (1, 2);
 
 -- Inserting product category
 -- Insert Root categories (Level 1)

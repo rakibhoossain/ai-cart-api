@@ -11,4 +11,7 @@ public class Currency extends PanacheEntity {
 
     @Column(length = 20, nullable = false)
     public String name; // e.g., US Dollar, Euro
+
+    @Column(length = 10, nullable = false)
+    public String symbol; // e.g, $, €
 }

@@ -2,10 +2,10 @@ package org.aicart.entity;
 
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import org.aicart.store.user.entity.Shop;
+
+import java.util.Set;
 
 @Entity(name = "warehouse_locations")
 public class WarehouseLocation extends PanacheEntity {
@@ -28,10 +28,9 @@ public class WarehouseLocation extends PanacheEntity {
     @Column(name = "postal_code", nullable = false)
     public String postalCode;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id", nullable = false)
     public Country country;
-
 
     public String latitude;
 
@@ -42,4 +41,16 @@ public class WarehouseLocation extends PanacheEntity {
 
     @Column(name = "is_active", nullable = false)
     public Boolean isActive = true; // Default to active
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "warehouse_sell_country",
+            joinColumns = @JoinColumn(name = "warehouse_id"),
+            inverseJoinColumns = @JoinColumn(name = "country_id")
+    )
+    public Set<Country> sellCountry;
 }

@@ -7,10 +7,9 @@ public class VariantDTO {
     private Integer id;         // Can be null
     private String sku;         // Can be null
     private Integer imageId;    // Can be null
-    private BigInteger price;
-    private BigInteger comparePrice;
-    private BigInteger purchasePrice;
     private List<AttributeDTO> attributes;
+    private List<VariantPriceDTO> prices;
+    private List<VariantStockDTO> stocks;
 
     // Getters and setters
     public Integer getId() { return id; }
@@ -22,15 +21,12 @@ public class VariantDTO {
     public Integer getImageId() { return imageId; }
     public void setImageId(Integer imageId) { this.imageId = imageId; }
 
-    public BigInteger getComparePrice() { return comparePrice; }
-    public void setComparePrice(BigInteger comparePrice) { this.comparePrice = comparePrice; }
-
-    public BigInteger getPrice() { return price; }
-    public void setPrice(BigInteger price) { this.price = price; }
-
-    public BigInteger getPurchasePrice() { return purchasePrice; }
-    public void setPurchasePrice(BigInteger purchasePrice) { this.purchasePrice = purchasePrice; }
-
     public List<AttributeDTO> getAttributes() { return attributes; }
     public void setAttributes(List<AttributeDTO> attributes) { this.attributes = attributes; }
+
+    public List<VariantPriceDTO> getPrices() { return prices; }
+    public void setPrices(List<VariantPriceDTO> prices) { this.prices = prices; }
+
+    public List<VariantStockDTO> getStocks() { return stocks; }
+    public void setStocks(List<VariantStockDTO> stocks) { this.stocks = stocks; }
 }

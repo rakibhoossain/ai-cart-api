@@ -11,7 +11,7 @@ import org.aicart.entity.WarehouseLocation;
 )
 public class VariantStock extends PanacheEntity {
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "variant_id", nullable = false)
     public ProductVariant productVariant;
 

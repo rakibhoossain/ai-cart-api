@@ -9,9 +9,7 @@ import org.aicart.entity.WarehouseLocation;
 import org.aicart.media.FileAssociation;
 import org.aicart.media.entity.FileStorage;
 import org.aicart.media.entity.FileStorageRelation;
-import org.aicart.store.product.dto.product.AttributeDTO;
-import org.aicart.store.product.dto.product.ProductCreateRequestDTO;
-import org.aicart.store.product.dto.product.VariantDTO;
+import org.aicart.store.product.dto.product.*;
 import org.aicart.store.product.entity.*;
 import org.aicart.store.user.entity.Shop;
 
@@ -80,28 +78,40 @@ public class ProductStoreService {
                     variant.attributeValues = new HashSet<>(attributeValues);
                 }
 
-
                 // Variant prices
-                VariantPrice variantPrice = new VariantPrice();
-                variantPrice.productVariant = variant;
-                variantPrice.country = country;
-                variantPrice.price = variantDTO.getPrice();
-                variantPrice.currency = currency;
-                variantPrice.isActive = true;
+                if(variantDTO.getPrices() != null && !variantDTO.getPrices().isEmpty()) {
+                    List<VariantPrice> prices = new ArrayList<>();
 
-                List<VariantPrice> prices = new ArrayList<>();
-                prices.add(variantPrice);
+                    for (VariantPriceDTO variantPriceDTO : variantDTO.getPrices()) {
+                        VariantPrice variantPrice = new VariantPrice();
+                        variantPrice.productVariant = variant;
+                        variantPrice.country = Country.findById(variantPriceDTO.getCountryId());
+                        variantPrice.price = variantPriceDTO.getPrice();
+                        variantPrice.currency = currency;
+                        variantPrice.isActive = true;
 
-                variant.prices = prices;
-
+                        prices.add(variantPrice);
+                    }
+                    variant.prices = prices;
+                }
 
                 // Variant stocks
-                VariantStock variantStock = new VariantStock();
-                variantStock.productVariant = variant;
-                variantStock.quantity = 0;
-                variantStock.warehouseLocation = warehouseLocation;
-                variant.stock = variantStock;
+                if(variantDTO.getStocks() != null && !variantDTO.getStocks().isEmpty()) {
+                    List<VariantStock> variantStocks = new ArrayList<>();
 
+                    for (VariantStockDTO variantStockDTO : variantDTO.getStocks()) {
+                        VariantStock variantStock = new VariantStock();
+                        variantStock.warehouseLocation = WarehouseLocation.findById(variantStockDTO.getWarehouseId());
+                        variantStock.productVariant = variant;
+                        variantStock.quantity = variantStockDTO.getQuantity();
+
+                        System.out.println("variantStockDTO.getWarehouseId() : " + variantStockDTO.getWarehouseId());
+
+                        variantStocks.add(variantStock);
+                    }
+
+                    variant.stocks = variantStocks;
+                }
 
                 variants.add(variant);
             }
@@ -141,7 +151,6 @@ public class ProductStoreService {
             product.categories.clear();
             product.categories.addAll(categories);
         }
-
 
 
         if(productDTO.getImages() != null && !productDTO.getImages().isEmpty()) {
@@ -230,8 +239,7 @@ public class ProductStoreService {
         variant.product = product;
 
         // 7. Proper SKU handling
-        variant.sku = Optional.ofNullable(variantDTO.getSku())
-                .orElse("variant-" + UUID.randomUUID().toString().substring(0, 8));
+        variant.sku = variantDTO.getSku();
 
         // 8. Handle attributes with batch query
         if (variantDTO.getAttributes() != null) {
@@ -245,20 +253,67 @@ public class ProductStoreService {
         }
 
         // 9. Handle prices
-        if (variantDTO.getPrice() != null) {
-            VariantPrice price = Optional.ofNullable(variant.prices)
-                    .flatMap(p -> p.stream().findFirst())
-                    .orElseGet(VariantPrice::new);
+        if(variantDTO.getPrices() != null && !variantDTO.getPrices().isEmpty()) {
 
-            price.price = variantDTO.getPrice();
-            price.isActive = true;
-            variant.prices = List.of(price);
+            VariantPrice.delete("productVariant.id in ?1", variant.id);
+
+            List<VariantPrice> prices = new ArrayList<>();
+
+            for (VariantPriceDTO variantPriceDTO : variantDTO.getPrices()) {
+                VariantPrice variantPrice = new VariantPrice();
+                variantPrice.productVariant = variant;
+                variantPrice.country = Country.findById(variantPriceDTO.getCountryId());
+                variantPrice.price = variantPriceDTO.getPrice();
+                variantPrice.currency = Currency.findById(1);
+                variantPrice.isActive = true;
+
+                prices.add(variantPrice);
+            }
+            variant.prices = prices;
         }
 
         // 10. Handle stock with merge logic
-        if (variant.stock == null) {
-            variant.stock = new VariantStock();
+        if(variantDTO.getStocks() != null && !variantDTO.getStocks().isEmpty()) {
+            VariantStock.delete("productVariant.id in ?1", variant.id);
+
+            List<VariantStock> variantStocks = new ArrayList<>();
+
+            for (VariantStockDTO variantStockDTO : variantDTO.getStocks()) {
+                VariantStock variantStock = new VariantStock();
+                variantStock.warehouseLocation = WarehouseLocation.findById(variantStockDTO.getWarehouseId());
+                variantStock.productVariant = variant;
+                variantStock.quantity = variantStockDTO.getQuantity();
+
+                variantStocks.add(variantStock);
+            }
+
+            variant.stocks = variantStocks;
         }
+
+//        // 9. Handle prices
+//        if (variantDTO.getPrice() != null) {
+//            VariantPrice price = Optional.ofNullable(variant.prices)
+//                    .flatMap(p -> p.stream().findFirst())
+//                    .orElseGet(VariantPrice::new);
+//
+//            price.price = variantDTO.getPrice();
+//            price.isActive = true;
+//            variant.prices = List.of(price);
+//        }
+//
+//        // 10. Handle stock with merge logic
+//        if (variant.stock == null) {
+//            variant.stock = new VariantStock();
+//        }
+
+
+
+
+
+
+
+
+
 //        variant.stock.quantity = variantDTO.getStockQuantity() != null ?
 //                variantDTO.getStockQuantity() :
 //                variant.stock.quantity;
