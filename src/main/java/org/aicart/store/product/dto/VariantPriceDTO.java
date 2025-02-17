@@ -8,9 +8,6 @@ public class VariantPriceDTO {
     @JsonProperty("compare_price")
     private Integer comparePrice;
 
-    @JsonProperty("purchase_price")
-    private Integer purchasePrice;
-
     private Integer discount;
 
     @JsonProperty("tax_rate")
@@ -124,14 +121,6 @@ public class VariantPriceDTO {
 
     public void setComparePrice(Integer comparePrice) {
         this.comparePrice = comparePrice;
-    }
-
-    public Integer getPurchasePrice() {
-        return purchasePrice;
-    }
-
-    public void setPurchasePrice(Integer purchasePrice) {
-        this.purchasePrice = purchasePrice;
     }
 }
 
