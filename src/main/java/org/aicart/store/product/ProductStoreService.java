@@ -1,6 +1,8 @@
 package org.aicart.store.product;
 
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.aicart.entity.Country;
@@ -18,6 +20,9 @@ import java.util.*;
 
 @ApplicationScoped
 public class ProductStoreService {
+
+    @PersistenceContext
+    EntityManager entityManager;
 
     @Transactional
     public Response productCreate(ProductCreateRequestDTO productDTO) {
@@ -141,6 +146,14 @@ public class ProductStoreService {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        // Existing variants ID
+        List<Long> existingVariantsId = product.variants.stream()
+                .map(v -> v.id)
+                .filter(Objects::nonNull)
+                .toList();
+
+
+
         // 2. Update basic fields
         product.name = productDTO.getName();
         product.description = productDTO.getDescription();
@@ -148,7 +161,12 @@ public class ProductStoreService {
         // 3. Handle categories with batch query
         if (productDTO.getCategories() != null && !productDTO.getCategories().isEmpty()) {
             List<Category> categories = Category.list("id in ?1", productDTO.getCategories());
-            product.categories.clear();
+
+            // Clear categories
+            entityManager.createNativeQuery("DELETE FROM product_category WHERE product_id = ?1")
+                    .setParameter(1, product.id)
+                    .executeUpdate();
+
             product.categories.addAll(categories);
         }
 
@@ -210,14 +228,27 @@ public class ProductStoreService {
             }
 
             // Remove deleted variants
-            List<Integer> incomingIds = productDTO.getVariants().stream()
+            List<Long> incomingIds = productDTO.getVariants().stream()
                     .map(VariantDTO::getId)
                     .filter(Objects::nonNull)
                     .toList();
 
-//            if (!incomingIds.isEmpty()) {
-//                ProductVariant.delete("product.id = ?1 and id not in ?2", productId, incomingIds);
-//            }
+            if (!incomingIds.isEmpty()) {
+                List<Long> filteredList = existingVariantsId.stream()
+                        .filter(id -> !incomingIds.contains(id))
+                        .toList();
+
+                // Remove garbage
+                if(!filteredList.isEmpty()) {
+                    entityManager.createNativeQuery("DELETE FROM product_variant_value WHERE variant_id IN (?1)")
+                    .setParameter(1, filteredList)
+                    .executeUpdate();
+
+                    VariantStock.delete("productVariant.id in ?1", filteredList);
+                    VariantPrice.delete("productVariant.id in ?1", filteredList);
+                    ProductVariant.delete("product.id = ?1 and id in ?2", productId, filteredList);
+                }
+            }
 
             product.variants = updatedVariants;
         }
@@ -248,8 +279,15 @@ public class ProductStoreService {
                     .toList();;
 
             List<AttributeValue> attributeValues = AttributeValue.list("id in ?1", attributeValueIds);
-            variant.attributeValues.clear();
-            variant.attributeValues.addAll(attributeValues);
+
+            // Clear attributes
+            if(variant.id != null) {
+                entityManager.createNativeQuery("DELETE FROM product_variant_value WHERE variant_id = ?1")
+                        .setParameter(1, variant.id)
+                        .executeUpdate();
+            }
+
+            variant.attributeValues = new HashSet<>(attributeValues);
         }
 
         // 9. Handle prices

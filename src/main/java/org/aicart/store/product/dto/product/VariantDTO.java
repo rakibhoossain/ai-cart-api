@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 public class VariantDTO {
-    private Integer id;         // Can be null
+    private Long id;         // Can be null
     private String sku;         // Can be null
     private Integer imageId;    // Can be null
     private List<AttributeDTO> attributes;
@@ -12,8 +12,8 @@ public class VariantDTO {
     private List<VariantStockDTO> stocks;
 
     // Getters and setters
-    public Integer getId() { return id; }
-    public void setId(Integer id) { this.id = id; }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getSku() { return sku; }
     public void setSku(String sku) { this.sku = sku; }
