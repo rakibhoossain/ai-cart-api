@@ -4,6 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class VariantPriceDTO {
     private Integer price;
+
+    @JsonProperty("compare_price")
+    private Integer comparePrice;
+
+    @JsonProperty("purchase_price")
+    private Integer purchasePrice;
+
     private Integer discount;
 
     @JsonProperty("tax_rate")
@@ -108,6 +115,23 @@ public class VariantPriceDTO {
 
     public void setDiscountEndAt(Long discountEndAt) {
         this.discountEndAt = discountEndAt;
+    }
+
+
+    public Integer getComparePrice() {
+        return comparePrice;
+    }
+
+    public void setComparePrice(Integer comparePrice) {
+        this.comparePrice = comparePrice;
+    }
+
+    public Integer getPurchasePrice() {
+        return purchasePrice;
+    }
+
+    public void setPurchasePrice(Integer purchasePrice) {
+        this.purchasePrice = purchasePrice;
     }
 }
 

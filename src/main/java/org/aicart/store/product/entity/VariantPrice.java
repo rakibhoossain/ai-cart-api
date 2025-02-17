@@ -18,11 +18,13 @@ public class VariantPrice extends PanacheEntity {
     @JoinColumn(name = "variant_id", nullable = false)
     public ProductVariant productVariant;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "currency_id", nullable = false)
-    public Currency currency;
-
     public BigInteger price;
+
+    @Column(name = "purchase_price")
+    public BigInteger purchasePrice = BigInteger.ZERO;
+
+    @Column(name = "compare_price")
+    public BigInteger comparePrice = BigInteger.ZERO;
 
     public BigInteger discount = BigInteger.ZERO;
 

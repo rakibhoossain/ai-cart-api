@@ -191,8 +191,9 @@ public class CartRepository implements PanacheRepository<Cart> {
                                    ),
                                    'price', (
                                        SELECT jsonb_build_object(
-                                                      'currency_id', vp.currency_id,
                                                       'price', vp.price,
+                                                      'compare_price', vp.compare_price,
+                                                      'purchase_price', vp.price,
                                                       'discount', COALESCE(d.amount, 0),
                                                       'discount_end_at', d.end_at,
                                                       'discount_type', d.discount_type,

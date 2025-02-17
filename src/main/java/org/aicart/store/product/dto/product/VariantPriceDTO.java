@@ -34,11 +34,6 @@ public class VariantPriceDTO {
         this.price = price;
     }
 
-    public BigInteger getPurchasePrice() {
-        return purchasePrice;
-    }
-
-    public void setPurchasePrice(BigInteger purchasePrice) {
-        this.purchasePrice = purchasePrice;
-    }
+    public BigInteger getPurchasePrice() { return purchasePrice; }
+    public void setPurchasePrice(BigInteger purchasePrice) { this.purchasePrice = purchasePrice; }
 }

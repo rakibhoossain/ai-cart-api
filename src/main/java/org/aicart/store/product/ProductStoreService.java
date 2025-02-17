@@ -6,7 +6,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.aicart.entity.Country;
-import org.aicart.entity.Currency;
 import org.aicart.entity.WarehouseLocation;
 import org.aicart.media.FileAssociation;
 import org.aicart.media.entity.FileStorage;
@@ -51,10 +50,7 @@ public class ProductStoreService {
             }).toList();
         }
 
-        product.shop = Shop.findById(1); // Shop
-        Country country = Country.findById(1); // Sell location
-        Currency currency = Currency.findById(1); // Price currency
-        WarehouseLocation warehouseLocation = WarehouseLocation.findById(1); // Warehouse Location
+        product.shop = Shop.findById(1); // TODO:: Shop
 
 
         // Handle variants
@@ -92,7 +88,8 @@ public class ProductStoreService {
                         variantPrice.productVariant = variant;
                         variantPrice.country = Country.findById(variantPriceDTO.getCountryId());
                         variantPrice.price = variantPriceDTO.getPrice();
-                        variantPrice.currency = currency;
+                        variantPrice.purchasePrice = variantPriceDTO.getPurchasePrice();
+                        variantPrice.comparePrice = variantPriceDTO.getComparePrice();
                         variantPrice.isActive = true;
 
                         prices.add(variantPrice);
@@ -124,15 +121,7 @@ public class ProductStoreService {
             product.variants = variants;
         }
 
-
-
-        // 6. No need to call persist() explicitly for managed entities
-//        return Response.ok(ProductCreateRequestDTO.fromEntity(product)).build();
-
         product.persist();
-//
-//
-//
         return Response.ok(productDTO).build();
     }
 
@@ -189,34 +178,6 @@ public class ProductStoreService {
 
             product.fileRelations.addAll(fileRelations);
         }
-
-        // 4. Handle images with proper relationship management
-//        if (productDTO.getImages() != null) {
-//            List<Long> imageIds = productDTO.getImages();
-//
-//            // Delete existing relations first
-//            FileStorageRelation.delete("associatedType = ?1 AND associatedId = ?2", FileAssociation.PRODUCT.getValue(), productId);
-//
-//            List<FileStorage> files = FileStorage.find("id in ?1", imageIds).list();
-//
-////            List<FileStorageRelation> fileRelations = new ArrayList<>();
-//            for (FileStorage file : files) {
-//                FileStorageRelation img = new FileStorageRelation();
-//                img.file = file;
-//                img.product = product;
-//                img.associatedId = product.id;
-//                img.associatedType = FileAssociation.PRODUCT.getValue();
-//                img.score = imageIds.indexOf(file.id);
-//                img.persist();
-////                fileRelations.add(img);
-//            }
-//        }
-
-        product.shop = Shop.findById(1); // Shop
-        Country country = Country.findById(1); // Sell location
-        Currency currency = Currency.findById(1); // Price currency
-        WarehouseLocation warehouseLocation = WarehouseLocation.findById(1); // Warehouse Location
-
 
         // 5. Handle variants with proper update logic
         if (productDTO.getVariants() != null) {
@@ -302,7 +263,8 @@ public class ProductStoreService {
                 variantPrice.productVariant = variant;
                 variantPrice.country = Country.findById(variantPriceDTO.getCountryId());
                 variantPrice.price = variantPriceDTO.getPrice();
-                variantPrice.currency = Currency.findById(1);
+                variantPrice.purchasePrice = variantPriceDTO.getPurchasePrice();
+                variantPrice.comparePrice = variantPriceDTO.getComparePrice();
                 variantPrice.isActive = true;
 
                 prices.add(variantPrice);
@@ -327,34 +289,6 @@ public class ProductStoreService {
 
             variant.stocks = variantStocks;
         }
-
-//        // 9. Handle prices
-//        if (variantDTO.getPrice() != null) {
-//            VariantPrice price = Optional.ofNullable(variant.prices)
-//                    .flatMap(p -> p.stream().findFirst())
-//                    .orElseGet(VariantPrice::new);
-//
-//            price.price = variantDTO.getPrice();
-//            price.isActive = true;
-//            variant.prices = List.of(price);
-//        }
-//
-//        // 10. Handle stock with merge logic
-//        if (variant.stock == null) {
-//            variant.stock = new VariantStock();
-//        }
-
-
-
-
-
-
-
-
-
-//        variant.stock.quantity = variantDTO.getStockQuantity() != null ?
-//                variantDTO.getStockQuantity() :
-//                variant.stock.quantity;
 
         return variant;
     }

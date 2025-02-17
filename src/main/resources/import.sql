@@ -253,8 +253,8 @@ VALUES (1, 1, 100, 1),
        (3, 3, 200, 1);
 
 -- Insert VariantPrice
-INSERT INTO variant_prices(id, country_id, variant_id, currency_id, price, discount, is_active)
-VALUES (1, 1, 1, 1, 1200, 0, TRUE),
-       (2, 1, 2, 1,1700, 0, TRUE),
-       (3, 1, 3, 1,1700, 0, TRUE);
+INSERT INTO variant_prices(id, country_id, variant_id, price, discount, is_active)
+VALUES (1, 1, 1, 1200, 0, TRUE),
+       (2, 1, 2, 1700, 0, TRUE),
+       (3, 1, 3, 1700, 0, TRUE);
 
