@@ -65,8 +65,10 @@ public class ProductStoreService {
                         variantDTO.getSku() + UUID.randomUUID().toString().substring(0, 8) :
                         "variant-" + UUID.randomUUID().toString().substring(0, 8);
 
-                variant.imageId = Long.valueOf(variantDTO.getImageId()); // Can be null
 
+                if(variantDTO.getImageId() != null) {
+                    variant.imageId = Long.valueOf(variantDTO.getImageId());
+                }
 
                 // Variant attribute values
                 if(variantDTO.getAttributes() != null) {
@@ -229,6 +231,12 @@ public class ProductStoreService {
         }
 
         variant.product = product;
+
+        if(variantDTO.getImageId() != null) {
+            variant.imageId = Long.valueOf(variantDTO.getImageId());
+        } else {
+            variant.imageId = null;
+        }
 
         // 7. Proper SKU handling
         variant.sku = variantDTO.getSku();
