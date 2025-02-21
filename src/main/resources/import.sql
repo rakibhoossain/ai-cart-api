@@ -187,10 +187,41 @@ VALUES (1, 1, 1, 'Blue'),
     (7, 7, 1, 'Cotton'),
        (8, 8, 1, 'Green');
 
+
+-- Inserting brands
+INSERT INTO product_brands(id, name)
+VALUES (1, 'Brand A'), (2, 'Brand B');
+
+-- Inserting tags
+INSERT INTO product_tags(id, name)
+VALUES (1, 'Tag A'), (2, 'Tag B');
+
+-- Product Type
+INSERT INTO product_types(id, name)
+VALUES (1, 'Type A'), (2, 'Type B');
+
+-- Product Type
+INSERT INTO product_collections(id, name)
+VALUES (1, 'Collection A'), (2, 'Collection B');
+
 -- Inserting Product
-INSERT INTO products(id, shop_id, name, slug, created_at, updated_at)
-VALUES (1, 1, 'Test product 1', 'test-product-1', NOW(), NOW()),
-       (2, 1, 'Test product 2', 'test-product-2', NOW(), NOW());
+INSERT INTO products(id, status, shop_id, product_type_id, product_brand_id, name, slug, created_at, updated_at)
+VALUES (1, 1, 1, 1, 1,'Test product 1', 'test-product-1', NOW(), NOW()),
+       (2, 1, 1, 2, 2,'Test product 2', 'test-product-2', NOW(), NOW());
+
+
+-- Insert product shipping
+INSERT INTO product_shippings(product_id, weight, weight_unit)
+VALUES (1, 0 , 'lb'),
+       (2, 10 , 'lb');
+
+-- Inserting product tags pivot
+INSERT INTO product_tag_pivot(product_id, tag_id)
+VALUES (1, 1), (2, 2);
+
+-- Inserting product collection pivot
+INSERT INTO product_collection_pivot(product_id, collection_id)
+VALUES (1, 1), (2, 2);
 
 -- Inserting translations
 INSERT INTO product_translations(id, product_id, language_id, name, description)

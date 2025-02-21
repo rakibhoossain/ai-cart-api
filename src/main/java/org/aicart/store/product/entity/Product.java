@@ -5,12 +5,17 @@ import java.util.Set;
 import jakarta.persistence.*;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import org.aicart.media.entity.FileStorageRelation;
+import org.aicart.store.product.ProductStatusEnum;
 import org.aicart.store.user.entity.Shop;
 import org.aicart.util.StringSlugifier;
 import org.aicart.store.order.entity.ProductTaxRate;
 
 @Entity(name = "products")
 public class Product extends PanacheEntity {
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "status", nullable = false)
+    public ProductStatusEnum status = ProductStatusEnum.DRAFT;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
@@ -28,6 +33,12 @@ public class Product extends PanacheEntity {
     @Column(columnDefinition = "TEXT")
     public String description;
 
+    @Column(name = "meta_title", length = 255)
+    public String metaTitle;
+
+    @Column(name = "meta_description", columnDefinition = "TEXT")
+    public String metaDescription;
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "product_category",
@@ -35,6 +46,33 @@ public class Product extends PanacheEntity {
             inverseJoinColumns = @JoinColumn(name = "category_id")
     )
     public Set<Category> categories;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "product_collection_pivot",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "collection_id")
+    )
+    public Set<ProductCollection> collections;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "product_tag_pivot",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    public Set<ProductTag> tags;
+
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProductShipping productShipping;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_type_id", nullable = false)
+    public ProductType productType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_brand_id", nullable = false)
+    public ProductBrand productBrand;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<ProductVariant> variants;

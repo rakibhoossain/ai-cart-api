@@ -20,4 +20,10 @@ public class ProductTranslation extends PanacheEntity {
 
     @Column(columnDefinition = "TEXT")
     public String description;
+
+    @Column(name = "meta_title", length = 255)
+    public String metaTitle;
+
+    @Column(name = "meta_description", columnDefinition = "TEXT")
+    public String metaDescription;
 }
