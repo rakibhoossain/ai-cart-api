@@ -211,9 +211,9 @@ VALUES (1, 1, 1, 1, 1,'Test product 1', 'test-product-1', NOW(), NOW()),
 
 
 -- Insert product shipping
-INSERT INTO product_shippings(product_id, weight, weight_unit)
-VALUES (1, 0 , 'lb'),
-       (2, 10 , 'lb');
+INSERT INTO product_shippings(id, product_id, weight, weight_unit)
+VALUES (1, 1, 0 , 'lb'),
+       (2, 2, 10 , 'lb');
 
 -- Inserting product tags pivot
 INSERT INTO product_tag_pivot(product_id, tag_id)

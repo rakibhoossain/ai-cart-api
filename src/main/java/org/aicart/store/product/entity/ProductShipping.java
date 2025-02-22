@@ -1,19 +1,14 @@
 package org.aicart.store.product.entity;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 
 @Entity(name = "product_shippings")
-public class ProductShipping extends PanacheEntityBase {
-
-    @Id
-    @Column(name = "product_id")
-    public Long productId;
+public class ProductShipping extends PanacheEntity {
 
     @OneToOne
-    @MapsId
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "product_id", unique = true, nullable = false)
+    public Product product;
 
     @Column(name = "weight")
     public int weight = 0;

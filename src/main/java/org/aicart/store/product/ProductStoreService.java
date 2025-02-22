@@ -54,6 +54,7 @@ public class ProductStoreService {
             ProductShipping productShipping = new ProductShipping();
             productShipping.weight = shippingDTO.getWeight();
             productShipping.weightUnit = shippingDTO.getWeightUnit();
+            productShipping.product = product; // Assign persisted Product
             product.productShipping = productShipping;
         }
 
