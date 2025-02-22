@@ -2,6 +2,7 @@ package org.aicart.store.product;
 
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -66,14 +67,14 @@ public class ProductResource {
 
     @POST
     @Path("/")
-    public Response productCreate(ProductCreateRequestDTO productDTO) {
+    public Response productCreate(@Valid ProductCreateRequestDTO productDTO) {
         return productCreateService.productCreate(productDTO);
     }
 
 
     @PUT
     @Path("/update/{productId}")
-    public Response productUpdate(@PathParam("productId") BigInteger productId, ProductCreateRequestDTO productDTO) {
+    public Response productUpdate(@PathParam("productId") BigInteger productId, @Valid ProductCreateRequestDTO productDTO) {
         return productCreateService.productUpdate(productId, productDTO);
     }
 

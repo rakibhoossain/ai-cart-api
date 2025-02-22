@@ -64,14 +64,14 @@ public class Product extends PanacheEntity {
     public Set<ProductTag> tags;
 
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private ProductShipping productShipping;
+    public ProductShipping productShipping;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_type_id", nullable = false)
+    @JoinColumn(name = "product_type_id")
     public ProductType productType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_brand_id", nullable = false)
+    @JoinColumn(name = "product_brand_id")
     public ProductBrand productBrand;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

@@ -6,10 +6,12 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.aicart.entity.Country;
+import org.aicart.entity.Tax;
 import org.aicart.entity.WarehouseLocation;
 import org.aicart.media.FileAssociation;
 import org.aicart.media.entity.FileStorage;
 import org.aicart.media.entity.FileStorageRelation;
+import org.aicart.store.order.entity.ProductTaxRate;
 import org.aicart.store.product.dto.product.*;
 import org.aicart.store.product.entity.*;
 import org.aicart.store.user.entity.Shop;
@@ -29,9 +31,63 @@ public class ProductStoreService {
         product.name = productDTO.getName();
         product.description = productDTO.getDescription();
 
+        product.metaTitle = productDTO.getMetaTitle();
+        product.metaDescription = productDTO.getMetaDescription();
+        product.status = productDTO.getStatus();
+
+        if(productDTO.getProductType() != null) {
+            product.productType = ProductType.findById(productDTO.getProductType());
+        } else {
+            product.productType = null;
+        }
+
+        if(productDTO.getProductBrand() != null) {
+            product.productBrand = ProductBrand.findById(productDTO.getProductBrand());
+        } else {
+            product.productBrand = null;
+        }
+
+        // Handle Shipping
+        if (productDTO.getShipping() != null) {
+            ProductShippingDTO shippingDTO = productDTO.getShipping();
+
+            ProductShipping productShipping = new ProductShipping();
+            productShipping.weight = shippingDTO.getWeight();
+            productShipping.weightUnit = shippingDTO.getWeightUnit();
+            product.productShipping = productShipping;
+        }
+
+        // Handle Collection
+        if (productDTO.getCollections() != null && !productDTO.getCollections().isEmpty()) {
+            List<Long> collectionIds = productDTO.getCollections();
+            List<ProductCollection> collections = ProductCollection.find("id in ?1", collectionIds).list();
+            product.collections = new HashSet<>(collections);
+        }
+
+        // Handle Tags
+        if (productDTO.getTags() != null && !productDTO.getTags().isEmpty()) {
+            List<Long> tagIds = productDTO.getTags();
+            List<ProductTag> tags = ProductTag.find("id in ?1", tagIds).list();
+            product.tags = new HashSet<>(tags);
+        }
+
+        // Handle Taxes
+        if (productDTO.getTaxes() != null && !productDTO.getTaxes().isEmpty()) {
+
+            List<ProductTaxRate> taxes = new ArrayList<>();
+
+            for (ProductTaxDTO productTaxDTO : productDTO.getTaxes()) {
+                ProductTaxRate productTaxRate = new ProductTaxRate();
+                productTaxRate.country = Country.findById(productTaxDTO.getCountryId());
+                productTaxRate.tax = Tax.findById(productTaxDTO.getTaxId());
+                taxes.add(productTaxRate);
+            }
+            product.productTaxRates = taxes;
+        }
+
         // Handle categories
         if (productDTO.getCategories() != null && !productDTO.getCategories().isEmpty()) {
-            List<Integer> categoryIds = productDTO.getCategories();
+            List<Long> categoryIds = productDTO.getCategories();
             List<Category> categories = Category.find("id in ?1", categoryIds).list();
             product.categories = new HashSet<>(categories);
         }
