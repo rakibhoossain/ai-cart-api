@@ -5,9 +5,9 @@ import jakarta.persistence.*;
 import org.aicart.entity.Country;
 import org.aicart.entity.Tax;
 
-@Entity(name = "product_tax")
+@Entity(name = "product_tax_rate")
 @Table(
-        name = "product_tax",
+        name = "product_tax_rate",
         uniqueConstraints = @UniqueConstraint(columnNames = {"product_id", "country_id"})
 )
 public class ProductTaxRate extends PanacheEntity {

@@ -204,7 +204,7 @@ public class CartRepository implements PanacheRepository<Cart> {
                                             AND d.is_active = true
                                             AND (d.start_at IS NULL OR d.start_at <= :currentTimestamp)
                                             AND (d.end_at IS NULL OR d.end_at >= :currentTimestamp)
-                                       LEFT JOIN product_tax pt ON pt.product_id = p.id
+                                       LEFT JOIN product_tax_rate pt ON pt.product_id = p.id
                                             AND pt.country_id = :countryId
                                             LEFT JOIN taxes t
                                             ON pt.tax_id = t.id

@@ -11,7 +11,7 @@ import org.aicart.entity.WarehouseLocation;
 import org.aicart.media.FileAssociation;
 import org.aicart.media.entity.FileStorage;
 import org.aicart.media.entity.FileStorageRelation;
-import org.aicart.store.order.entity.ProductTaxRate;
+import org.aicart.store.product.entity.ProductTaxRate;
 import org.aicart.store.product.dto.product.*;
 import org.aicart.store.product.entity.*;
 import org.aicart.store.user.entity.Shop;

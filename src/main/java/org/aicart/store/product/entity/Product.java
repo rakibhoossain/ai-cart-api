@@ -8,7 +8,6 @@ import org.aicart.media.entity.FileStorageRelation;
 import org.aicart.store.product.ProductStatusEnum;
 import org.aicart.store.user.entity.Shop;
 import org.aicart.util.StringSlugifier;
-import org.aicart.store.order.entity.ProductTaxRate;
 
 @Entity(name = "products")
 public class Product extends PanacheEntity {
