@@ -300,10 +300,8 @@ public class ProductStoreService {
         }
 
         // Handle Taxes
+        ProductTaxRate.delete("product.id = ?1", product.id);
         if (productDTO.getTaxes() != null && !productDTO.getTaxes().isEmpty()) {
-
-            ProductTaxRate.delete("product.id = ?1", product.id);
-
             List<ProductTaxRate> taxes = new ArrayList<>();
 
             for (ProductTaxDTO productTaxDTO : productDTO.getTaxes()) {
@@ -312,19 +310,12 @@ public class ProductStoreService {
 
                 productTaxRate.tax = Tax.findById(productTaxDTO.getTaxId());
                 if(productTaxRate.tax != null) {
-                    System.out.println("------------");
-                    System.out.println(productTaxDTO.getCountryId());
-                    System.out.println(productTaxDTO.getTaxId());
-
                     productTaxRate.product = product;
-
-                    productTaxRate.persist();
-
-//                    taxes.add(productTaxRate);
+                    taxes.add(productTaxRate);
                 }
             }
 
-//            product.taxes = taxes;
+            product.taxes = taxes;
         }
 
         // 5. Handle variants with proper update logic

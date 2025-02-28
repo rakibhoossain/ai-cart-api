@@ -79,7 +79,7 @@ public class Product extends PanacheEntity {
     @OneToMany(mappedBy = "associatedId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     public List<FileStorageRelation> fileRelations;
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<ProductTaxRate> taxes; // Link to ProductTaxRate
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
