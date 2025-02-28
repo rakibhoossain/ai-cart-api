@@ -296,7 +296,7 @@ public class ProductStoreService {
         // Handle Taxes
         if (productDTO.getTaxes() != null && !productDTO.getTaxes().isEmpty()) {
 
-//            ProductTaxRate.delete("product.id = ?1", product.id);
+            ProductTaxRate.delete("product.id = ?1", product.id);
 
             List<ProductTaxRate> taxes = new ArrayList<>();
 
