@@ -115,7 +115,11 @@ public class ProductStoreService {
         // Handle variants
         if (productDTO.getVariants() != null) {
             List<ProductVariant> variants = new ArrayList<>();
+            boolean accept = true;
             for (VariantDTO variantDTO : productDTO.getVariants()) {
+
+                if(!accept) continue;
+
                 ProductVariant variant = new ProductVariant();
                 variant.product = product;
 
@@ -138,6 +142,8 @@ public class ProductStoreService {
 
                     List<AttributeValue> attributeValues = AttributeValue.find("id in ?1", attributeValueIds).list();
                     variant.attributeValues = new HashSet<>(attributeValues);
+                } else {
+                    accept = false;
                 }
 
                 // Variant prices
@@ -323,9 +329,17 @@ public class ProductStoreService {
 
         // 5. Handle variants with proper update logic
         if (productDTO.getVariants() != null) {
+
             List<ProductVariant> updatedVariants = new ArrayList<>();
+            boolean accept = true;
 
             for (VariantDTO variantDTO : productDTO.getVariants()) {
+
+                if(!accept) continue;
+
+                if(variantDTO.getAttributes() == null || variantDTO.getAttributes().isEmpty()) {
+                    accept = false;
+                }
                 ProductVariant variant = handleVariantUpdate(product, variantDTO);
                 updatedVariants.add(variant);
             }
