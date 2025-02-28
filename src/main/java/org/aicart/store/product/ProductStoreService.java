@@ -194,6 +194,18 @@ public class ProductStoreService {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
+        if(productDTO.getProductType() != null) {
+            product.productType = ProductType.findById(productDTO.getProductType());
+        } else {
+            product.productType = null;
+        }
+
+        if(productDTO.getProductBrand() != null) {
+            product.productBrand = ProductBrand.findById(productDTO.getProductBrand());
+        } else {
+            product.productBrand = null;
+        }
+
         // Existing variants ID
         List<Long> existingVariantsId = product.variants.stream()
                 .map(v -> v.id)
@@ -201,10 +213,12 @@ public class ProductStoreService {
                 .toList();
 
 
-
         // 2. Update basic fields
         product.name = productDTO.getName();
         product.description = productDTO.getDescription();
+        product.metaTitle = productDTO.getMetaTitle();
+        product.metaDescription = productDTO.getMetaDescription();
+        product.status = productDTO.getStatus();
 
         // 3. Handle categories with batch query
         if (productDTO.getCategories() != null && !productDTO.getCategories().isEmpty()) {
@@ -236,6 +250,75 @@ public class ProductStoreService {
             }).toList();
 
             product.fileRelations.addAll(fileRelations);
+        }
+
+        // Handle Shipping
+        if (productDTO.getShipping() != null) {
+            ProductShippingDTO shippingDTO = productDTO.getShipping();
+
+            ProductShipping productShipping = new ProductShipping();
+            productShipping.weight = shippingDTO.getWeight();
+            productShipping.weightUnit = shippingDTO.getWeightUnit();
+            productShipping.product = product; // Assign persisted Product
+
+            System.out.println(productShipping.weight);
+            product.productShipping = productShipping;
+        }
+
+        // Handle Collection
+        if (productDTO.getCollections() != null && !productDTO.getCollections().isEmpty()) {
+            // Clear collections
+            entityManager.createNativeQuery("DELETE FROM product_collection_pivot WHERE product_id = ?1")
+                    .setParameter(1, product.id)
+                    .executeUpdate();
+
+            List<Long> collectionIds = productDTO.getCollections();
+
+            List<ProductCollection> collections = ProductCollection.find("id in ?1", collectionIds).list();
+            product.collections = new HashSet<>(collections);
+        }
+
+        // Handle Tags
+        if (productDTO.getTags() != null && !productDTO.getTags().isEmpty()) {
+            // Clear tags
+            entityManager.createNativeQuery("DELETE FROM product_tag_pivot WHERE product_id = ?1")
+                    .setParameter(1, product.id)
+                    .executeUpdate();
+
+            List<Long> tagIds = productDTO.getTags();
+            List<ProductTag> tags = ProductTag.find("id in ?1", tagIds).list();
+            product.tags = new HashSet<>(tags);
+        }
+
+        // Handle Taxes
+        if (productDTO.getTaxes() != null && !productDTO.getTaxes().isEmpty()) {
+
+            ProductTaxRate.delete("product.id = ?1", product.id);
+
+            List<ProductTaxRate> taxes = new ArrayList<>();
+
+            for (ProductTaxDTO productTaxDTO : productDTO.getTaxes()) {
+                ProductTaxRate productTaxRate = new ProductTaxRate();
+                productTaxRate.country = Country.findById(productTaxDTO.getCountryId());
+
+                Tax tax = Tax.findById(productTaxDTO.getTaxId());
+                if(tax != null) {
+                    System.out.println("------------");
+                    System.out.println(productTaxDTO.getCountryId());
+                    System.out.println(productTaxDTO.getTaxId());
+
+                    productTaxRate.tax = tax;
+                    productTaxRate.product = product;
+                    taxes.add(productTaxRate);
+                }
+            }
+
+            System.out.println("------------");
+            System.out.println(taxes.isEmpty());
+            System.out.println("------------ end");
+
+
+            product.productTaxRates = taxes;
         }
 
         // 5. Handle variants with proper update logic
