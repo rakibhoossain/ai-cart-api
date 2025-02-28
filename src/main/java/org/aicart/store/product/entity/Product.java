@@ -81,7 +81,7 @@ public class Product extends PanacheEntity {
     public List<FileStorageRelation> fileRelations;
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    public List<ProductTaxRate> productTaxRates; // Link to ProductTaxRate
+    public List<ProductTaxRate> taxes; // Link to ProductTaxRate
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     public List<Discount> discounts;  // Global discounts
