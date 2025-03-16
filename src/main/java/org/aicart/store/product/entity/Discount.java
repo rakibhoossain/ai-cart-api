@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity(name = "discounts")
 public class Discount extends PanacheEntity {
@@ -65,6 +66,22 @@ public class Discount extends PanacheEntity {
     @CollectionTable(name = "discount_locations", joinColumns = @JoinColumn(name = "discount_id"))
     @Column(name = "location_id")
     public List<Long> locations; // Stores location IDs
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "discount_collection_pivot",
+            joinColumns = @JoinColumn(name = "discount_id"),
+            inverseJoinColumns = @JoinColumn(name = "collection_id")
+    )
+    public Set<ProductCollection> collections;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "discount_variant_pivot",
+            joinColumns = @JoinColumn(name = "discount_id"),
+            inverseJoinColumns = @JoinColumn(name = "variant_id")
+    )
+    public Set<ProductVariant> variants;
 
     @Column(name = "max_use")
     public Integer maxUse;

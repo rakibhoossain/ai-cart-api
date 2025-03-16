@@ -63,4 +63,7 @@ public class DiscountDTO {
 
     @PositiveOrZero(message = "Max customer use must be 0 or greater")
     public Integer maxCustomerUse;
+
+    public List<Long> variantIds;
+    public List<Long> collectionIds;
 }
