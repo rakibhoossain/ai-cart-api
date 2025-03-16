@@ -2,32 +2,87 @@ package org.aicart.store.product.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import org.aicart.store.product.DiscountAppliesToEnum;
+import org.aicart.store.product.DiscountPurchaseType;
+import org.aicart.store.product.ProductDiscountAmountTypEnum;
+import org.aicart.store.product.ProductDiscountEnum;
 
 import java.math.BigInteger;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity(name = "discounts")
 public class Discount extends PanacheEntity {
 
+    @Enumerated(EnumType.ORDINAL)
     @Column(name = "discount_type", nullable = false)
-    public String discountType;  // 'PERCENTAGE' or 'FIXED'
+    public ProductDiscountEnum discountType;  // moneyOffProduct, buyXgetY, moneyOffOrder, shipping
+
+    @Column(name = "is_automatic", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    public Boolean isAutomatic = Boolean.TRUE;
+
+    @Column(nullable = true, unique = true)
+    public String coupon;
+
+    @Column(nullable = false)
+    public String title;
+
+    @Column(name = "start_at", nullable = false)
+    public Instant startAt; // Unix timestamp stored as Instant
+
+    @Column(name = "end_at", nullable = true)
+    public Instant endAt; // Unix timestamp for end date (Optional)
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(nullable = false, name = "amount_type")
+    public ProductDiscountAmountTypEnum amountType;
 
     @Column(nullable = false)
     public BigInteger amount;  // Discount amount (in cents or percentage)
 
-    @Column(name = "start_at", nullable = true)
-    public BigInteger startAt;  // Unix timestamp for start date
-
-    @Column(name = "end_at", nullable = true)
-    public BigInteger endAt;    // Unix timestamp for end date
-
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     public Boolean isActive = Boolean.FALSE;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    public Product product;  // Associated product (if global discount)
+    @Column(nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    public DiscountPurchaseType purchaseType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variant_id")
-    public ProductVariant variant;  // Associated variant (if variant-specific discount)
+    @Column(name = "applies_to", nullable = false)
+    @Enumerated(EnumType.ORDINAL)
+    public DiscountAppliesToEnum appliesTo = DiscountAppliesToEnum.PRODUCT; // Default value
+
+    @Column(name = "min_amount")
+    public Integer minAmount; // Nullable
+
+    @Column(name = "min_quantity")
+    public Integer minQuantity; // Nullable
+
+    @ElementCollection
+    public List<String> combinations;
+
+    @ElementCollection
+    @CollectionTable(name = "discount_locations", joinColumns = @JoinColumn(name = "discount_id"))
+    @Column(name = "location_id")
+    public List<Long> locations; // Stores location IDs
+
+    @Column(name = "max_use")
+    public Integer maxUse;
+
+    @Column(name = "max_customer_use")
+    public Integer maxCustomerUse;
+
+    @Column(name = "used_count", nullable = true)
+    public Integer usedCount = 0;   // Used count
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    public LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = false)
+    public LocalDateTime updatedAt = LocalDateTime.now();
+
+    @PreUpdate
+    public void updateTimestamp() {
+        updatedAt = LocalDateTime.now();
+    }
 }

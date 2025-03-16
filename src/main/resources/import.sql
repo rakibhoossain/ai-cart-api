@@ -8,7 +8,7 @@ VALUES (1, 'Rakib', 'admin@mail.com', '123456', NOW(), NOW());
 INSERT INTO currencies (id, code, name, symbol) VALUES (1, 'USD', 'US Dollar', '$'), (2, 'EUR', 'Euro', '€');
 
 -- Inserting Country (United States, Spain)
-INSERT INTO countries (id, code, name, currency_id) VALUES (1, 'usa', 'United States', 1), (2, 'es', 'Spain', 2);
+INSERT INTO countries (id, code, name, currency_id) VALUES (1, 'USA', 'United States', 1), (2, 'ES', 'Spain', 2);
 
 -- Inserting Language (English, Spanish)
 INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'Spanish');
@@ -201,8 +201,8 @@ INSERT INTO product_types(id, name)
 VALUES (1, 'Type A'), (2, 'Type B');
 
 -- Product Type
-INSERT INTO product_collections(id, name)
-VALUES (1, 'Collection A'), (2, 'Collection B');
+INSERT INTO product_collections(id, shop_id, name, status, slug)
+VALUES (1, 1, 'Collection A', 1, 'collection-A'), (2, 1,'Collection B', 1, 'collection-B');
 
 -- Inserting Product
 INSERT INTO products(id, status, shop_id, product_type_id, product_brand_id, name, slug, created_at, updated_at)

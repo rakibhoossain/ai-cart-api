@@ -82,8 +82,8 @@ public class Product extends PanacheEntity {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<ProductTaxRate> taxes; // Link to ProductTaxRate
 
-    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
-    public List<Discount> discounts;  // Global discounts
+//    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
+//    public List<Discount> discounts;  // Global discounts
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();

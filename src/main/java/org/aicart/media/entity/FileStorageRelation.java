@@ -13,7 +13,7 @@ import org.aicart.store.product.entity.Product;
 public class FileStorageRelation extends PanacheEntity {
 
     @Column(name = "associated_type", nullable = false)
-    public int associatedType; // e.g., 1 => "Product", 2 => "Category"
+    public int associatedType; // e.g., 1 => "Product", 2 => "Category", 3 => "Product Collection"
 
     @Column(name = "associated_id", nullable = false)
     public Long associatedId; // ID of the associated entity

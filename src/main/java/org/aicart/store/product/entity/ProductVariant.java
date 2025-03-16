@@ -39,6 +39,6 @@ public class ProductVariant extends PanacheEntity {
     @OneToMany(mappedBy = "productVariant", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     public List<VariantPrice> prices;
 
-    @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY)
-    public List<Discount> discounts; // Variant-specific discounts
+//    @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY)
+//    public List<Discount> discounts; // Variant-specific discounts
 }
