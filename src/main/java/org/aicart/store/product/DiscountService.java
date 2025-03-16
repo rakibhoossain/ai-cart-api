@@ -5,7 +5,6 @@ import jakarta.transaction.Transactional;
 import org.aicart.store.product.dto.DiscountDTO;
 import org.aicart.store.product.entity.Discount;
 import org.aicart.store.product.mapper.DiscountMapper;
-
 import java.util.Optional;
 
 @ApplicationScoped

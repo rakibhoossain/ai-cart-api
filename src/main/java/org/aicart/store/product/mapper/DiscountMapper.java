@@ -2,8 +2,10 @@ package org.aicart.store.product.mapper;
 
 import org.aicart.store.product.dto.DiscountDTO;
 import org.aicart.store.product.entity.Discount;
+import org.aicart.store.product.entity.ProductVariant;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DiscountMapper {
@@ -54,6 +56,13 @@ public class DiscountMapper {
         discount.locations = dto.locations;
         discount.maxUse = dto.maxUse;
         discount.maxCustomerUse = dto.maxCustomerUse;
+
+        // Fetch variants by IDs and set them
+        if (dto.variantIds != null && !dto.variantIds.isEmpty()) {
+            List<ProductVariant> variants = ProductVariant.list("id IN ?1", dto.variantIds);
+            discount.variants = Set.copyOf(variants);
+        }
+
         return discount;
     }
 }
