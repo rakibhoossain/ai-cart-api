@@ -42,15 +42,17 @@ public class VariantPriceDTO {
             return 0;  // No discount if the discount or price is null
         }
 
-        if ("PERCENTAGE".equalsIgnoreCase(discountType)) {
-            // Percentage discount calculation
-            return price * discount / 100;  // Calculate discount as percentage of price
-        } else if ("FIXED".equalsIgnoreCase(discountType)) {
-            // Fixed discount amount
-            return discount;  // Return fixed amount as discount
-        }
+        return discount;
 
-        return 0;  // Default return if discount type is unknown
+//        if ("PERCENTAGE".equalsIgnoreCase(discountType)) {
+//            // Percentage discount calculation
+//            return price * discount / 100;  // Calculate discount as percentage of price
+//        } else if ("FIXED".equalsIgnoreCase(discountType)) {
+//            // Fixed discount amount
+//            return discount;  // Return fixed amount as discount
+//        }
+//
+//        return 0;  // Default return if discount type is unknown
     }
 
     public void setDiscount(Integer discount) {

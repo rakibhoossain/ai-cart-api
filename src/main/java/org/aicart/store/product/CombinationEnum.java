@@ -2,15 +2,14 @@ package org.aicart.store.product;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum DiscountPurchaseType {
-
-    ONE_TIME("one-time"),
-    SUBSCRIPTION("subscription"),
-    BOTH("both");
+public enum CombinationEnum {
+    PRODUCT_DISCOUNT("product_discount"),
+    ORDER_DISCOUNT("order_discount"),
+    SHIPPING_DISCOUNT("shipping_discount");
 
     private final String value;
 
-    DiscountPurchaseType(String value) {
+    CombinationEnum(String value) {
         this.value = value;
     }
 

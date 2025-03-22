@@ -88,16 +88,15 @@ public class ProductRepository {
                                                       'tax_rate', COALESCE(t.tax_rate, 0)
                                               )
                                        FROM variant_prices vp
-                                       LEFT JOIN discounts d
-                                            ON (d.variant_id = pv.id OR (d.variant_id IS NULL AND d.product_id = p.id))
-                                            AND d.is_active = true
-                                            AND (d.start_at IS NULL OR d.start_at <= :currentTimestamp)
-                                            AND (d.end_at IS NULL OR d.end_at >= :currentTimestamp)
+                                       LEFT JOIN discount_variant_pivot dp ON vp.variant_id = dp.variant_id
+                                       LEFT JOIN discounts d ON dp.discount_id = d.id
+
                                        LEFT JOIN product_tax_rate pt ON pt.product_id = p.id
                                             AND pt.country_id = :countryId
                                             LEFT JOIN taxes t
                                             ON pt.tax_id = t.id
                                        WHERE vp.variant_id = pv.id AND vp.country_id = :countryId
+                                       LIMIT 1
                                    ),
                                    'image_id', pv.image_id,
                                    'attributes', (
