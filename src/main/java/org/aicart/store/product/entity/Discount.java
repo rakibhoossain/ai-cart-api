@@ -41,7 +41,7 @@ public class Discount extends PanacheEntity {
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     public Boolean isActive = Boolean.FALSE;
 
-    @Column(nullable = false)
+    @Column(name = "purchase_type", nullable = false)
     @Enumerated(EnumType.ORDINAL)
     public DiscountPurchaseType purchaseType;
 
