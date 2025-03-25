@@ -188,7 +188,7 @@ public class ProductRepository {
         // Set parameters
         nativeQuery.setParameter("languageId", languageId);
         nativeQuery.setParameter("countryId", countryId);
-        nativeQuery.setParameter("currentTimestamp", currentTimestamp);
+//        nativeQuery.setParameter("currentTimestamp", currentTimestamp);
         minPrice.ifPresent(price -> nativeQuery.setParameter("minPrice", price));
         maxPrice.ifPresent(price -> nativeQuery.setParameter("maxPrice", price));
         nameFilter.ifPresent(filter -> nativeQuery.setParameter("nameFilter", "%" + filter + "%"));
