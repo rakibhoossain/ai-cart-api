@@ -78,4 +78,7 @@ public class DiscountDTO {
 
     @JsonProperty("collection_ids")
     public List<Long> collectionIds;
+
+    @JsonProperty("customer_ids")
+    public List<Long> customerIds;
 }

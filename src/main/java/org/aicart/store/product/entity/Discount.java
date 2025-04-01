@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.aicart.store.product.*;
 import org.aicart.store.user.entity.Shop;
+import org.aicart.store.user.entity.User;
 import org.aicart.util.StringSlugifier;
 
 import java.math.BigInteger;
@@ -77,6 +78,15 @@ public class Discount extends PanacheEntity {
             inverseJoinColumns = @JoinColumn(name = "collection_id")
     )
     public Set<ProductCollection> collections;
+
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "discount_customer_pivot",
+            joinColumns = @JoinColumn(name = "discount_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    public Set<User> customers;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
