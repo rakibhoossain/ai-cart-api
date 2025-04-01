@@ -39,5 +39,5 @@ public class User extends PanacheEntity {
     }
 
     @Column(name = "verified_at")
-    public long verifiedAt;
+    public long verifiedAt = 0;
 }
