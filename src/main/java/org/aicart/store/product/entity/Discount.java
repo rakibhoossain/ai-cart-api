@@ -3,6 +3,8 @@ package org.aicart.store.product.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.aicart.store.product.*;
+import org.aicart.store.user.entity.Shop;
+import org.aicart.util.StringSlugifier;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -24,6 +26,9 @@ public class Discount extends PanacheEntity {
 
     @Column(nullable = false)
     public String title;
+
+    @Column(length = 255, unique = true, nullable = false)
+    public String slug;
 
     @Column(name = "start_at", nullable = false)
     public BigInteger startAt; // Unix timestamp stored as Instant
@@ -56,6 +61,8 @@ public class Discount extends PanacheEntity {
     public Integer minQuantity; // Nullable
 
     @ElementCollection
+    @CollectionTable(name = "discounts_combinations", joinColumns = @JoinColumn(name = "discount_id"))
+    @Column(name = "combinations")
     public List<CombinationEnum> combinations;
 
     @ElementCollection
@@ -85,6 +92,10 @@ public class Discount extends PanacheEntity {
     @Column(name = "max_customer_use")
     public Integer maxCustomerUse;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
+
     @Column(name = "used_count", nullable = true)
     public Integer usedCount = 0;   // Used count
 
@@ -94,8 +105,22 @@ public class Discount extends PanacheEntity {
     @Column(name = "updated_at", nullable = false)
     public LocalDateTime updatedAt = LocalDateTime.now();
 
+
+    @PrePersist
     @PreUpdate
-    public void updateTimestamp() {
+    public void generateUniqueSlugAndUpdateTimestamp() {
         updatedAt = LocalDateTime.now();
+
+        if (this.slug == null || this.slug.isEmpty()) {
+            final String baseSlug = StringSlugifier.slugify(this.title);
+            String uniqueSlug = baseSlug;
+            int counter = 1;
+
+            while (Product.find("slug", uniqueSlug).firstResult() != null) {
+                uniqueSlug = baseSlug + "-" + counter++;
+            }
+
+            this.slug = uniqueSlug;
+        }
     }
 }

@@ -23,8 +23,22 @@ public class DiscountResource {
     @POST
     public Response createDiscount(@Valid DiscountDTO discountDTO) {
         try {
-            DiscountDTO createdDiscount = discountService.createDiscount(discountDTO);
-            return Response.status(Response.Status.CREATED).entity(createdDiscount).build();
+            DiscountDTO discount = discountService.createDiscount(discountDTO);
+            return Response.status(Response.Status.CREATED).entity(discount).build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        }
+    }
+
+    @PUT
+    @Path("/update/{slug}")
+    public Response updateDiscount(@Valid DiscountDTO discountDTO, @PathParam("slug") String slug) {
+        try {
+            DiscountDTO discount = discountService.updateDiscount(slug, discountDTO);
+            return Response.status(Response.Status.ACCEPTED).entity(discount).build();
 
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)

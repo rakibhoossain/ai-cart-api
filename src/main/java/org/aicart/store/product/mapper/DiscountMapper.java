@@ -2,6 +2,7 @@ package org.aicart.store.product.mapper;
 
 import org.aicart.store.product.dto.DiscountDTO;
 import org.aicart.store.product.entity.Discount;
+import org.aicart.store.product.entity.ProductCollection;
 import org.aicart.store.product.entity.ProductVariant;
 
 import java.util.List;
@@ -61,6 +62,45 @@ public class DiscountMapper {
         if (dto.variantIds != null && !dto.variantIds.isEmpty()) {
             List<ProductVariant> variants = ProductVariant.list("id IN ?1", dto.variantIds);
             discount.variants = Set.copyOf(variants);
+        }
+
+        // Fetch collections by IDs and set them
+        if (dto.collectionIds != null && !dto.collectionIds.isEmpty()) {
+            List<ProductCollection> collections = ProductCollection.list("id IN ?1", dto.collectionIds);
+            discount.collections = Set.copyOf(collections);
+        }
+
+        return discount;
+    }
+
+
+    public static Discount toUpdate(Discount discount, DiscountDTO dto) {
+        discount.coupon = dto.coupon;
+        discount.title = dto.title;
+        discount.startAt = dto.startAt;
+        discount.endAt = dto.endAt;
+        discount.amountType = dto.amountType;
+        discount.amount = dto.amount;
+        discount.isActive = dto.isActive;
+        discount.purchaseType = dto.purchaseType;
+        discount.appliesTo = dto.appliesTo;
+        discount.minAmount = dto.minAmount;
+        discount.minQuantity = dto.minQuantity;
+        discount.combinations = dto.combinations;
+        discount.locations = dto.locations;
+        discount.maxUse = dto.maxUse;
+        discount.maxCustomerUse = dto.maxCustomerUse;
+
+        // Fetch variants by IDs and set them
+        if (dto.variantIds != null && !dto.variantIds.isEmpty()) {
+            List<ProductVariant> variants = ProductVariant.list("id IN ?1", dto.variantIds);
+            discount.variants = Set.copyOf(variants);
+        }
+
+        // Fetch collections by IDs and set them
+        if (dto.collectionIds != null && !dto.collectionIds.isEmpty()) {
+            List<ProductCollection> collections = ProductCollection.list("id IN ?1", dto.collectionIds);
+            discount.collections = Set.copyOf(collections);
         }
 
         return discount;
