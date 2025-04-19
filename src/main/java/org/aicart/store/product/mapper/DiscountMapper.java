@@ -32,6 +32,7 @@ public class DiscountMapper {
         dto.locations = discount.locations;
         dto.maxUse = discount.maxUse;
         dto.maxCustomerUse = discount.maxCustomerUse;
+        dto.eligibilityType = discount.eligibilityType;
         return dto;
     }
 
@@ -58,6 +59,7 @@ public class DiscountMapper {
         discount.locations = dto.locations;
         discount.maxUse = dto.maxUse;
         discount.maxCustomerUse = dto.maxCustomerUse;
+        discount.eligibilityType = dto.eligibilityType;
 
         // Fetch variants by IDs and set them
         if (dto.variantIds != null && !dto.variantIds.isEmpty()) {
@@ -97,6 +99,7 @@ public class DiscountMapper {
         discount.locations = dto.locations;
         discount.maxUse = dto.maxUse;
         discount.maxCustomerUse = dto.maxCustomerUse;
+        discount.eligibilityType = dto.eligibilityType;
 
         // Fetch variants by IDs and set them
         if (dto.variantIds != null && !dto.variantIds.isEmpty()) {

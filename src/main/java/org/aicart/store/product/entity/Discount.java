@@ -19,6 +19,10 @@ public class Discount extends PanacheEntity {
     @Column(name = "discount_type", nullable = false)
     public ProductDiscountEnum discountType;  // moneyOffProduct, buyXgetY, moneyOffOrder, shipping
 
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "eligibility_type", nullable = false, columnDefinition = "SMALLINT DEFAULT 0")
+    public DiscountEligibilityEnum eligibilityType = DiscountEligibilityEnum.ALL;
+
     @Column(name = "is_automatic", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     public Boolean isAutomatic = Boolean.TRUE;
 

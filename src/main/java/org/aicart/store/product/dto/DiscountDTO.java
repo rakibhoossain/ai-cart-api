@@ -16,6 +16,10 @@ public class DiscountDTO {
     @JsonProperty("discount_type")
     public ProductDiscountEnum discountType;
 
+    @NotNull(message = "Eligibility type is required")
+    @JsonProperty("eligibility")
+    public DiscountEligibilityEnum eligibilityType;
+
     @NotNull(message = "Discount method is required")
     @JsonProperty("is_automatic")
     public Boolean isAutomatic;
@@ -63,6 +67,7 @@ public class DiscountDTO {
 
     public List<CombinationEnum> combinations;
 
+    @NotEmpty(message = "At least one location is required")
     public List<Long> locations;
 
     @PositiveOrZero(message = "Max use must be 0 or greater")
