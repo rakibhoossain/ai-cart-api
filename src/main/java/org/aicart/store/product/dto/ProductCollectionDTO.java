@@ -15,10 +15,10 @@ import java.util.List;
 public class ProductCollectionDTO {
     public Long id;
 
-    @NotNull(message = "Title is required")
-    @Size(min = 5, message = "Title must be at least 5 characters")
-    @Size(max = 100, message = "Title must not exceed 100 characters")
-    public String title;
+    @NotNull(message = "Name is required")
+    @Size(min = 5, message = "Name must be at least 5 characters")
+    @Size(max = 100, message = "Name must not exceed 100 characters")
+    public String name;
 
     @NotNull(message = "Description is required")
     @Size(min = 10, message = "Description must be at least 10 characters")

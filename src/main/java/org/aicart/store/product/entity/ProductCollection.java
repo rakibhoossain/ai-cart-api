@@ -41,8 +41,8 @@ public class ProductCollection extends PanacheEntity {
     @Column(name = "location_id")
     public List<Long> locations; // Stores location IDs
 
-    @Column(name = "title", nullable = false)
-    public String title;
+    @Column(name = "name", nullable = false)
+    public String name;
 
     @Column(length = 255, unique = true, nullable = false)
     public String slug;
@@ -68,7 +68,7 @@ public class ProductCollection extends PanacheEntity {
         updatedAt = LocalDateTime.now();
 
         if (this.slug == null || this.slug.isEmpty()) {
-            final String baseSlug = StringSlugifier.slugify(this.title);
+            final String baseSlug = StringSlugifier.slugify(this.name);
             String uniqueSlug = baseSlug;
             int counter = 1;
 

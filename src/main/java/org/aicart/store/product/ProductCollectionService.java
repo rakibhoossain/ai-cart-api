@@ -27,7 +27,7 @@ public class ProductCollectionService {
     @Transactional
     public ProductCollection create(ProductCollectionDTO collectionDTO) {
         ProductCollection collection = new ProductCollection();
-        collection.title = collectionDTO.title;
+        collection.name = collectionDTO.name;
         collection.description = collectionDTO.description;
         collection.collectionType = collectionDTO.collectionType;
         collection.shop = Shop.findById(1);
