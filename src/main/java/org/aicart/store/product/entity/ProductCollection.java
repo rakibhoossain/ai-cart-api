@@ -29,8 +29,10 @@ public class ProductCollection extends PanacheEntity {
     @ManyToMany(mappedBy = "collections", fetch = FetchType.LAZY)
     public Set<Product> products;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "collection_id")
+    @OneToMany(
+            mappedBy = "collection",
+            cascade = CascadeType.ALL // Ensures operations cascade
+    )
     public Set<ProductCollectionCondition> conditions;
 
     @Column(name = "is_active")

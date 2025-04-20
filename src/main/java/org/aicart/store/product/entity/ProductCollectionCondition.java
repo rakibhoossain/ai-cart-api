@@ -9,6 +9,10 @@ import org.aicart.store.product.ProductCollectionOperatorEnum;
 @Table(name = "product_collection_conditions")
 public class ProductCollectionCondition extends PanacheEntity {
 
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "collection_id", nullable = false)
+    public ProductCollection collection;
+
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "field", nullable = false)
     public ProductCollectionFieldEnum field;
