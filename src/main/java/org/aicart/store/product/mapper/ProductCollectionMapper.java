@@ -2,6 +2,7 @@ package org.aicart.store.product.mapper;
 
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
+import org.aicart.media.entity.FileStorage;
 import org.aicart.store.product.ProductCollectionFieldEnum;
 import org.aicart.store.product.ProductCollectionTypeEnum;
 import org.aicart.store.product.dto.ProductCollectionConditionDTO;
@@ -49,6 +50,11 @@ public class ProductCollectionMapper {
             collection.conditions = Set.copyOf(newConditions);
         }
 
+        // Store file
+        if(dto.fileId != null) {
+            collection.file = FileStorage.findById(dto.fileId);
+        }
+
         return collection;
     }
 
@@ -79,6 +85,13 @@ public class ProductCollectionMapper {
         if(dto.collectionType == ProductCollectionTypeEnum.SMART && dto.conditions != null && !dto.conditions.isEmpty()) {
             List<ProductCollectionCondition> newConditions = newConditionValue(collection, dto);
             collection.conditions = Set.copyOf(newConditions);
+        }
+
+        // Store file
+        if(dto.fileId != null) {
+            collection.file = FileStorage.findById(dto.fileId);
+        } else {
+            collection.file = null;
         }
 
         return collection;

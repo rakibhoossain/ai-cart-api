@@ -1,6 +1,7 @@
 package org.aicart.store.product.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import org.aicart.media.entity.FileStorage;
 import org.aicart.store.product.ProductCollectionTypeEnum;
 import org.aicart.store.product.ProductConditionMatchEnum;
 import org.aicart.store.user.entity.Shop;
@@ -57,6 +58,10 @@ public class ProductCollection extends PanacheEntity {
 
     @Column(columnDefinition = "TEXT", nullable = false)
     public String description;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "file_id", nullable = false)
+    public FileStorage file;
 
     @Column(name = "meta_title", length = 255)
     public String metaTitle;
