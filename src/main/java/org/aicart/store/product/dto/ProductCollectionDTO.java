@@ -29,13 +29,12 @@ public class ProductCollectionDTO {
     @JsonProperty("collection_type")
     public ProductCollectionTypeEnum collectionType;
 
-//    @NotNull(message = "Collection condition match type is required")
     @JsonProperty("condition_match")
     public ProductConditionMatchEnum conditionMatch;
 
     @Valid
     @JsonProperty("conditions")
-    public List<ProductCollectionConditionDTO> conditions;
+    public List<@Valid ProductCollectionConditionDTO> conditions;
 
     @NotNull(message = "Active status is required")
     @JsonProperty("is_active")

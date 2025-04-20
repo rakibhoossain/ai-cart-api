@@ -60,7 +60,7 @@ public class ProductCollection extends PanacheEntity {
     public String description;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "file_id", nullable = false)
+    @JoinColumn(name = "file_id")
     public FileStorage file;
 
     @Column(name = "meta_title", length = 255)

@@ -23,6 +23,12 @@ public class ConditionValidator implements ConstraintValidator<ValidCondition, P
                         .addConstraintViolation();
                 isValid = false;
             }
+        } else if(condition.field.equals(ProductCollectionFieldEnum.TAG) || condition.field.equals(ProductCollectionFieldEnum.CATEGORY)) {
+            if (!(condition.value instanceof Number)) {
+                context.buildConstraintViolationWithTemplate("Value must be int")
+                .addPropertyNode("value")
+                .addConstraintViolation();
+            }
         } else {
             if (!(condition.value instanceof String) || ((String) condition.value).isEmpty()) {
                 context.buildConstraintViolationWithTemplate("Value must be non-empty text")

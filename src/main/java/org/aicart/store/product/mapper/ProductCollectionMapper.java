@@ -1,7 +1,5 @@
 package org.aicart.store.product.mapper;
 
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import org.aicart.media.entity.FileStorage;
 import org.aicart.store.product.ProductCollectionFieldEnum;
 import org.aicart.store.product.ProductCollectionTypeEnum;
@@ -110,18 +108,10 @@ public class ProductCollectionMapper {
             if (condition.field.equals(ProductCollectionFieldEnum.PRICE)) {
                 if (conditionDto.value instanceof Number) {
                     condition.numericValue = (Integer) conditionDto.value;
-                } else {
-                    throw new WebApplicationException(
-                            "Value for " + condition.field + " must be numeric",
-                            Response.Status.BAD_REQUEST);
                 }
             } else if(condition.field.equals(ProductCollectionFieldEnum.TAG) || condition.field.equals(ProductCollectionFieldEnum.CATEGORY)) {
                 if (conditionDto.value instanceof Number) {
                     condition.referenceId = (Long) conditionDto.value;
-                } else {
-                    throw new WebApplicationException(
-                            "Value for " + condition.field + " must be int",
-                            Response.Status.BAD_REQUEST);
                 }
             } else {
                 condition.stringValue = conditionDto.value != null ? conditionDto.value.toString() : null;
