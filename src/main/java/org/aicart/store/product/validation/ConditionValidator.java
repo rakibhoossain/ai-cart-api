@@ -2,6 +2,7 @@ package org.aicart.store.product.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import org.aicart.store.product.ProductCollectionFieldEnum;
 import org.aicart.store.product.dto.ProductCollectionConditionDTO;
 
 public class ConditionValidator implements ConstraintValidator<ValidCondition, ProductCollectionConditionDTO> {
@@ -15,7 +16,7 @@ public class ConditionValidator implements ConstraintValidator<ValidCondition, P
         boolean isValid = true;
         context.disableDefaultConstraintViolation();
 
-        if ("price".equals(condition.field)) {
+        if (condition.field.equals(ProductCollectionFieldEnum.PRICE)) {
             if (!(condition.value instanceof Number)) {
                 context.buildConstraintViolationWithTemplate("Price must be a number")
                         .addPropertyNode("value")

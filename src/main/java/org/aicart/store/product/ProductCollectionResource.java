@@ -29,18 +29,20 @@ public class ProductCollectionResource {
     @Path("/")
     public Response create(@Valid ProductCollectionDTO request) {
 
+        if(request == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Request body is required"))
+                    .build();
+        }
+
         for(ProductCollectionConditionDTO conditionDTO: request.conditions) {
             System.out.println(conditionDTO.field);
             System.out.println(conditionDTO.operator);
             System.out.println(conditionDTO.value);
         }
 
+        service.create(request);
 
-        if(request == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Request body is required"))
-                    .build();
-        }
-        return Response.ok(service.create(request.title)).build();
+        return Response.ok(request).build();
     }
 }

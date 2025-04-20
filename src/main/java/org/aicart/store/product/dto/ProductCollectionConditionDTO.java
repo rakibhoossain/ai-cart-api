@@ -3,17 +3,19 @@ package org.aicart.store.product.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import org.aicart.store.product.ProductCollectionFieldEnum;
+import org.aicart.store.product.ProductCollectionOperatorEnum;
 import org.aicart.store.product.validation.ValidCondition;
 
 @ValidCondition
 public class ProductCollectionConditionDTO {
-        @NotBlank(message = "Field type required")
+        @NotNull(message = "Field required")
         @JsonProperty("field")
-        public String field;
+        public ProductCollectionFieldEnum field;
 
-        @NotBlank(message = "Operator required")
+        @NotNull(message = "Operator required")
         @JsonProperty("operator")
-        public String operator;
+        public ProductCollectionOperatorEnum operator;
 
         @NotNull(message = "Value required")
         @JsonProperty("value")
@@ -21,7 +23,7 @@ public class ProductCollectionConditionDTO {
 
         // Custom validation
         public boolean isValid() {
-            if ("price".equals(field)) {
+            if (field.equals(ProductCollectionFieldEnum.PRICE)) {
                 return value instanceof Number;
             }
             return value instanceof String && !((String) value).isEmpty();

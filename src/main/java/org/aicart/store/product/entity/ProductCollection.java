@@ -1,12 +1,14 @@
 package org.aicart.store.product.entity;
-
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
-import org.aicart.media.entity.FileStorageRelation;
-import org.aicart.store.product.ProductStatusEnum;
+import org.aicart.store.product.ProductCollectionTypeEnum;
+import org.aicart.store.product.ProductConditionMatchEnum;
 import org.aicart.store.user.entity.Shop;
+import org.aicart.util.StringSlugifier;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "product_collections")
@@ -17,16 +19,35 @@ public class ProductCollection extends PanacheEntity {
     public Shop shop;
 
     @Enumerated(EnumType.ORDINAL)
-    @Column(name = "status", nullable = false)
-    public ProductStatusEnum status = ProductStatusEnum.DRAFT;
+    @Column(name = "collection_type", nullable = false)
+    public ProductCollectionTypeEnum collectionType; // smart, manual
 
-    @Column(name = "name", nullable = false)
-    public String name;
+    @Enumerated(EnumType.ORDINAL)
+    @Column(name = "condition_match")
+    public ProductConditionMatchEnum conditionMatch;
+
+    @ManyToMany(mappedBy = "collections", fetch = FetchType.LAZY)
+    public Set<Product> products;
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "collection_id")
+    public List<ProductCollectionCondition> conditions;
+
+    @Column(name = "is_active")
+    public Boolean isActive;
+
+    @ElementCollection
+    @CollectionTable(name = "collection_location_pivot", joinColumns = @JoinColumn(name = "collection_id"))
+    @Column(name = "location_id")
+    public List<Long> locations; // Stores location IDs
+
+    @Column(name = "title", nullable = false)
+    public String title;
 
     @Column(length = 255, unique = true, nullable = false)
     public String slug;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     public String description;
 
     @Column(name = "meta_title", length = 255)
@@ -35,6 +56,27 @@ public class ProductCollection extends PanacheEntity {
     @Column(name = "meta_description", columnDefinition = "TEXT")
     public String metaDescription;
 
-    @OneToMany(mappedBy = "associatedId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    public List<FileStorageRelation> fileRelations;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    public LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = false)
+    public LocalDateTime updatedAt = LocalDateTime.now();
+
+    @PrePersist
+    @PreUpdate
+    public void generateUniqueSlugAndUpdateTimestamp() {
+        updatedAt = LocalDateTime.now();
+
+        if (this.slug == null || this.slug.isEmpty()) {
+            final String baseSlug = StringSlugifier.slugify(this.title);
+            String uniqueSlug = baseSlug;
+            int counter = 1;
+
+            while (ProductCollection.find("slug", uniqueSlug).firstResult() != null) {
+                uniqueSlug = baseSlug + "-" + counter++;
+            }
+
+            this.slug = uniqueSlug;
+        }
+    }
 }

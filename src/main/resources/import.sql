@@ -201,8 +201,8 @@ INSERT INTO product_types(id, name)
 VALUES (1, 'Type A'), (2, 'Type B');
 
 -- Product Type
-INSERT INTO product_collections(id, shop_id, name, status, slug)
-VALUES (1, 1, 'Collection A', 1, 'collection-A'), (2, 1,'Collection B', 1, 'collection-B');
+-- INSERT INTO product_collections(id, shop_id, title, status, slug)
+-- VALUES (1, 1, 'Collection A', 1, 'collection-A'), (2, 1,'Collection B', 1, 'collection-B');
 
 -- Inserting Product
 INSERT INTO products(id, status, shop_id, product_type_id, product_brand_id, name, slug, created_at, updated_at)
@@ -220,8 +220,8 @@ INSERT INTO product_tag_pivot(product_id, tag_id)
 VALUES (1, 1), (2, 2);
 
 -- Inserting product collection pivot
-INSERT INTO product_collection_pivot(product_id, collection_id)
-VALUES (1, 1), (2, 2);
+-- INSERT INTO product_collection_pivot(product_id, collection_id)
+-- VALUES (1, 1), (2, 2);
 
 -- Inserting translations
 INSERT INTO product_translations(id, product_id, language_id, name, description)
