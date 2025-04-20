@@ -59,27 +59,24 @@ public class ProductCollectionMapper {
         collection.description = dto.description;
         collection.collectionType = dto.collectionType;
 
+        // Clear old data
+        getEntityManager().createNativeQuery(
+                        "DELETE FROM product_collection_pivot WHERE collection_id = ?1; " +
+                                "DELETE FROM product_collection_conditions WHERE collection_id = ?1")
+                .setParameter(1, collection.id)
+                .executeUpdate();
+
+
         // Fetch product by IDs and set them
         if (dto.collectionType == ProductCollectionTypeEnum.MANUAL && dto.productIds != null && !dto.productIds.isEmpty()) {
-
-            // Clear products
-            getEntityManager().createNativeQuery("DELETE FROM product_collection_pivot WHERE collection_id = ?1")
-                    .setParameter(1, collection.id)
-                    .executeUpdate();
-
             List<Product> products = Product.list("id IN ?1", dto.productIds);
+
+            System.out.println(products.getFirst());
             collection.products = Set.copyOf(products);
         }
 
         // Store conditions
         if(dto.collectionType == ProductCollectionTypeEnum.SMART && dto.conditions != null && !dto.conditions.isEmpty()) {
-            collection.conditions.clear();
-
-            // Clear conditions
-            getEntityManager().createNativeQuery("DELETE FROM product_collection_conditions WHERE collection_id = ?1")
-                    .setParameter(1, collection.id)
-                    .executeUpdate();
-
             List<ProductCollectionCondition> newConditions = newConditionValue(collection, dto);
             collection.conditions = Set.copyOf(newConditions);
         }

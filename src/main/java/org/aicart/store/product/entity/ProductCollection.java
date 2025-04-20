@@ -7,6 +7,7 @@ import org.aicart.store.user.entity.Shop;
 import org.aicart.util.StringSlugifier;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -26,8 +27,13 @@ public class ProductCollection extends PanacheEntity {
     @Column(name = "condition_match")
     public ProductConditionMatchEnum conditionMatch;
 
-    @ManyToMany(mappedBy = "collections", fetch = FetchType.LAZY)
-    public Set<Product> products;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "product_collection_pivot",
+            joinColumns = @JoinColumn(name = "collection_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id")
+    )
+    public Set<Product> products = new HashSet<>();
 
     @OneToMany(
             mappedBy = "collection",

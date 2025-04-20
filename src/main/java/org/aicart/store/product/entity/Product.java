@@ -1,5 +1,6 @@
 package org.aicart.store.product.entity;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import jakarta.persistence.*;
@@ -46,13 +47,8 @@ public class Product extends PanacheEntity {
     )
     public Set<Category> categories;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "product_collection_pivot",
-            joinColumns = @JoinColumn(name = "product_id"),
-            inverseJoinColumns = @JoinColumn(name = "collection_id")
-    )
-    public Set<ProductCollection> collections;
+    @ManyToMany(mappedBy = "products", fetch = FetchType.LAZY)
+    public Set<ProductCollection> collections = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
