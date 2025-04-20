@@ -22,4 +22,7 @@ public class ProductCollectionCondition extends PanacheEntity {
 
     @Column(name = "numeric_value")
     public Integer numericValue;
+
+    @Column(name = "reference_id")
+    public Long referenceId;
 }

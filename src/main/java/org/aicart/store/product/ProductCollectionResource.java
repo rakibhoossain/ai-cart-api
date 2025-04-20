@@ -5,9 +5,8 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.aicart.store.product.dto.ProductCollectionConditionDTO;
 import org.aicart.store.product.dto.ProductCollectionDTO;
-import org.aicart.store.product.request.ValueNameRequest;
+import org.aicart.store.product.mapper.ProductCollectionMapper;
 
 import java.util.Map;
 
@@ -35,14 +34,19 @@ public class ProductCollectionResource {
                     .build();
         }
 
-        for(ProductCollectionConditionDTO conditionDTO: request.conditions) {
-            System.out.println(conditionDTO.field);
-            System.out.println(conditionDTO.operator);
-            System.out.println(conditionDTO.value);
+        return Response.ok(ProductCollectionMapper.toDTO(service.create(request))).build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Response update(@PathParam("id") Long collectionId, @Valid ProductCollectionDTO request) {
+
+        if(request == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Request body is required"))
+                    .build();
         }
 
-        service.create(request);
-
-        return Response.ok(request).build();
+        return Response.ok(ProductCollectionMapper.toDTO(service.update(collectionId, request))).build();
     }
 }

@@ -29,9 +29,9 @@ public class ProductCollection extends PanacheEntity {
     @ManyToMany(mappedBy = "collections", fetch = FetchType.LAZY)
     public Set<Product> products;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "collection_id")
-    public List<ProductCollectionCondition> conditions;
+    public Set<ProductCollectionCondition> conditions;
 
     @Column(name = "is_active")
     public Boolean isActive;
