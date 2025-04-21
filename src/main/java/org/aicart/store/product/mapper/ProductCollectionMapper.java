@@ -53,6 +53,10 @@ public class ProductCollectionMapper {
             collection.file = FileStorage.findById(dto.fileId);
         }
 
+        collection.conditionMatch = dto.collectionType == ProductCollectionTypeEnum.SMART ? dto.conditionMatch : null;
+        collection.locations = dto.locations;
+        collection.isActive = dto.isActive;
+
         return collection;
     }
 
@@ -91,6 +95,10 @@ public class ProductCollectionMapper {
         } else {
             collection.file = null;
         }
+
+        collection.conditionMatch = dto.collectionType == ProductCollectionTypeEnum.SMART ? dto.conditionMatch : null;
+        collection.locations = dto.locations;
+        collection.isActive = dto.isActive;
 
         return collection;
     }
