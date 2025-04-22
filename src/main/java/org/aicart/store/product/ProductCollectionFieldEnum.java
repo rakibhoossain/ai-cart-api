@@ -6,7 +6,8 @@ public enum ProductCollectionFieldEnum {
     TAG("tag"),
     TITLE("title"),
     PRICE("price"),
-    CATEGORY("category");
+    CATEGORY("category"),
+    SKU("sku"),;
 
     private final String value;
 

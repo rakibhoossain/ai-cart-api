@@ -6,6 +6,7 @@ public enum ProductCollectionOperatorEnum {
     EQUALS("equals"),
     NOT_EQUALS("not_equals"),
     CONTAINS("contains"),
+    NOT_CONTAINS("contains"),
     GREATER_THAN("greater_than"),
     LESS_THAN("less_than");
 
