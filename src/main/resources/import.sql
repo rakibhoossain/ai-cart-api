@@ -14,8 +14,8 @@ INSERT INTO countries (id, code, name, currency_id) VALUES (1, 'USA', 'United St
 INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'Spanish');
 
 -- Inserting Shops
-INSERT INTO shops (id, user_id, name, primary_country, currency_id)
-VALUES (1, 1, 'Rakib Shop', 1, 1);
+INSERT INTO shops (id, user_id, name, host, primary_country, currency_id)
+VALUES (1, 1, 'Rakib Shop', 'localhost', 1, 1);
 
 -- Shop country
 INSERT INTO shop_country (shop_id, country_id)
@@ -243,8 +243,11 @@ VALUES (10,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.
        (2,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_71.jpg', 'fashion_71.jpg', 'temp/fashion_71.jpg', 'temp/fashion_71.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_71.jpg', null),
        (3,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_311.jpg', 'fashion_311.jpg', 'temp/fashion_311.jpg', 'temp/fashion_311.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_311.jpg', null),
        (4,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_0122.jpg', 'fashion_0122.jpg', 'temp/fashion_0122.jpg', 'temp/fashion_0122.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_0122.jpg', null),
-       (5,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_0122.jpg', 'fashion_0122.jpg', 'temp/fashion_0122.jpg', 'temp/fashion_0122.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_0122.jpg', null);
-
+       (5,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'fashion_0122.jpg', 'fashion_0122.jpg', 'temp/fashion_0122.jpg', 'temp/fashion_0122.jpg', 'https://storage.aicart.store/ai-cart', 'temp/fashion_0122.jpg', null),
+       (6,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'icon', 'image/vnd.microsoft.icon', 'favicon.ico', 'favicon.ico', 'shop/favicon.ico', 'shop/favicon.ico', 'https://storage.aicart.store/ai-cart', 'shop/favicon.ico', null),
+       (7,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'logo.png', 'logo.png', 'shop/logo.png', 'shop/logo.png', 'https://storage.aicart.store/ai-cart', 'shop/logo.png', null),
+       (8,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/svg+xml', 'logo.svg', 'logo.svg', 'shop/logo.svg', 'shop/logo.svg', 'https://storage.aicart.store/ai-cart', 'shop/logo.svg', null),
+       (9,997, 800, '2025-01-27 08:48:31.277445', 203006, '2025-01-27 08:48:31.316070', 'image', 'image/jpeg', 'aicart.png', 'aicart.png', 'shop/themes/aicart.png', 'shop/themes/aicart.png', 'https://storage.aicart.store/ai-cart', 'shop/themes/aicart.png', null);
 
 SELECT setval(pg_get_serial_sequence('file_storage', 'id'), (SELECT MAX(id) FROM file_storage) + 1);
 
@@ -288,4 +291,13 @@ INSERT INTO variant_prices(id, country_id, variant_id, price, discount, is_activ
 VALUES (1, 1, 1, 1200, 0, TRUE),
        (2, 1, 2, 1700, 0, TRUE),
        (3, 1, 3, 1700, 0, TRUE);
+
+-- Insert themes
+INSERT INTO themes (id, name, description, price, thumbnail_id)
+VALUES (1, 'AiCart', 'Modern template', 0, 9);
+
+-- Insert shop theme settings
+INSERT INTO shop_theme_settings (id, shop_id, theme_id, favicon_id, logo_id, is_sticky_header, has_top_header, top_content_1, support_phone, support_email, footer_content)
+VALUES (1, 1, 1, 6, 7, TRUE, TRUE, 'Welcome to AiCart', '12345678901', 'support@aicart.store', 'Discover the latest trends and enjoy seamless shopping with our exclusive collections.');
+
 
