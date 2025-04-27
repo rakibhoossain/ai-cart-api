@@ -300,4 +300,9 @@ VALUES (1, 'AiCart', 'Modern template', 0, 9);
 INSERT INTO shop_theme_settings (id, shop_id, theme_id, favicon_id, logo_id, is_sticky_header, has_top_header, top_content_1, support_phone, support_email, footer_content)
 VALUES (1, 1, 1, 6, 7, TRUE, TRUE, 'Welcome to AiCart', '12345678901', 'support@aicart.store', 'Discover the latest trends and enjoy seamless shopping with our exclusive collections.');
 
-
+-- Insert shop highlights
+INSERT INTO shop_highlights (id, shop_id, icon, title, description, is_active, score)
+VALUES (1, 1, 'truck', 'Free Shipping', 'Free shipping on all orders over $50', TRUE, 0),
+       (2, 1, 'phone', '24/7 Customer Support', 'Have a question? Get in touch.', TRUE, 1),
+       (3, 1, 'handCoins', 'Best prices', 'We offer the best prices on the market.', TRUE, 2);
+SELECT setval(pg_get_serial_sequence('shop_highlights', 'id'), (SELECT MAX(id) FROM shop_highlights));
