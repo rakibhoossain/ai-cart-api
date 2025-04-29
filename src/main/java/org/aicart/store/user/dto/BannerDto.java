@@ -34,6 +34,7 @@ public class BannerDto {
     public Long posterId;
 
     @Size(max = 255)
+    @JsonProperty("url")
     public String url;
 
     @Valid

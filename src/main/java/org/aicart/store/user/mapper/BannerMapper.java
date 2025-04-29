@@ -50,7 +50,7 @@ public class BannerMapper {
         banner.startDate = dto.startDate;
         banner.endDate = dto.endDate;
         banner.button = dto.button;
-        dto.url = banner.url;
+        banner.url = dto.url;
         banner.updatedAt = LocalDateTime.now();
 
 
