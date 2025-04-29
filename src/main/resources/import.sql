@@ -1,8 +1,8 @@
 -- This file allow to write SQL commands that will be emitted in test and dev.
 
 -- Inserting users
-INSERT INTO users (id, name, email, password, created_at, updated_at)
-VALUES (1, 'Rakib', 'admin@mail.com', '123456', NOW(), NOW());
+INSERT INTO users (id, name, email, password, created_at, updated_at, verified_at)
+VALUES (1, 'Rakib', 'admin@mail.com', '123456', NOW(), NOW(), 0);
 
 -- Inserting Currency (USD, EUR)
 INSERT INTO currencies (id, code, name, symbol) VALUES (1, 'USD', 'US Dollar', '$'), (2, 'EUR', 'Euro', '€');
