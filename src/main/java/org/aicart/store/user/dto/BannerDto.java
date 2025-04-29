@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class BannerDto {
     public Long id;
@@ -34,15 +33,19 @@ public class BannerDto {
     @JsonProperty("poster_id")
     public Long posterId;
 
+    @Size(max = 255)
+    public String url;
+
     @Valid
-    public List<BannerButtonDto> buttons;
+    public BannerButtonDto button;
 
     @Min(0)
     @JsonProperty("sort_order")
     public Integer sortOrder;
 
     @NotNull
-    public Boolean active;
+    @JsonProperty("is_active")
+    public Boolean isActive;
 
     @JsonProperty("start_date")
     public LocalDateTime startDate;

@@ -13,9 +13,6 @@ public class BannerButtonDto {
     @Size(max = 50)
     public String variant; // "primary", "secondary", etc.
 
-    @Size(max = 255)
-    public String url;
-
     @Size(max = 20)
     public String position; // e.g. "left", "right", "center"
 }

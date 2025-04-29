@@ -28,9 +28,10 @@ public class BannerMapper {
         dto.backgroundType = banner.backgroundType;
         dto.backgroundId = background != null ? background.id : null;
         dto.posterId = poster != null ? poster.id : null;
-        dto.buttons = banner.buttons;
+        dto.button = banner.button;
+        dto.url = banner.url;
         dto.sortOrder = banner.sortOrder;
-        dto.active = banner.active;
+        dto.isActive = banner.isActive;
         dto.startDate = banner.startDate;
         dto.endDate = banner.endDate;
         dto.createdAt = banner.createdAt;
@@ -45,10 +46,11 @@ public class BannerMapper {
         banner.description = dto.description;
         banner.backgroundType = dto.backgroundType;
         banner.sortOrder = dto.sortOrder != null ? dto.sortOrder : 0;
-        banner.active = dto.active != null ? dto.active : true;
+        banner.isActive = dto.isActive != null ? dto.isActive : true;
         banner.startDate = dto.startDate;
         banner.endDate = dto.endDate;
-        banner.buttons = dto.buttons;
+        banner.button = dto.button;
+        dto.url = banner.url;
         banner.updatedAt = LocalDateTime.now();
 
 

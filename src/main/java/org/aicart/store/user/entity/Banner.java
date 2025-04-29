@@ -2,6 +2,7 @@ package org.aicart.store.user.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import org.aicart.media.entity.FileStorage;
 import org.aicart.store.user.dto.BannerBackgroundEnum;
 import org.aicart.store.user.dto.BannerButtonDto;
@@ -42,13 +43,16 @@ public class Banner extends PanacheEntity {
 
     @Column(columnDefinition = "jsonb")
     @JdbcTypeCode(SqlTypes.JSON)
-    public List<BannerButtonDto> buttons;
+    public BannerButtonDto button;
+
+    @Column(length = 255)
+    public String url;
 
     @Column(name = "sort_order")
     public Integer sortOrder = 0;
 
-    @Column(name = "active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    public Boolean active = true;
+    @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    public Boolean isActive = true;
 
     @Column(name = "start_date")
     public LocalDateTime startDate;
