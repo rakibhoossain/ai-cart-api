@@ -1,5 +1,6 @@
 package org.aicart.setting;
 
+import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -7,9 +8,11 @@ import org.aicart.setting.dto.NavigationMenuItemDTO;
 import org.aicart.setting.dto.PublicNavigationMenuItemDTO;
 import org.aicart.setting.entity.NavigationMenu;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.aicart.store.user.entity.Shop;
 import org.postgresql.util.PGobject;
 
 import java.util.List;
+import java.util.logging.Logger;
 
 @ApplicationScoped
 public class NavigationMenuService {
@@ -45,6 +48,7 @@ public class NavigationMenuService {
             }
         } else {
             menu = new NavigationMenu();
+            menu.shop = Shop.findById(1);
         }
 
         menu.name = name;

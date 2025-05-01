@@ -61,7 +61,7 @@ public class NavigationMenuResource {
 
         service.createOrUpdateMenu(null, request.name, request.value);
         Map<String, String> data = new HashMap<>();
-        data.put("message", "Resource created successfully");
+        data.put("message", "Menu created successfully");
         return Response.status(Response.Status.CREATED)
                 .entity(data)
                 .type(MediaType.APPLICATION_JSON).build();
@@ -71,7 +71,11 @@ public class NavigationMenuResource {
     @Path("/{id}")
     public Response updateMenu(@PathParam("id") Long id, CreateNavigationMenuRequestDTO request) {
         service.createOrUpdateMenu(id, request.name, request.value);
-        return Response.ok().build();
+        Map<String, String> data = new HashMap<>();
+        data.put("message", "Menu updated successfully");
+        return Response.status(Response.Status.CREATED)
+                .entity(data)
+                .type(MediaType.APPLICATION_JSON).build();
     }
 
     @DELETE
