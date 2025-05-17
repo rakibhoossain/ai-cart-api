@@ -6,7 +6,6 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.aicart.store.customer.dto.CustomerDTO;
 import org.aicart.store.customer.entity.Customer;
-import org.aicart.store.customer.entity.CustomerAddress;
 
 import java.util.Optional;
 

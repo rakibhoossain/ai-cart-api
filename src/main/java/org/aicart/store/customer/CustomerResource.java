@@ -6,6 +6,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.aicart.store.customer.dto.CustomerDTO;
+import org.aicart.store.customer.mapper.CustomerAddressMapper;
+import org.aicart.store.customer.mapper.CustomerMapper;
 
 @Path("/customers")
 @Produces(MediaType.APPLICATION_JSON)
@@ -18,7 +20,7 @@ public class CustomerResource {
     @POST
     public Response createCustomer(@Valid CustomerDTO dto) {
         return Response.status(Response.Status.CREATED)
-                .entity(customerService.createCustomer(dto))
+                .entity(CustomerMapper.toDto(customerService.createCustomer(dto)))
                 .build();
     }
 
@@ -26,14 +28,14 @@ public class CustomerResource {
     @Path("/{id}")
     public Response getCustomer(@PathParam("id") Long id) {
         return customerService.getCustomer(id)
-                .map(customer -> Response.ok(customer).build())
+                .map(customer -> Response.ok(CustomerMapper.toDto(customer)).build())
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 
     @PUT
     @Path("/{id}")
     public Response updateCustomer(@PathParam("id") Long id, @Valid CustomerDTO dto) {
-        return Response.ok(customerService.updateCustomer(id, dto)).build();
+        return Response.ok(CustomerMapper.toDto(customerService.updateCustomer(id, dto))).build();
     }
 
     @DELETE
@@ -49,14 +51,14 @@ public class CustomerResource {
             @PathParam("customerId") Long customerId,
             @PathParam("addressId") Long addressId
     ) {
-        return Response.ok(customerService.setPrimaryAddress(customerId, addressId)).build();
+        return Response.ok(CustomerMapper.toDto(customerService.setPrimaryAddress(customerId, addressId))).build();
     }
 
     @GET
     @Path("/{customerId}/primary-address")
     public Response getPrimaryAddress(@PathParam("customerId") Long customerId) {
         return customerService.getCustomer(customerId)
-                .map(customer -> Response.ok(customer.primaryAddress).build())
+                .map(customer -> Response.ok(CustomerAddressMapper.toDto(customer.primaryAddress)).build())
                 .orElse(Response.status(Response.Status.NOT_FOUND).build());
     }
 }

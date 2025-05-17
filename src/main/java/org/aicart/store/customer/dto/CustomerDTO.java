@@ -1,12 +1,16 @@
 package org.aicart.store.customer.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CustomerDTO {
+
+    @Transient
+    public String id;
 
     @NotBlank(message = "Email cannot be blank")
     @Email(message = "Invalid Email")

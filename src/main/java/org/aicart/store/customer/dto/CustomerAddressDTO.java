@@ -1,11 +1,15 @@
 package org.aicart.store.customer.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class CustomerAddressDTO {
+
+    @Transient
+    public String id;
 
     @NotBlank(message = "First name cannot be blank")
     @Size(max = 30, message = "First name must be less than 30 characters")
