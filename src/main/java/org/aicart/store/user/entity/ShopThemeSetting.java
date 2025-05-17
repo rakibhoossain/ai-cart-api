@@ -3,7 +3,13 @@ package org.aicart.store.user.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.aicart.media.entity.FileStorage;
+import org.aicart.store.user.dto.TemplateSectionDTO;
 import org.aicart.theme.entity.Theme;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "shop_theme_settings", uniqueConstraints = @UniqueConstraint(columnNames = "shop_id"))
@@ -31,8 +37,8 @@ public class ShopThemeSetting extends PanacheEntity {
     @Column(name = "secondary_color")
     public String secondaryColor;
 
-    @Column(name = "celebration_effect")
-    public boolean celebrationEffect;
+    @Column(name = "celebration_effect", columnDefinition = "BOOLEAN DEFAULT TRUE")
+    public boolean celebrationEffect = true;
 
     // Header area
     @Column(name = "is_sticky_header")
@@ -80,4 +86,20 @@ public class ShopThemeSetting extends PanacheEntity {
 
     @Column(name = "social_links")
     public String socialLinks;
+
+    @Column(name = "header", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    public List<TemplateSectionDTO> header = new ArrayList<>();
+
+    @Column(name = "footer", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    public List<TemplateSectionDTO> footer = new ArrayList<>();
+
+    @Column(name = "home_page", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    public List<TemplateSectionDTO> homePage = new ArrayList<>();
+
+    @Column(name = "sections", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
+    public List<TemplateSectionDTO> sections = new ArrayList<>();
 }
