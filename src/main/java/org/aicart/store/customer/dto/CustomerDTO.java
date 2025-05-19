@@ -2,11 +2,10 @@ package org.aicart.store.customer.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Transient;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+import org.aicart.store.customer.validation.UniqueEmail;
 
+@UniqueEmail
 public class CustomerDTO {
 
     @Transient
@@ -28,4 +27,8 @@ public class CustomerDTO {
     @NotBlank(message = "Phone number cannot be blank")
     @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid phone number format")
     public String phone;
+
+    @NotNull(message = "Shop ID is required")
+    @JsonProperty("shop_id")
+    public Long shopId;
 }

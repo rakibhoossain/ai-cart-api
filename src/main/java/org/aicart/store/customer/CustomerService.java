@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
 import org.aicart.store.customer.dto.CustomerDTO;
 import org.aicart.store.customer.entity.Customer;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.Optional;
 
@@ -29,6 +30,8 @@ public class CustomerService {
     @Transactional
     public Customer createCustomer(CustomerDTO dto) {
         Customer customer = new Customer();
+        customer.shop = (Shop) Shop.findByIdOptional(dto.shopId)
+                .orElseThrow(() -> new NotFoundException("Shop not found"));
         updateCustomerFromDto(customer, dto);
         customerRepository.persist(customer);
         return customer;

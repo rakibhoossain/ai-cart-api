@@ -14,6 +14,7 @@ public class CustomerMapper {
         dto.lastName = customer.lastName;
         dto.email = customer.email;
         dto.phone = customer.phone;
+        dto.shopId = customer.shop.id;
 
         return dto;
     }
