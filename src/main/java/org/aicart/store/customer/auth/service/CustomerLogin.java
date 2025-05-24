@@ -1,8 +1,6 @@
 package org.aicart.store.customer.auth.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.elytron.security.common.BcryptUtil;
+import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Context;
@@ -10,201 +8,101 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.aicart.auth.dto.LoginCredentialDTO;
 import org.aicart.auth.dto.OauthLoginDTO;
-import org.aicart.auth.service.TokenResponse;
+import org.aicart.authentication.AuthenticationService;
+import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.user.entity.User;
-
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.security.SecureRandom;
+import org.eclipse.microprofile.jwt.Claims;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+
 @ApplicationScoped
-public class CustomerLogin {
+public class CustomerLogin extends AuthenticationService {
 
     @Context
-    UriInfo uriInfo; // Provides request context
+    UriInfo uriInfo;
 
-
-    private final HttpClient httpClient;
-    private final ObjectMapper objectMapper;
-
-    public CustomerLogin() {
-        this.httpClient = HttpClient.newHttpClient();
-        this.objectMapper = new ObjectMapper();
-    }
-
-    public Response login(LoginCredentialDTO loginCredentialDTO) {
-
-        if (loginCredentialDTO == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Request body is required"))
-                    .build();
-        }
-
-        // Find the user by email
-        User user = User.find("email", loginCredentialDTO.getEmail()).firstResult();
-
-        if (user == null || !BcryptUtil.matches(loginCredentialDTO.getPassword(), user.password)) {
+    @Override
+    protected Response jwtResponse(LoginCredentialDTO loginCredentialDTO) {
+        Customer customer = Customer.find("email", loginCredentialDTO.getEmail()).firstResult();
+        if(!isValidCredentials(loginCredentialDTO, customer)) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(Map.of("message", "Invalid email or password"))
                     .build();
         }
 
-        return TokenResponse.build(user, uriInfo);
+        return generateJwtResponse(customer);
     }
 
-
-
-    public Response oauthLogin(OauthLoginDTO oauthLoginDTO) {
-        if (oauthLoginDTO == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Request body is required"))
-                    .build();
-        }
-
-        try {
-            if ("google".equalsIgnoreCase(oauthLoginDTO.getProvider())) {
-                return validateGoogleToken(oauthLoginDTO);
-            } else if ("github".equalsIgnoreCase(oauthLoginDTO.getProvider())) {
-                return validateGitHubToken(oauthLoginDTO);
-            } else {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity(Map.of("message", "Request body is required"))
-                        .build();
-            }
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(Map.of("message", "Request body is required"))
-                    .build();
-        }
-    }
-
-
-
-
-    private Response validateGoogleToken(OauthLoginDTO oauthLoginDTO) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://www.googleapis.com/oauth2/v2/userinfo"))
-                .header("Authorization", "Bearer " + oauthLoginDTO.getAccessToken()) // Add access token to the Authorization header
-                .header("User-Agent", "authjs") // Set the User-Agent header
-                .GET()
-                .build();
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if(response.statusCode() == 200) {
-                JsonNode jsonNode = objectMapper.readTree(response.body());
-                if(jsonNode.has("id")) {
-                    return generateOauthToken(oauthLoginDTO);
-                }
-            }
-        } catch (Exception e) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(Map.of("message", "Invalid Google token"))
-                    .build();
-        }
-
-        return Response.status(Response.Status.UNAUTHORIZED)
-                .entity(Map.of("message", "Invalid Google token"))
-                .build();
-    }
-
-    private Response validateGitHubToken(OauthLoginDTO oauthLoginDTO) {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.github.com/user"))
-                .header("Authorization", "Bearer " + oauthLoginDTO.getAccessToken()) // Add access token to the Authorization header
-                .header("User-Agent", "auths") // Set the User-Agent header
-                .GET()
-                .build();
-
-        try {
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if(response.statusCode() == 200) {
-                JsonNode jsonNode = objectMapper.readTree(response.body());
-                if(jsonNode.has("id")) {
-                    return generateOauthToken(oauthLoginDTO);
-                }
-            }
-        } catch (Exception e) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(Map.of("message", "Invalid GitHub token"))
-                    .build();
-        }
-
-        return Response.status(Response.Status.UNAUTHORIZED)
-                .entity(Map.of("message", "Invalid GitHub token"))
-                .build();
-    }
-
-    private String generateStrongPassword(int length) {
-
-        // Define the characters for the password
-        final String LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
-        final String UPPERCASE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        final String DIGITS = "0123456789";
-        final String SPECIAL_CHARACTERS = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/";
-
-        // Combine all character sets
-        String allCharacters = LOWERCASE + UPPERCASE + DIGITS + SPECIAL_CHARACTERS;
-
-        // Use SecureRandom for better randomness
-        SecureRandom random = new SecureRandom();
-        StringBuilder password = new StringBuilder(length);
-
-        // Ensure the password contains at least one character from each category
-        password.append(LOWERCASE.charAt(random.nextInt(LOWERCASE.length())));
-        password.append(UPPERCASE.charAt(random.nextInt(UPPERCASE.length())));
-        password.append(DIGITS.charAt(random.nextInt(DIGITS.length())));
-        password.append(SPECIAL_CHARACTERS.charAt(random.nextInt(SPECIAL_CHARACTERS.length())));
-
-        // Fill the rest of the password with random characters
-        for (int i = password.length(); i < length; i++) {
-            password.append(allCharacters.charAt(random.nextInt(allCharacters.length())));
-        }
-
-        // Shuffle the password to randomize character positions
-        for (int i = 0; i < password.length(); i++) {
-            int j = random.nextInt(password.length());
-            char temp = password.charAt(i);
-            password.setCharAt(i, password.charAt(j));
-            password.setCharAt(j, temp);
-        }
-
-        return password.toString();
-    }
-
-
+    @Override
     @Transactional
-    public Response generateOauthToken(OauthLoginDTO oauthLoginDTO) {
-
-        long now = System.currentTimeMillis() / 1000L;
+    protected Response generateOauthToken(OauthLoginDTO oauthLoginDTO) {
 
         // Find the user by email
-        User dbUser = User.find("email", oauthLoginDTO.getEmail()).firstResult();
+        Customer dbCustomer = User.find("email", oauthLoginDTO.getEmail()).firstResult();
 
-        if(dbUser != null) {
-            if(dbUser.verifiedAt == 0) {
-                dbUser.verifiedAt = now;
-                dbUser.persist();
-            }
-            return TokenResponse.build(dbUser, uriInfo);
+        if(dbCustomer != null) {
+            return generateJwtResponse(dbCustomer);
         }
 
-        SecureRandom random = new SecureRandom();
+        // Create and persist the new customer
+        Customer customer = new Customer();
+        customer.firstName = oauthLoginDTO.getName();
+        customer.email = oauthLoginDTO.getEmail();
+        customer.persist();
 
-        String hashedPassword = BcryptUtil.bcryptHash(generateStrongPassword(random.nextInt(8, 12)));
+        return generateJwtResponse(customer);
+    }
 
-        // Create and persist the new user
-        User user = new User();
-        user.name = oauthLoginDTO.getName();
-        user.email = oauthLoginDTO.getEmail();
-        user.password = hashedPassword;
-        user.verifiedAt = now;
-        user.persist();
 
-        return TokenResponse.build(user, uriInfo);
+    private Response generateJwtResponse(Customer entity){
+
+        String entityIdentifier = entity.getIdentifier();
+
+        // Define roles
+        List<String> realmRoles = Arrays.asList(entityIdentifier, "offline_access", "default-roles-aicart", "uma_authorization");
+        List<String> resourceRoles = Arrays.asList("manage-account", "manage-account-links", "view-profile");
+
+        // Prepare `realm_access` claim as a map
+        Map<String, Object> realmAccess = new HashMap<>();
+        realmAccess.put("roles", realmRoles);
+
+        // Prepare `resource_access` claim as a map
+        Map<String, Object> resourceAccessRoles = new HashMap<>();
+        resourceAccessRoles.put("roles", resourceRoles);
+        Map<String, Object> resourceAccess = new HashMap<>();
+        resourceAccess.put("account", resourceAccessRoles);
+
+        // Build the JWT token
+        String token = Jwt.issuer(uriInfo.getBaseUri().toString())
+                .subject(entity.id.toString())
+                .claim(Claims.exp, Long.MAX_VALUE)
+                .claim(Claims.iat, System.currentTimeMillis() / 1000)
+                .claim(Claims.auth_time, System.currentTimeMillis() / 1000)
+                .claim("typ", "Bearer") // Custom claim for type
+                .claim("allowed_origins", List.of("*"))
+                .claim("realm_access", realmAccess)
+                .claim("resource_access", resourceAccess)
+                .claim("scope", "openid profile email") // Custom claim for scope
+                .claim("email_verified", true)
+                .claim("name", entity.firstName)
+                .claim("preferred_username", entity.firstName)
+                .claim("given_name", entity.firstName)
+                .claim("family_name", entity.lastName)
+                .claim("email", entity.email)
+                .sign();
+
+        // Build the response object
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("id", entity.id);
+        response.put("email", entity.email);
+        response.put("name", (entity.firstName + " " + entity.lastName).trim());
+        response.put("verifiedAt", System.currentTimeMillis() / 1000);
+
+        // Return the token
+        return Response.ok(response).build();
     }
 }

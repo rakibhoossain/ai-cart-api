@@ -12,7 +12,7 @@ import jakarta.ws.rs.core.Response;
 import org.aicart.auth.dto.LoginCredentialDTO;
 import org.aicart.store.customer.auth.service.CustomerLogin;
 
-@Path("/customer/auth")
+@Path("/customers/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class AuthResource {

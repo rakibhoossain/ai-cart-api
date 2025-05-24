@@ -49,7 +49,6 @@ public class ResetPassword {
     @Transactional
     public Response forgetPassword(String email, String origin) {
 
-
         System.out.println("origin: "+ origin);
 
         // Check if the user is authenticated

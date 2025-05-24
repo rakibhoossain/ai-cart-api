@@ -2,6 +2,7 @@ package org.aicart.store.customer.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import org.aicart.authentication.IdentifiableEntity;
 import org.aicart.store.user.entity.Shop;
 
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ import java.util.List;
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"shop_id", "email"})
         })
-public class Customer extends PanacheEntity {
+public class Customer extends PanacheEntity implements IdentifiableEntity {
 
     @Column(name = "first_name")
     public String firstName;
@@ -68,6 +69,16 @@ public class Customer extends PanacheEntity {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    @Override
+    public String getIdentifier() {
+        return "customer";
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
     }
 
     public enum AccountStatus {
