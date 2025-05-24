@@ -1,5 +1,6 @@
 package org.aicart.store.customer;
 
+import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -60,5 +61,9 @@ public class CustomerService {
         customer.firstName = dto.firstName;
         customer.lastName = dto.lastName;
         customer.phone = dto.phone;
+
+        if(dto.password != null) {
+            customer.password = BcryptUtil.bcryptHash(dto.password);
+        }
     }
 }
