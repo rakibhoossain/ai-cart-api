@@ -1,4 +1,4 @@
-package org.aicart.auth.dto;
+package org.aicart.authentication.dto;
 
 public class TokenUser {
     private long userId;

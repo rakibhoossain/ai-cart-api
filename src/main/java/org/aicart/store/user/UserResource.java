@@ -8,7 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.aicart.auth.dto.UserProfileDTO;
+import org.aicart.store.user.auth.dto.UserProfileDTO;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.resteasy.reactive.NoCache;
 import org.aicart.store.order.dto.OrderBillingDTO;

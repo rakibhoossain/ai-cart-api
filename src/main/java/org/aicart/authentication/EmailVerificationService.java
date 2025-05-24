@@ -1,4 +1,4 @@
-package org.aicart.auth;
+package org.aicart.authentication;
 
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
@@ -7,21 +7,18 @@ import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.security.Authenticated;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.aicart.authentication.dto.TokenUser;
 import org.aicart.authentication.entity.EmailVerification;
-import org.aicart.authentication.TokenGenerator;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.aicart.store.user.entity.User;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
-@ApplicationScoped
-public class EmailVerifyService {
+public class EmailVerificationService {
 
     @Inject
     JsonWebToken jwt;
@@ -47,13 +44,13 @@ public class EmailVerifyService {
     }
 
 
-    private void storeToken(User user, String otp, long expiredAt) {
-        EmailVerification emailVerification = EmailVerification.find("userId", user.id).firstResult();
+    private void storeToken(long entityId, String identifierName, String otp, long expiredAt) {
+        EmailVerification emailVerification = EmailVerification.find("entityId = ?1 AND identifierName = ?2", entityId, identifierName).firstResult();
 
         if (emailVerification == null) {
             emailVerification = new EmailVerification();
-            emailVerification.entityId = user.id;
-            emailVerification.identifierName = user.getIdentifier();
+            emailVerification.entityId = entityId;
+            emailVerification.identifierName = identifierName;
         }
 
         emailVerification.token = otp;
@@ -83,7 +80,10 @@ public class EmailVerifyService {
                 "Test Email from Quarkus",
                 verifyMailInstance.render());
 
-        storeToken(user, otp, expiredAt);
+        storeToken(user.id, user.getIdentifier(), otp, expiredAt);
+
+
+
         reactiveMailer.send(mail).subscribe().with(
                 success -> System.out.println("Email sent successfully!"),
                 failure -> System.err.println("Failed to send email: " + failure.getMessage())

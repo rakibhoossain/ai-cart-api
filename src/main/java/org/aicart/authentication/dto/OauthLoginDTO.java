@@ -1,4 +1,4 @@
-package org.aicart.auth.dto;
+package org.aicart.authentication.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;

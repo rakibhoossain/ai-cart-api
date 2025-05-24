@@ -1,4 +1,4 @@
-package org.aicart.auth.dto;
+package org.aicart.store.user.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

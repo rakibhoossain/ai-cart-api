@@ -1,14 +1,19 @@
-package org.aicart.auth;
+package org.aicart.store.user.auth;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import java.util.*;
 import jakarta.ws.rs.core.*;
-import org.aicart.auth.dto.*;
-import org.aicart.auth.service.ResetPassword;
-import org.aicart.auth.service.UserLogin;
-import org.aicart.auth.service.UserRegistration;
+import org.aicart.auth.EmailVerifyService;
+import org.aicart.authentication.PasswordResetService;
+import org.aicart.authentication.dto.ChangePasswordDTO;
+import org.aicart.authentication.dto.LoginCredentialDTO;
+import org.aicart.authentication.dto.OauthLoginDTO;
+import org.aicart.authentication.dto.ResetPasswordDTO;
+import org.aicart.store.user.auth.dto.RegistrationDTO;
+import org.aicart.store.user.auth.service.UserLogin;
+import org.aicart.store.user.auth.service.UserRegistration;
 import org.jboss.resteasy.reactive.NoCache;
 import io.smallrye.faulttolerance.api.RateLimit;
 
@@ -27,10 +32,7 @@ public class AuthResource {
     EmailVerifyService emailVerifyService;
 
     @Inject
-    ResetPassword resetPassword;
-
-    @Inject
-    ChangePasswordService changePasswordService;
+    PasswordResetService resetPassword;
 
     @Inject
     UserRegistration userRegistration;
@@ -78,7 +80,7 @@ public class AuthResource {
                     .build();
         }
 
-        return changePasswordService.changePassword(changePasswordDTO.getCurrentPassword(), changePasswordDTO.getPassword());
+        return userLogin.changePassword(changePasswordDTO);
     }
 
 

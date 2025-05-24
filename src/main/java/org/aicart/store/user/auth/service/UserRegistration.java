@@ -1,4 +1,4 @@
-package org.aicart.auth.service;
+package org.aicart.store.user.auth.service;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -6,7 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
 import org.aicart.auth.EmailVerifyService;
-import org.aicart.auth.dto.RegistrationDTO;
+import org.aicart.store.user.auth.dto.RegistrationDTO;
 import org.aicart.store.user.entity.User;
 
 import java.util.Map;

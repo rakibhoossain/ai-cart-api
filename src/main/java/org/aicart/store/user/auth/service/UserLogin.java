@@ -1,16 +1,21 @@
-package org.aicart.auth.service;
+package org.aicart.store.user.auth.service;
 
+import io.quarkus.security.Authenticated;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.aicart.auth.dto.LoginCredentialDTO;
-import org.aicart.auth.dto.OauthLoginDTO;
+import org.aicart.authentication.dto.ChangePasswordDTO;
+import org.aicart.authentication.dto.LoginCredentialDTO;
+import org.aicart.authentication.dto.OauthLoginDTO;
 import org.aicart.authentication.AuthenticationService;
 import org.aicart.store.user.entity.User;
 import org.eclipse.microprofile.jwt.Claims;
+import org.eclipse.microprofile.jwt.JsonWebToken;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +23,8 @@ import java.util.Map;
 
 @ApplicationScoped
 public class UserLogin extends AuthenticationService {
+    @Inject
+    JsonWebToken jwt;
 
     @Context
     UriInfo uriInfo; // Provides request context
@@ -25,7 +32,7 @@ public class UserLogin extends AuthenticationService {
     @Override
     protected Response jwtResponse(LoginCredentialDTO loginCredentialDTO) {
         User user = User.find("email", loginCredentialDTO.getEmail()).firstResult();
-        if(!isValidCredentials(loginCredentialDTO, user)) {
+        if(isInvalidCredentials(loginCredentialDTO.getPassword(), user)) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(Map.of("message", "Invalid email or password"))
                     .build();
@@ -108,5 +115,28 @@ public class UserLogin extends AuthenticationService {
 
         // Return the token
         return Response.ok(response).build();
+    }
+
+    @Override
+    @Transactional
+    @Authenticated
+    public Response changePassword(ChangePasswordDTO changePasswordDTO) {
+        String subject = jwt.getSubject();
+
+        // Find the user by id
+        User user = User.find("id", subject).firstResult();
+
+        if (isInvalidCredentials(changePasswordDTO.getPassword(), user)) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Current password not matched"))
+                    .build();
+        }
+
+        user.password = generatePasswordHash(changePasswordDTO.getPassword()); // Ensure your `User` entity has this field
+        user.persist();
+
+        return Response.status(Response.Status.OK)
+                .entity(Map.of("message", "Password changed successfully"))
+                .build();
     }
 }

@@ -19,7 +19,7 @@ public class User extends PanacheEntity implements IdentifiableEntity {
     @Column(name = "email", nullable = false, unique = true)
     public String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password")
     public String password; // Hashed password for authentication
 
     @OneToMany(mappedBy = "user")

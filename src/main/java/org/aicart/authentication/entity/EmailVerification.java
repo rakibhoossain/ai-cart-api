@@ -1,15 +1,20 @@
-package org.aicart.auth.entity;
+package org.aicart.authentication.entity;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "email_verifications")
-public class EmailVerification extends PanacheEntityBase {
+@Table(name = "email_verifications",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"entity_id", "identifier_name"})
+        })
+public class EmailVerification extends PanacheEntity {
 
-    @Id
-    @Column(name = "user_id", nullable = false)
-    public long userId;
+    @Column(name = "entity_id", nullable = false)
+    public long entityId;
+
+    @Column(name = "identifier_name", nullable = false, length = 10)
+    public String identifierName;
 
     @Column(nullable = false, length = 8)
     public String token;

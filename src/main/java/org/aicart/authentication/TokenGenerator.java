@@ -1,6 +1,6 @@
-package org.aicart.auth.service;
+package org.aicart.authentication;
 
-import org.aicart.auth.dto.TokenUser;
+import org.aicart.authentication.dto.TokenUser;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
@@ -9,8 +9,8 @@ public class TokenGenerator {
 
     private static final String SECRET_KEY = "A3j17B5W6qC2X4r8F9nV0ZtYdU3eS7I2L5H4K9";
 
-    public static String generateToken(long userId, String email, long expiredAt) {
-        String payload = userId + ":" + email + ":" + expiredAt;
+    public static String generateToken(long entityId, String email, long expiredAt) {
+        String payload = entityId + ":" + email + ":" + expiredAt;
 
         String signature = hmacSha256(payload);
         return Base64.getUrlEncoder().withoutPadding().encodeToString((payload + ":" + signature).getBytes());

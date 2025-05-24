@@ -1,5 +1,6 @@
 package org.aicart.store.customer.auth;
 
+import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -9,7 +10,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.aicart.auth.dto.LoginCredentialDTO;
+import org.aicart.authentication.dto.LoginCredentialDTO;
 import org.aicart.store.customer.auth.service.CustomerLogin;
 
 @Path("/customers/auth")

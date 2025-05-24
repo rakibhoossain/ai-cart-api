@@ -1,8 +1,9 @@
-package org.aicart.auth.dto;
+package org.aicart.authentication.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.aicart.authentication.validation.StrongPassword;
 
 public class ChangePasswordDTO {
 
@@ -13,6 +14,7 @@ public class ChangePasswordDTO {
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters long")
+    @StrongPassword
     private String password;
 
 

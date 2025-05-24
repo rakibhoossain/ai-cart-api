@@ -1,8 +1,8 @@
-package org.aicart.auth.dto;
+package org.aicart.authentication.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.aicart.auth.validation.StrongPassword;
+import org.aicart.authentication.validation.StrongPassword;
 
 public class ResetPasswordDTO {
 

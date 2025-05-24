@@ -1,4 +1,4 @@
-package org.aicart.auth.service;
+package org.aicart.authentication;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.mailer.Mail;
@@ -12,15 +12,15 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
-import org.aicart.auth.dto.ResetPasswordDTO;
-import org.aicart.auth.dto.TokenUser;
-import org.aicart.auth.entity.PasswordReset;
+import org.aicart.authentication.dto.ResetPasswordDTO;
+import org.aicart.authentication.dto.TokenUser;
+import org.aicart.authentication.entity.PasswordReset;
 import org.aicart.store.user.entity.User;
 
 import java.util.Map;
 
 @ApplicationScoped
-public class ResetPassword {
+public class PasswordResetService {
 
     @Inject
     ReactiveMailer reactiveMailer;
@@ -38,7 +38,8 @@ public class ResetPassword {
 
         if (passwordReset == null) {
             passwordReset = new PasswordReset();
-            passwordReset.userId = user.id;
+            passwordReset.entityId = user.id;
+            passwordReset.identifierName = user.getIdentifier();
         }
 
         passwordReset.token = token;

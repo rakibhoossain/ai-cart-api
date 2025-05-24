@@ -1,10 +1,10 @@
-package org.aicart.auth.dto;
+package org.aicart.store.user.auth.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import org.aicart.auth.validation.StrongPassword;
-import org.aicart.auth.validation.UniqueEmail;
+import org.aicart.authentication.validation.StrongPassword;
+import org.aicart.store.user.validation.UniqueEmail;
 
 public class RegistrationDTO {
 

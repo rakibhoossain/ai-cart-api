@@ -1,7 +1,7 @@
 package org.aicart.store.user;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import org.aicart.auth.dto.UserProfileDTO;
+import org.aicart.store.user.auth.dto.UserProfileDTO;
 import org.aicart.store.order.dto.OrderBillingDTO;
 import org.aicart.store.order.dto.OrderShippingDTO;
 import org.aicart.store.user.entity.User;

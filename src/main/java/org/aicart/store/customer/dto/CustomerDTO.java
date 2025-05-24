@@ -3,7 +3,7 @@ package org.aicart.store.customer.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.*;
-import org.aicart.auth.validation.StrongPassword;
+import org.aicart.authentication.validation.StrongPassword;
 import org.aicart.store.customer.validation.UniqueEmail;
 
 @UniqueEmail

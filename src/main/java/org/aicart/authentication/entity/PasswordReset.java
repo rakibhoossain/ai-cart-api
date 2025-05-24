@@ -1,15 +1,20 @@
-package org.aicart.auth.entity;
+package org.aicart.authentication.entity;
 
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "password_resets")
-public class PasswordReset extends PanacheEntityBase {
+@Table(name = "password_resets",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"entity_id", "identifier_name"})
+        })
+public class PasswordReset extends PanacheEntity {
 
-    @Id
-    @Column(name = "user_id", nullable = false)
-    public long userId;
+    @Column(name = "entity_id", nullable = false)
+    public long entityId;
+
+    @Column(name = "identifier_name", nullable = false, length = 10)
+    public String identifierName;
 
     @Column(nullable = false)
     public String token;

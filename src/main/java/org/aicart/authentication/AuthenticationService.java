@@ -6,8 +6,9 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-import org.aicart.auth.dto.LoginCredentialDTO;
-import org.aicart.auth.dto.OauthLoginDTO;
+import org.aicart.authentication.dto.ChangePasswordDTO;
+import org.aicart.authentication.dto.LoginCredentialDTO;
+import org.aicart.authentication.dto.OauthLoginDTO;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -30,8 +31,8 @@ public abstract class AuthenticationService implements AuthenticationInterface {
 
     abstract protected Response jwtResponse(LoginCredentialDTO loginCredentialDTO);
 
-    protected boolean isValidCredentials(LoginCredentialDTO loginCredentialDTO, IdentifiableEntity entity) {
-        return entity != null && entity.getPassword() != null && !entity.getPassword().isBlank() && BcryptUtil.matches(loginCredentialDTO.getPassword(), entity.getPassword());
+    protected boolean isInvalidCredentials(String password, IdentifiableEntity entity) {
+        return entity == null || entity.getPassword() == null || entity.getPassword().isBlank() || !BcryptUtil.matches(password, entity.getPassword());
     }
 
     @Override
@@ -126,4 +127,10 @@ public abstract class AuthenticationService implements AuthenticationInterface {
     }
 
     protected abstract Response generateOauthToken(OauthLoginDTO oauthLoginDTO);
+
+    protected abstract Response changePassword(ChangePasswordDTO changePasswordDTO);
+
+    public String generatePasswordHash(String password) {
+        return BcryptUtil.bcryptHash(password);
+    }
 }
