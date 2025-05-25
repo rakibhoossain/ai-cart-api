@@ -1,33 +1,24 @@
-package org.aicart.auth;
+package org.aicart.store.user.auth.service;
 
 import io.quarkus.mailer.Mail;
-import io.quarkus.mailer.Mailer;
 import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.qute.Location;
 import io.quarkus.qute.Template;
 import io.quarkus.qute.TemplateInstance;
-import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
+import org.aicart.authentication.EmailVerificationService;
+import org.aicart.authentication.TokenGenerator;
 import org.aicart.authentication.dto.TokenUser;
 import org.aicart.authentication.entity.EmailVerification;
-import org.aicart.authentication.TokenGenerator;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.aicart.store.user.entity.User;
 
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 @ApplicationScoped
-public class EmailVerifyService {
-
-    @Inject
-    JsonWebToken jwt;
-
-    @Inject
-    Mailer mailer;
+public class UserEmailVerification extends EmailVerificationService {
 
     @Inject
     ReactiveMailer reactiveMailer;
@@ -36,38 +27,11 @@ public class EmailVerifyService {
     @Location("mail/verify-email.html")
     Template verifyMailTemplate;
 
-    public String generateOtp() {
-        final int OTP_LENGTH = 6;
-
-        StringBuilder otp = new StringBuilder(OTP_LENGTH);
-        for (int i = 0; i < OTP_LENGTH; i++) {
-            otp.append(ThreadLocalRandom.current().nextInt(10));
-        }
-        return otp.toString();
-    }
-
-
-    private void storeToken(User user, String otp, long expiredAt) {
-        EmailVerification emailVerification = EmailVerification.find("userId", user.id).firstResult();
-
-        if (emailVerification == null) {
-            emailVerification = new EmailVerification();
-            emailVerification.entityId = user.id;
-            emailVerification.identifierName = user.getIdentifier();
-        }
-
-        emailVerification.token = otp;
-        emailVerification.expiredAt = expiredAt;
-        emailVerification.persist();
-    }
-
-
     public void sendMail(User user, String origin) {
 
-        final long expiryDuration = 10 * 60L;
-        long expiredAt = System.currentTimeMillis() / 1000L + expiryDuration;
+        long expiredAt = getExpiryDuration();
 
-        String token = TokenGenerator.generateToken(user.id, user.email, expiredAt);
+        String token = TokenGenerator.generateToken(user.id, user.getIdentifier(), user.email, expiredAt);
         String otp = generateOtp();
 
         TemplateInstance verifyMailInstance = verifyMailTemplate
@@ -83,64 +47,18 @@ public class EmailVerifyService {
                 "Test Email from Quarkus",
                 verifyMailInstance.render());
 
-        storeToken(user, otp, expiredAt);
+        storeToken(user.id, user.getIdentifier(), otp, expiredAt);
+
         reactiveMailer.send(mail).subscribe().with(
                 success -> System.out.println("Email sent successfully!"),
                 failure -> System.err.println("Failed to send email: " + failure.getMessage())
         );
-
-//         mailer.send(mail);
-
     }
 
-    @Authenticated
+    @Override
     @Transactional
-    public Response emailVerifyCode(String token) {
-
-        long currentTime = System.currentTimeMillis() / 1000;
-
-        EmailVerification emailVerification = EmailVerification.find("userId = ?1 and token = ?2 AND expiredAt >= ?3", jwt.getSubject(), token, currentTime)
-                .firstResult();
-
-
-        if (emailVerification == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Code expired"))
-                    .build();
-        }
-
+    protected Response verifyEmailVerificationEntity(EmailVerification emailVerification) {
         User user = User.findById(emailVerification.entityId);
-
-        if(user == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Code expired"))
-                    .build();
-        }
-        
-        user.verifiedAt = currentTime;
-        user.persist();
-
-        EmailVerification.delete("userId = ?1", emailVerification.entityId);
-
-
-        return Response.status(Response.Status.OK)
-                .entity(Map.of("message", "Email verified successfully"))
-                .build();
-    }
-
-
-    @Transactional
-    public Response emailVerifyToken(String token) {
-
-        TokenUser tokenUser = TokenGenerator.getTokenUser(token);
-        if(tokenUser == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("message", "Code expired"))
-                    .build();
-        }
-
-        User user = User.findById(tokenUser.getUserId());
-
         if(user == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("message", "Code expired"))
@@ -153,16 +71,39 @@ public class EmailVerifyService {
                     .build();
         }
 
-
         user.verifiedAt = System.currentTimeMillis() / 1000;
         user.persist();
-
-        EmailVerification.delete("userId = ?1", user.id);
-
+        EmailVerification.delete("entityId = ?1 AND identifierName = ?2", emailVerification.entityId, emailVerification.identifierName);
 
         return Response.status(Response.Status.OK)
                 .entity(Map.of("message", "Email verified successfully"))
                 .build();
     }
 
+    @Override
+    @Transactional
+    protected Response verifyTokenUserEntity(TokenUser tokenUser) {
+
+        if(tokenUser == null || !tokenUser.getIdentifierName().equals("user")) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Code expired"))
+                    .build();
+        }
+
+        User user = User.findById(tokenUser.getUserId());
+        if(user == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Code expired"))
+                    .build();
+        }
+
+        user.verifiedAt = System.currentTimeMillis() / 1000;
+        user.persist();
+
+        EmailVerification.delete("entityId = ?1 AND identifierName = ?2", user.id, tokenUser.getIdentifierName());
+
+        return Response.status(Response.Status.OK)
+                .entity(Map.of("message", "Email verified successfully"))
+                .build();
+    }
 }

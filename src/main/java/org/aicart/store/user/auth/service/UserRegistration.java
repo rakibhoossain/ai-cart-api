@@ -5,7 +5,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Response;
-import org.aicart.auth.EmailVerifyService;
 import org.aicart.store.user.auth.dto.RegistrationDTO;
 import org.aicart.store.user.entity.User;
 
@@ -15,7 +14,7 @@ import java.util.Map;
 public class UserRegistration {
 
     @Inject
-    EmailVerifyService emailVerifyService;
+    UserEmailVerification userEmailVerification;
 
     @Transactional
     public Response register(RegistrationDTO registrationDTO, String origin) {
@@ -34,7 +33,7 @@ public class UserRegistration {
         user.password = hashedPassword;
         user.persist();
 
-        emailVerifyService.sendMail(user, origin);
+        userEmailVerification.sendMail(user, origin);
 
         return Response.status(Response.Status.CREATED)
                 .entity(Map.of("message", "User registered successfully"))

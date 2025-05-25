@@ -3,9 +3,7 @@ package org.aicart.authentication;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.elytron.security.common.BcryptUtil;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
 import org.aicart.authentication.dto.ChangePasswordDTO;
 import org.aicart.authentication.dto.LoginCredentialDTO;
 import org.aicart.authentication.dto.OauthLoginDTO;
@@ -17,9 +15,6 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 
 public abstract class AuthenticationService implements AuthenticationInterface {
-
-    @Context
-    UriInfo uriInfo; // Provides request context
 
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
@@ -56,7 +51,7 @@ public abstract class AuthenticationService implements AuthenticationInterface {
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if(response.statusCode() == 200) {
+            if(response.statusCode() == Response.Status.OK.getStatusCode()) {
                 JsonNode jsonNode = objectMapper.readTree(response.body());
                 if(jsonNode.has("id")) {
                     return generateOauthToken(oauthLoginDTO);
@@ -84,7 +79,7 @@ public abstract class AuthenticationService implements AuthenticationInterface {
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
-            if(response.statusCode() == 200) {
+            if(response.statusCode() == Response.Status.OK.getStatusCode()) {
                 JsonNode jsonNode = objectMapper.readTree(response.body());
                 if(jsonNode.has("id")) {
                     return generateOauthToken(oauthLoginDTO);

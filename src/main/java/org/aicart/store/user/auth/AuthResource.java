@@ -5,14 +5,14 @@ import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import java.util.*;
 import jakarta.ws.rs.core.*;
-import org.aicart.auth.EmailVerifyService;
-import org.aicart.authentication.PasswordResetService;
 import org.aicart.authentication.dto.ChangePasswordDTO;
 import org.aicart.authentication.dto.LoginCredentialDTO;
 import org.aicart.authentication.dto.OauthLoginDTO;
 import org.aicart.authentication.dto.ResetPasswordDTO;
 import org.aicart.store.user.auth.dto.RegistrationDTO;
+import org.aicart.store.user.auth.service.UserEmailVerification;
 import org.aicart.store.user.auth.service.UserLogin;
+import org.aicart.store.user.auth.service.UserPasswordReset;
 import org.aicart.store.user.auth.service.UserRegistration;
 import org.jboss.resteasy.reactive.NoCache;
 import io.smallrye.faulttolerance.api.RateLimit;
@@ -29,10 +29,10 @@ public class AuthResource {
     UserLogin userLogin;
 
     @Inject
-    EmailVerifyService emailVerifyService;
+    UserEmailVerification userEmailVerification;
 
     @Inject
-    PasswordResetService resetPassword;
+    UserPasswordReset userPasswordReset;
 
     @Inject
     UserRegistration userRegistration;
@@ -60,14 +60,14 @@ public class AuthResource {
     @GET
     @Path("/email-verify-code")
     public Response emailVerifyCode(@QueryParam("code") String code) {
-        return emailVerifyService.emailVerifyCode(code);
+        return userEmailVerification.emailVerifyCode(code);
     }
 
 
     @GET
     @Path("/email-verify-token")
     public Response emailVerifyToken(@QueryParam("token") String token) {
-        return emailVerifyService.emailVerifyToken(token);
+        return userEmailVerification.emailVerifyToken(token);
     }
 
     @POST
@@ -96,14 +96,14 @@ public class AuthResource {
 
         System.out.println("Origin: " + origin + "\nReferer: " + referer);
 
-        return resetPassword.forgetPassword(email, origin);
+        return userPasswordReset.forgetPassword(email, origin);
 
     }
 
     @POST
     @Path("/reset-password")
     public Response resetPassword(@Valid ResetPasswordDTO resetPasswordDTO) {
-        return resetPassword.resetPassword(resetPasswordDTO);
+        return userPasswordReset.resetPassword(resetPasswordDTO);
     }
 }
 

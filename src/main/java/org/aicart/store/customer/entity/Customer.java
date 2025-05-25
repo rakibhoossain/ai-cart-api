@@ -66,6 +66,9 @@ public class Customer extends PanacheEntity implements IdentifiableEntity {
     @Column(name = "updated_at", nullable = false)
     public LocalDateTime updatedAt = LocalDateTime.now();
 
+    @Column(name = "verified_at")
+    public long verifiedAt = 0;
+
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
