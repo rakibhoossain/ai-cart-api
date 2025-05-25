@@ -20,6 +20,8 @@ public class OauthLoginDTO {
     @Email(message = "Invalid email format")
     private String email;
 
+    @JsonProperty("shop_id")
+    private long shopId;
 
     public String getProvider() {
         return provider;
@@ -52,4 +54,8 @@ public class OauthLoginDTO {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public long getShopId() { return shopId; }
+
+    public void setShopId(long shopId) { this.shopId = shopId; }
 }

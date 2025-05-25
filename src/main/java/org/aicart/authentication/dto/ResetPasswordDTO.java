@@ -1,5 +1,6 @@
 package org.aicart.authentication.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.aicart.authentication.validation.StrongPassword;
@@ -13,6 +14,9 @@ public class ResetPasswordDTO {
 
     @NotBlank(message = "Token is required")
     private String token;
+
+    @JsonProperty("shop_id")
+    private long shopId;
 
     public String getPassword() {
         return password;
@@ -29,4 +33,8 @@ public class ResetPasswordDTO {
     public void setToken(String token) {
         this.token = token;
     }
+
+    public long getShopId() { return shopId; }
+
+    public void setShopId(long shopId) { this.shopId = shopId; }
 }

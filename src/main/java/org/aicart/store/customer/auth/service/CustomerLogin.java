@@ -1,6 +1,5 @@
 package org.aicart.store.customer.auth.service;
 
-import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.security.Authenticated;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -35,7 +34,7 @@ public class CustomerLogin extends AuthenticationService {
 
     @Override
     protected Response jwtResponse(LoginCredentialDTO loginCredentialDTO) {
-        Customer customer = Customer.find("email", loginCredentialDTO.getEmail()).firstResult();
+        Customer customer = Customer.find("email = ?1 AND shop.id = ?2", loginCredentialDTO.getEmail(), loginCredentialDTO.getShopId()).firstResult();
         if(isInvalidCredentials(loginCredentialDTO.getPassword(), customer)) {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(Map.of("message", "Invalid email or password"))
@@ -50,7 +49,7 @@ public class CustomerLogin extends AuthenticationService {
     protected Response generateOauthToken(OauthLoginDTO oauthLoginDTO) {
 
         // Find the user by email
-        Customer dbCustomer = User.find("email", oauthLoginDTO.getEmail()).firstResult();
+        Customer dbCustomer = User.find("email = ?1 AND shop.id = ?2", oauthLoginDTO.getEmail(), oauthLoginDTO.getShopId()).firstResult();
 
         if(dbCustomer != null) {
             return generateJwtResponse(dbCustomer);
@@ -124,7 +123,7 @@ public class CustomerLogin extends AuthenticationService {
         String subject = jwt.getSubject();
 
         // Find the customer by id
-        Customer customer = Customer.find("id", subject).firstResult();
+        Customer customer = Customer.find("id = ?1 AND shop.id = ?2", subject, changePasswordDTO.getShopId()).firstResult();
 
         if (isInvalidCredentials(changePasswordDTO.getPassword(), customer)) {
             return Response.status(Response.Status.BAD_REQUEST)
