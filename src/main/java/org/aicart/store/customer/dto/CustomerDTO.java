@@ -31,4 +31,6 @@ public class CustomerDTO {
 
     @StrongPassword
     public String password;
+
+    public long shopId;
 }

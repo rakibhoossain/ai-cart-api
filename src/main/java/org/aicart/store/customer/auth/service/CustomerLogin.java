@@ -14,7 +14,7 @@ import org.aicart.authentication.dto.OauthLoginDTO;
 import org.aicart.authentication.AuthenticationService;
 import org.aicart.store.context.ShopContext;
 import org.aicart.store.customer.entity.Customer;
-import org.aicart.store.user.entity.User;
+import org.aicart.store.user.entity.Shop;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -53,7 +53,7 @@ public class CustomerLogin extends AuthenticationService {
     protected Response generateOauthToken(OauthLoginDTO oauthLoginDTO) {
 
         // Find the user by email
-        Customer dbCustomer = User.find("email = ?1 AND shop.id = ?2", oauthLoginDTO.getEmail(), shopContext.getShopId()).firstResult();
+        Customer dbCustomer = Customer.find("email = ?1 AND shop.id = ?2", oauthLoginDTO.getEmail(), shopContext.getShopId()).firstResult();
 
         if(dbCustomer != null) {
             return generateJwtResponse(dbCustomer);
@@ -63,6 +63,8 @@ public class CustomerLogin extends AuthenticationService {
         Customer customer = new Customer();
         customer.firstName = oauthLoginDTO.getName();
         customer.email = oauthLoginDTO.getEmail();
+        customer.shop = Shop.findById(shopContext.getShopId());
+        customer.verifiedAt = System.currentTimeMillis() / 1000;
         customer.persist();
 
         return generateJwtResponse(customer);
@@ -102,7 +104,7 @@ public class CustomerLogin extends AuthenticationService {
                 .claim("name", entity.firstName)
                 .claim("preferred_username", entity.firstName)
                 .claim("given_name", entity.firstName)
-                .claim("family_name", entity.lastName)
+                .claim("family_name", entity.firstName)
                 .claim("email", entity.email)
                 .sign();
 
