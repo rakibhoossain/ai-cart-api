@@ -17,9 +17,6 @@ public class ChangePasswordDTO {
     @StrongPassword
     private String password;
 
-    @JsonProperty("shop_id")
-    private long shopId;
-
     public String getCurrentPassword() {
         return currentPassword;
     }
@@ -35,8 +32,4 @@ public class ChangePasswordDTO {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    public long getShopId() { return shopId; }
-
-    public void setShopId(long shopId) { this.shopId = shopId; }
 }
