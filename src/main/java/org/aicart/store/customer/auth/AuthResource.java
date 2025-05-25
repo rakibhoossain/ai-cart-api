@@ -17,7 +17,6 @@ import org.aicart.store.customer.auth.service.CustomerEmailVerification;
 import org.aicart.store.customer.auth.service.CustomerLogin;
 import org.aicart.store.customer.auth.service.CustomerPasswordReset;
 import org.aicart.store.customer.auth.service.CustomerRegistration;
-import org.aicart.store.user.auth.dto.RegistrationDTO;
 import org.jboss.resteasy.reactive.NoCache;
 
 import java.util.Map;

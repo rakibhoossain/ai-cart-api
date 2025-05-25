@@ -29,10 +29,6 @@ public class CustomerDTO {
     @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid phone number format")
     public String phone;
 
-    @NotNull(message = "Shop ID is required")
-    @JsonProperty("shop_id")
-    public Long shopId;
-
     @StrongPassword
     public String password;
 }

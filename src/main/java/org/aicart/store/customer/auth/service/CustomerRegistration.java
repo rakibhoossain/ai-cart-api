@@ -30,18 +30,15 @@ public class CustomerRegistration {
                     .build();
         }
 
-        String hashedPassword = BcryptUtil.bcryptHash(registrationDTO.password);
-
-        Shop shop = (Shop) Shop.findByIdOptional(shopContext.getShopId())
-                .orElseThrow(() -> new NotFoundException("Shop not found"));
-
         // Create and persist the new user
         Customer customer = new Customer();
         customer.email = registrationDTO.email;
         customer.firstName = registrationDTO.firstName;
         customer.lastName = registrationDTO.lastName;
         customer.phone = registrationDTO.phone;
-        customer.shop = shop;
+        customer.shop = (Shop) Shop.findByIdOptional(shopContext.getShopId())
+                .orElseThrow(() -> new NotFoundException("Shop not found"));
+        customer.password = BcryptUtil.bcryptHash(registrationDTO.password);
         customer.persist();
 
         customerEmailVerification.sendMail(customer, origin);

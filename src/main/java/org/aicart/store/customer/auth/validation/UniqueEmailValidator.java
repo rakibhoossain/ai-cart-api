@@ -1,18 +1,18 @@
-package org.aicart.store.customer.validation;
+package org.aicart.store.customer.auth.validation;
 
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.aicart.store.context.ShopContext;
-import org.aicart.store.customer.dto.CustomerDTO;
+import org.aicart.store.customer.auth.dto.CustomerRegistrationDTO;
 import org.aicart.store.customer.entity.Customer;
 
-public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, CustomerDTO> {
+public class UniqueEmailValidator implements ConstraintValidator<UniqueEmail, CustomerRegistrationDTO> {
     @Inject
     ShopContext shopContext;
 
     @Override
-    public boolean isValid(CustomerDTO dto, ConstraintValidatorContext context) {
+    public boolean isValid(CustomerRegistrationDTO dto, ConstraintValidatorContext context) {
         if (dto.email == null || dto.email.isBlank()) {
             return true;
         }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.*;
 import org.aicart.authentication.validation.StrongPassword;
-import org.aicart.store.customer.validation.UniqueEmail;
+import org.aicart.store.customer.auth.validation.UniqueEmail;
 
 @UniqueEmail
 public class CustomerRegistrationDTO {
