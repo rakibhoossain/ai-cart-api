@@ -2,11 +2,12 @@ package org.aicart.store.order.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import org.aicart.store.customer.entity.Customer;
+import org.aicart.store.user.entity.Shop;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import org.aicart.store.order.dto.OrderBillingDTO;
 import org.aicart.store.order.dto.OrderShippingDTO;
-import org.aicart.store.user.entity.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,9 +16,13 @@ import java.util.List;
 @Table(name = "carts")
 public class Cart extends PanacheEntity {
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = true)
-    public User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id")
+    public Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
 
     @Column(name = "session_id", nullable = true)
     public String sessionId; // UUID for guest users

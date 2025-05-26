@@ -5,6 +5,8 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.aicart.PaymentStatusEnum;
 import org.aicart.PaymentTypeEnum;
+import org.aicart.store.context.ShopContext;
+import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.order.dto.CartItemDTO;
 import org.aicart.store.order.dto.OrderShippingDTO;
 import org.aicart.store.order.dto.OrderBillingDTO;
@@ -27,14 +29,17 @@ public class OrderService {
     @Inject
     CartRepository cartRepository;
 
+    @Inject
+    ShopContext shopContext;
+
     @Transactional
     public Order convertCartToOrder(Cart cart,
                                     OrderBillingDTO billingDetails,
                                     OrderShippingDTO shippingDetails,
                                     String subject) {
 
-        User user = subject != null
-                ? User.find("id", subject).firstResult()
+        Customer customer = subject != null
+                ? Customer.find("id = ?1 AND shop.id = ?2", subject, shopContext.getShopId()).firstResult()
                 : null;
 
 
@@ -60,17 +65,19 @@ public class OrderService {
         order.paymentStatus = PaymentStatusEnum.PENDING;
         order.status = OrderStatusEnum.PENDING;
 
-        if(user != null) {
-            order.user = user;
-        } else if(cart.user != null) {
-            order.user = cart.user;
+        if(customer != null) {
+            order.customer = customer;
+        } else if(cart.customer != null) {
+            order.customer = cart.customer;
         }
 
         order.currency = "EUR";
 
-        //
-        if (cart.user != null) {
-            order.user = cart.user;
+        // Shop
+        order.shop = cart.shop;
+
+        if (cart.customer != null) {
+            order.customer = cart.customer;
         } else {
             order.sessionId = cart.sessionId;
         }

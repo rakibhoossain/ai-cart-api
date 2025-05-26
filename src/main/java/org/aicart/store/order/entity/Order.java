@@ -2,10 +2,11 @@ package org.aicart.store.order.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.order.OrderStatusEnum;
 import org.aicart.PaymentStatusEnum;
 import org.aicart.PaymentTypeEnum;
-import org.aicart.store.user.entity.User;
+import org.aicart.store.user.entity.Shop;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
@@ -16,12 +17,12 @@ import java.util.List;
 public class Order extends PanacheEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
-    public User user;
+    @JoinColumn(name = "customer_id")
+    public Customer customer;
 
-//    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinColumn(name = "currency_id", nullable = false)
-//    public Currency currency;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
 
     @Column(name = "currency", nullable = false)
     public String currency; // ISO 3166-1 alpha-2

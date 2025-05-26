@@ -5,13 +5,14 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.HttpHeaders;
+import org.aicart.store.context.ShopContext;
+import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.order.dto.CartAddressRequestDTO;
 import org.aicart.store.order.dto.CartItemDTO;
 import org.aicart.store.order.dto.CartResponseDTO;
 import org.aicart.store.order.entity.Cart;
 import org.aicart.store.order.entity.CartDeliveryRequestDTO;
 import org.aicart.store.order.entity.CartItem;
-import org.aicart.store.user.entity.User;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,12 +25,15 @@ public class CartService {
     @Inject
     CartRepository cartRepository;
 
+    @Inject
+    ShopContext shopContext;
+
     public Cart getCartEntity(String sessionId) {
-        return cartRepository.getCart(sessionId);
+        return cartRepository.getCart(sessionId, shopContext.getShopId());
     }
 
     public CartResponseDTO getCart(String sessionId) {
-        Cart cart = cartRepository.getCart(sessionId);
+        Cart cart = cartRepository.getCart(sessionId, shopContext.getShopId());
 
         if(cart != null) {
             List<CartItemDTO> cartItems = cartRepository.getCartItems(cart);
@@ -40,18 +44,18 @@ public class CartService {
     }
 
     @Transactional
-    public Cart firstOrCreate(String sessionId, Long userId) {
-        Cart cart = cartRepository.getCart(sessionId);
+    public Cart firstOrCreate(String sessionId, Long customerId) {
+        Cart cart = cartRepository.getCart(sessionId, shopContext.getShopId());
 
         if(cart == null) {
-            User user = userId != null ? User.find("id", userId).firstResult() : null;
-            return cartRepository.createNewCart(sessionId, user);
+            Customer customer = customerId != null ? Customer.find("id = ?1 AND shop.id = ?2", customerId, shopContext.getShopId()).firstResult() : null;
+            return cartRepository.createNewCart(sessionId, customer, shopContext.getShopId());
         }
 
-        if(cart.user == null) {
-            User user = userId != null ? User.find("id", userId).firstResult() : null;
-            if(user != null) {
-                cart.user = user;
+        if(cart.customer == null) {
+            Customer customer = customerId != null ? Customer.find("id = ?1 AND shop.id = ?2", customerId, shopContext.getShopId()).firstResult() : null;
+            if(customer != null) {
+                cart.customer = customer;
                 cart.persist();
             }
         }

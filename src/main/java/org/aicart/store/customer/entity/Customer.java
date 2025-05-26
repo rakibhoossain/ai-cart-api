@@ -3,6 +3,8 @@ package org.aicart.store.customer.entity;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.aicart.authentication.IdentifiableEntity;
+import org.aicart.store.order.entity.Cart;
+import org.aicart.store.order.entity.Order;
 import org.aicart.store.user.entity.Shop;
 
 import java.time.LocalDateTime;
@@ -37,6 +39,12 @@ public class Customer extends PanacheEntity implements IdentifiableEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     public Shop shop;
+
+    @OneToMany(mappedBy = "customer")
+    public List<Cart> carts;
+
+    @OneToMany(mappedBy = "customer")
+    public List<Order> orders;
 
     @Column(name = "newsletter_subscribe", columnDefinition = "BOOLEAN DEFAULT FALSE")
     public boolean newsletterSubscribe = false;

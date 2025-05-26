@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.order.dto.CartAddressRequestDTO;
 import org.aicart.store.order.dto.CartItemDTO;
 import org.aicart.store.order.entity.Cart;
@@ -14,7 +15,7 @@ import org.aicart.store.order.entity.CartItem;
 import org.aicart.store.order.entity.StockReservation;
 import org.aicart.store.product.entity.Product;
 import org.aicart.store.product.entity.ProductVariant;
-import org.aicart.store.user.entity.User;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.List;
 
@@ -25,17 +26,22 @@ public class CartRepository implements PanacheRepository<Cart> {
     EntityManager em;
 
     public Cart getCart(String sessionId) {
-        return find("sessionId", sessionId).firstResult();  // Find Cart by guestSessionId
+        return find("sessionId", sessionId).firstResult();
     }
 
-    public Cart createNewCart(String sessionId, User user) {
+    public Cart getCart(String sessionId, long shopId) {
+        return find("sessionId = ?1 AND shop.id = ?2", sessionId, shopId).firstResult();  // Find Cart by guestSessionId
+    }
+
+    public Cart createNewCart(String sessionId, Customer customer, long shopId) {
         // Create a new Cart and associate it with the session ID
         Cart newCart = new Cart();
         newCart.sessionId = sessionId;
+        newCart.shop = Shop.findById(shopId);
         newCart.step = 0;
 
-        if(user != null) {
-            newCart.user = user;
+        if(customer != null) {
+            newCart.customer = customer;
         }
 
         persist(newCart);
@@ -134,6 +140,7 @@ public class CartRepository implements PanacheRepository<Cart> {
     @Transactional
     public List<CartItemDTO> getCartItems(Cart cart) {
 
+        // TODO: Replace with SQL query
         int languageId = 1; // Static language ID for now
         int countryId = 1; // Static country ID for now
         long currentTimestamp = System.currentTimeMillis() / 1000L; // Static Unix timestamp for now

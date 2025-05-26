@@ -6,6 +6,8 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
+import org.aicart.store.context.ShopContext;
+import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.order.dto.*;
 import org.aicart.sslcommerz.SslcommerzResponse;
 import org.aicart.sslcommerz.SslcommerzService;
@@ -14,7 +16,6 @@ import org.aicart.store.order.entity.Cart;
 import org.aicart.store.order.entity.CartDeliveryRequestDTO;
 import org.aicart.store.order.entity.CartItem;
 import org.aicart.store.order.entity.Order;
-import org.aicart.store.user.entity.User;
 
 import java.util.HashMap;
 
@@ -37,6 +38,9 @@ public class CartResource {
 
     @Context
     SecurityContext securityContext;
+
+    @Inject
+    ShopContext shopContext;
 
     private final String sessionKey = "cart-session";
 
@@ -116,7 +120,7 @@ public class CartResource {
     @Path("/update-cart-address/{cartId}")
     public Response updateCartAddress(@PathParam("cartId") Long cartId, @Valid CartAddressRequestDTO addressRequest) {
 
-        Cart cart = Cart.findById(cartId);
+        Cart cart = Cart.find("id = ?1 AND shop.id = ?2", cartId, shopContext.getShopId()).firstResult();
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         CartAddressRequestDTO results = cartService.updateCartAddress(cart, addressRequest);
@@ -128,7 +132,7 @@ public class CartResource {
     @GET
     @Path("/verify-coupon/{cartId}")
     public Response verifyCoupon(@PathParam("cartId") Long cartId, @QueryParam("couponCode") String couponCode) {
-        Cart cart = Cart.findById(cartId);
+        Cart cart = Cart.find("id = ?1 AND shop.id = ?2", cartId, shopContext.getShopId()).firstResult();
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         return Response.ok(couponCode).build();
@@ -137,7 +141,7 @@ public class CartResource {
     @PUT
     @Path("/update-delivery-info/{cartId}")
     public Response updateDeliveryInfo(@PathParam("cartId") Long cartId, CartDeliveryRequestDTO deliveryRequest) {
-        Cart cart = Cart.findById(cartId);
+        Cart cart = Cart.find("id = ?1 AND shop.id = ?2", cartId, shopContext.getShopId()).firstResult();
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         CartDeliveryRequestDTO results = cartService.updateDeliveryInfo(cart, deliveryRequest);
@@ -149,7 +153,7 @@ public class CartResource {
     @POST
     @Path("/confirm/{cartId}")
     public Response confirmOrder(@PathParam("cartId") Long cartId) {
-        Cart cart = Cart.findById(cartId);
+        Cart cart = Cart.find("id = ?1 AND shop.id = ?2", cartId, shopContext.getShopId()).firstResult();
         if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
         long remainingItems = CartItem.count("cart.id = ?1", cart.id);
@@ -176,7 +180,7 @@ public class CartResource {
         if(response.isValid() && response.getTran_id() != null)
         {
             String cartId = response.getTran_id();
-            Cart cart = Cart.findById(cartId);
+            Cart cart = Cart.find("id = ?1 AND shop.id = ?2", cartId, shopContext.getShopId()).firstResult();
             if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
             orderService.convertCartToOrder(cart, cart.billing, cart.shipping, null);
@@ -197,10 +201,10 @@ public class CartResource {
 
         String subject = jwt.getSubject();
 
-        if(cart != null && cart.user == null && subject != null) {
-            User user = User.find("id", subject).firstResult();
-            if(user != null) {
-                cart.user = user;
+        if(cart != null && cart.customer == null && subject != null) {
+            Customer customer = Customer.find("id = ?1 AND shop.id = ?2", subject, shopContext.getShopId()).firstResult();
+            if(customer != null) {
+                cart.customer = customer;
                 cart.persist();
             }
         }
