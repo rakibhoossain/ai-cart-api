@@ -206,8 +206,9 @@ public class CartRepository implements PanacheRepository<Cart> {
                                                       'tax_rate', COALESCE(t.tax_rate, 0)
                                               )
                                        FROM variant_prices vp
+                                       LEFT JOIN discount_variant_pivot dp ON vp.variant_id = dp.variant_id
                                        LEFT JOIN discounts d
-                                            ON (d.variant_id = pv.id OR (d.variant_id IS NULL AND d.product_id = p.id))
+                                            ON dp.discount_id = d.id
                                             AND d.is_active = true
                                             AND (d.start_at IS NULL OR d.start_at <= :currentTimestamp)
                                             AND (d.end_at IS NULL OR d.end_at >= :currentTimestamp)
