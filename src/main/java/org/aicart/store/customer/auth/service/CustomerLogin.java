@@ -18,6 +18,7 @@ import org.aicart.store.user.entity.Shop;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -37,6 +38,7 @@ public class CustomerLogin extends AuthenticationService {
     ShopContext shopContext;
 
     @Override
+    @Transactional
     protected Response jwtResponse(LoginCredentialDTO loginCredentialDTO) {
         Customer customer = Customer.find("email = ?1 AND shop.id = ?2", loginCredentialDTO.getEmail(), shopContext.getShopId()).firstResult();
         if(isInvalidCredentials(loginCredentialDTO.getPassword(), customer)) {
@@ -45,6 +47,8 @@ public class CustomerLogin extends AuthenticationService {
                     .build();
         }
 
+        customer.lastLoginAt = LocalDateTime.now();
+        customer.persist();
         return generateJwtResponse(customer);
     }
 
@@ -56,6 +60,11 @@ public class CustomerLogin extends AuthenticationService {
         Customer dbCustomer = Customer.find("email = ?1 AND shop.id = ?2", oauthLoginDTO.getEmail(), shopContext.getShopId()).firstResult();
 
         if(dbCustomer != null) {
+            dbCustomer.lastLoginAt = LocalDateTime.now();
+            if(dbCustomer.verifiedAt == 0) {
+                dbCustomer.verifiedAt = System.currentTimeMillis() / 1000L;
+            }
+            dbCustomer.persist();
             return generateJwtResponse(dbCustomer);
         }
 
@@ -65,6 +74,7 @@ public class CustomerLogin extends AuthenticationService {
         customer.email = oauthLoginDTO.getEmail();
         customer.shop = Shop.findById(shopContext.getShopId());
         customer.verifiedAt = System.currentTimeMillis() / 1000;
+        customer.lastLoginAt = LocalDateTime.now();
         customer.persist();
 
         return generateJwtResponse(customer);

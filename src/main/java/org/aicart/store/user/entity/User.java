@@ -28,6 +28,9 @@ public class User extends PanacheEntity implements IdentifiableEntity {
     @OneToMany(mappedBy = "user")
     public List<Order> orders;
 
+    @Column(name = "last_login_at")
+    public LocalDateTime lastLoginAt = null;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
 

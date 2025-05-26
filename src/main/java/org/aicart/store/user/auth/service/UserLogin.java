@@ -16,6 +16,7 @@ import org.aicart.store.user.entity.User;
 import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ public class UserLogin extends AuthenticationService {
     UriInfo uriInfo; // Provides request context
 
     @Override
+    @Transactional
     protected Response jwtResponse(LoginCredentialDTO loginCredentialDTO) {
         User user = User.find("email", loginCredentialDTO.getEmail()).firstResult();
         if(isInvalidCredentials(loginCredentialDTO.getPassword(), user)) {
@@ -37,6 +39,9 @@ public class UserLogin extends AuthenticationService {
                     .entity(Map.of("message", "Invalid email or password"))
                     .build();
         }
+
+        user.lastLoginAt = LocalDateTime.now();
+        user.persist();
 
         return generateJwtResponse(user);
     }
@@ -52,10 +57,11 @@ public class UserLogin extends AuthenticationService {
         User dbUser = User.find("email", oauthLoginDTO.getEmail()).firstResult();
 
         if(dbUser != null) {
+            dbUser.lastLoginAt = LocalDateTime.now();
             if(dbUser.verifiedAt == 0) {
                 dbUser.verifiedAt = now;
-                dbUser.persist();
             }
+            dbUser.persist();
             return generateJwtResponse(dbUser);
         }
 
@@ -64,6 +70,7 @@ public class UserLogin extends AuthenticationService {
         user.name = oauthLoginDTO.getName();
         user.email = oauthLoginDTO.getEmail();
         user.verifiedAt = now;
+        user.lastLoginAt = LocalDateTime.now();
         user.persist();
 
         return generateJwtResponse(user);

@@ -25,8 +25,7 @@ public class CustomerRegistrationDTO {
     @JsonProperty("last_name")
     public String lastName;
 
-    @NotBlank(message = "Phone number cannot be blank")
-    @Pattern(regexp = "^\\+[1-9]\\d{1,14}$", message = "Invalid phone number format")
+    @Pattern(regexp = "^\\+[1-9]\\d{0,14}$", message = "Invalid phone number format")
     public String phone;
 
     @NotBlank(message = "Password is required")

@@ -44,7 +44,7 @@ public class Customer extends PanacheEntity implements IdentifiableEntity {
     @Column(name = "email_subscribe", columnDefinition = "BOOLEAN DEFAULT FALSE")
     public boolean emailSubscribe = false;
 
-    @Column(name = "phonel_subscribe", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Column(name = "phone_subscribe", columnDefinition = "BOOLEAN DEFAULT FALSE")
     public boolean phoneSubscribe = false;
 
     @Column(name = "last_login_at")
