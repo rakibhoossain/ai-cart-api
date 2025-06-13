@@ -14,8 +14,8 @@ INSERT INTO countries (id, code, name, currency_id) VALUES (1, 'USA', 'United St
 INSERT INTO languages (id, code, name) VALUES (1, 'en', 'English'), (2, 'es', 'Spanish');
 
 -- Inserting Shops
-INSERT INTO shops (id, user_id, name, host, primary_country, currency_id)
-VALUES (1, 1, 'Rakib Shop', 'localhost', 1, 1);
+INSERT INTO shops (id, user_id, name, host, primary_country, primary_language, currency_id)
+VALUES (1, 1, 'Rakib Shop', 'localhost', 1, 1,1);
 
 -- Shop country
 INSERT INTO shop_country (shop_id, country_id)
@@ -36,42 +36,42 @@ VALUES (1, 1), (1, 2);
 
 -- Inserting product category
 -- Insert Root categories (Level 1)
-INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, shop_id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (1, 'Electronics', NULL, NOW(), NOW()),    -- ID 1
-    (2, 'Furniture', NULL, NOW(), NOW()),      -- ID 2
-    (3, 'Books', NULL, NOW(), NOW());           -- ID 3
+    (1, 1, 'Electronics', NULL, NOW(), NOW()),    -- ID 1
+    (2, 1, 'Furniture', NULL, NOW(), NOW()),      -- ID 2
+    (3, 1, 'Books', NULL, NOW(), NOW());           -- ID 3
 
 -- Insert Level 2 (Subcategories under root categories)
-INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, shop_id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (4, 'Computers', (SELECT id FROM categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 4
-    (5, 'Smartphones', (SELECT id FROM categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 5
-    (6, 'Chairs', (SELECT id FROM categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 6
-    (7, 'Tables', (SELECT id FROM categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 7
-    (8, 'Novels', (SELECT id FROM categories WHERE name = 'Books'), NOW(), NOW()),           -- ID 8
-    (9, 'Magazines', (SELECT id FROM categories WHERE name = 'Books'), NOW(), NOW());         -- ID 9
+    (4, 1, 'Computers', (SELECT id FROM categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 4
+    (5, 1, 'Smartphones', (SELECT id FROM categories WHERE name = 'Electronics'), NOW(), NOW()), -- ID 5
+    (6, 1, 'Chairs', (SELECT id FROM categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 6
+    (7, 1, 'Tables', (SELECT id FROM categories WHERE name = 'Furniture'), NOW(), NOW()),        -- ID 7
+    (8, 1, 'Novels', (SELECT id FROM categories WHERE name = 'Books'), NOW(), NOW()),           -- ID 8
+    (9, 1, 'Magazines', (SELECT id FROM categories WHERE name = 'Books'), NOW(), NOW());         -- ID 9
 
 -- Insert Level 3 (Subcategories under the previous level)
-INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, shop_id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (10, 'Gaming', (SELECT id FROM categories WHERE name = 'Computers'), NOW(), NOW()),     -- ID 10
-    (11, 'Accessories', (SELECT id FROM categories WHERE name = 'Computers'), NOW(), NOW()), -- ID 11
-    (12, 'Office', (SELECT id FROM categories WHERE name = 'Chairs'), NOW(), NOW()),        -- ID 12
-    (13, 'Outdoor', (SELECT id FROM categories WHERE name = 'Tables'), NOW(), NOW());        -- ID 13
+    (10, 1, 'Gaming', (SELECT id FROM categories WHERE name = 'Computers'), NOW(), NOW()),     -- ID 10
+    (11, 1, 'Accessories', (SELECT id FROM categories WHERE name = 'Computers'), NOW(), NOW()), -- ID 11
+    (12, 1, 'Office', (SELECT id FROM categories WHERE name = 'Chairs'), NOW(), NOW()),        -- ID 12
+    (13, 1, 'Outdoor', (SELECT id FROM categories WHERE name = 'Tables'), NOW(), NOW());        -- ID 13
 
 -- Insert Level 4 (Subcategories under the previous level)
-INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, shop_id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (14, 'PCs', (SELECT id FROM categories WHERE name = 'Gaming'), NOW(), NOW()),  -- ID 14
-    (15, 'Consoles', (SELECT id FROM categories WHERE name = 'Gaming'), NOW(), NOW()), -- ID 15
-    (16, 'Gaming Accessories', (SELECT id FROM categories WHERE name = 'Accessories'), NOW(), NOW());  -- ID 16
+    (14, 1, 'PCs', (SELECT id FROM categories WHERE name = 'Gaming'), NOW(), NOW()),  -- ID 14
+    (15, 1, 'Consoles', (SELECT id FROM categories WHERE name = 'Gaming'), NOW(), NOW()), -- ID 15
+    (16, 1, 'Gaming Accessories', (SELECT id FROM categories WHERE name = 'Accessories'), NOW(), NOW());  -- ID 16
 
 -- Insert Level 5 (Subcategories under the previous level)
-INSERT INTO categories (id, name, parent_category_id, created_at, updated_at)
+INSERT INTO categories (id, shop_id, name, parent_category_id, created_at, updated_at)
 VALUES
-    (17, 'Desktop PCs', (SELECT id FROM categories WHERE name = 'PCs'), NOW(), NOW()), -- ID 17
-    (18, 'Laptop Accessories', (SELECT id FROM categories WHERE name = 'Gaming Accessories'), NOW(), NOW());  -- ID 18
+    (17, 1, 'Desktop PCs', (SELECT id FROM categories WHERE name = 'PCs'), NOW(), NOW()), -- ID 17
+    (18, 1, 'Laptop Accessories', (SELECT id FROM categories WHERE name = 'Gaming Accessories'), NOW(), NOW());  -- ID 18
 
 
 SELECT setval(pg_get_serial_sequence('categories', 'id'), (SELECT MAX(id) FROM categories));

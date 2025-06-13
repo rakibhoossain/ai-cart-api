@@ -4,7 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.aicart.entity.Country;
 import org.aicart.entity.Currency;
-import org.aicart.media.entity.FileStorage;
+import org.aicart.entity.Language;
 import org.aicart.util.StringSlugifier;
 import java.util.Set;
 
@@ -29,6 +29,10 @@ public class Shop extends PanacheEntity {
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "primary_country", nullable = false)
     public Country primaryCountry;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "primary_language", nullable = false)
+    public Language primaryLanguage;
 
     @Column(nullable = false, unique = true)
     public String host;

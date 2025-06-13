@@ -13,13 +13,11 @@ public class RateLimitExceptionMapper implements ExceptionMapper<RateLimitExcept
     public Response toResponse(RateLimitException exception) {
 
         long retryAfterSeconds = exception.getRetryAfterMillis() / 1000;
-        retryAfterSeconds = retryAfterSeconds == 0 ? 1 : retryAfterSeconds;
-
         return Response.status(Response.Status.TOO_MANY_REQUESTS)
                 .header("Retry-After", retryAfterSeconds) // Standard HTTP header
                 .entity(Map.of(
                         "message", "Rate limit exceeded. Please try again later.",
-                        "retry_after_seconds", retryAfterSeconds
+                        "retry_after_seconds", Math.min(1, retryAfterSeconds)
                 ))
                 .build();
     }
