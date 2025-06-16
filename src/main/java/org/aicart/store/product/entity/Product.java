@@ -1,4 +1,6 @@
 package org.aicart.store.product.entity;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -80,6 +82,18 @@ public class Product extends PanacheEntity {
 
 //    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
 //    public List<Discount> discounts;  // Global discounts
+
+    @Column(name = "is_featured", nullable = false)
+    public Boolean isFeatured = false;
+
+    @Column(name = "min_price")
+    public BigInteger minPrice; // calculated & stored via trigger or batch job
+
+    @Column(name = "average_rating", precision = 3, scale = 2)
+    public BigDecimal averageRating = BigDecimal.ZERO;
+
+    @Column(name = "review_count")
+    public Integer reviewCount = 0;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();

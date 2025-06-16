@@ -154,7 +154,7 @@ VALUES (1, 1, 'First category'),
 
 
 -- Inserting Attribute. Defines an attribute type like size or color.
-INSERT INTO attributes (id, name) VALUES (1, 'Color'), (2, 'Size'), (3, 'Material');
+INSERT INTO attributes (id, shop_id, name) VALUES (1, 1,'Color'), (2, 1, 'Size'), (3, 1, 'Material');
 
 SELECT setval(pg_get_serial_sequence('attributes', 'id'), (SELECT MAX(id) FROM attributes));
 
@@ -166,15 +166,15 @@ VALUES (1, 1, 1, 'Color'),
         (3, 3, 1, 'Material');
 
 -- Inserting AttributeValue
-INSERT INTO attribute_values(id, attribute_id, value, color)
-VALUES (1, 1, 'Blue', 'blue'),
-       (2, 1, 'Red', 'red'),
-       (3, 2, 'X', null),
-       (4, 2, 'XL', null),
-       (5, 2, 'XXL', null),
-       (6, 3, 'Fiber', null),
-       (7, 3, 'Cotton', null),
-        (8, 1, 'Green', 'green');
+INSERT INTO attribute_values(id, shop_id, attribute_id, value, color)
+VALUES (1, 1, 1, 'Blue', 'blue'),
+       (2, 1, 1, 'Red', 'red'),
+       (3, 1, 2, 'X', null),
+       (4, 1, 2, 'XL', null),
+       (5, 1, 2, 'XXL', null),
+       (6, 1, 3, 'Fiber', null),
+       (7, 1, 3, 'Cotton', null),
+       (8, 1, 1, 'Green', 'green');
 
 -- Inserting AttributeValueTranslation
 INSERT INTO attribute_value_translations(id, attribute_value_id, language_id, value)
@@ -189,8 +189,8 @@ VALUES (1, 1, 1, 'Blue'),
 
 
 -- Inserting brands
-INSERT INTO product_brands(id, name)
-VALUES (1, 'Brand A'), (2, 'Brand B');
+INSERT INTO product_brands(id, shop_id, name)
+VALUES (1, 1, 'Brand A'), (2, 1, 'Brand B');
 
 -- Inserting tags
 INSERT INTO product_tags(id, name)
@@ -205,10 +205,9 @@ VALUES (1, 'Type A'), (2, 'Type B');
 -- VALUES (1, 1, 'Collection A', 1, 'collection-A'), (2, 1,'Collection B', 1, 'collection-B');
 
 -- Inserting Product
-INSERT INTO products(id, status, shop_id, product_type_id, product_brand_id, name, slug, created_at, updated_at)
-VALUES (1, 1, 1, 1, 1,'Test product 1', 'test-product-1', NOW(), NOW()),
-       (2, 1, 1, 2, 2,'Test product 2', 'test-product-2', NOW(), NOW());
-
+INSERT INTO products(id, is_featured, status, shop_id, product_type_id, product_brand_id, name, slug, created_at, updated_at)
+VALUES (1, true, 1, 1, 1, 1,'Test product 1', 'test-product-1', NOW(), NOW()),
+       (2, false,1, 1, 2, 2,'Test product 2', 'test-product-2', NOW(), NOW());
 
 -- Insert product shipping
 INSERT INTO product_shippings(id, product_id, weight, weight_unit)

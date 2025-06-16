@@ -2,6 +2,7 @@ package org.aicart.store.product.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.List;
 
@@ -10,6 +11,10 @@ import java.util.List;
  */
 @Entity(name = "attributes")
 public class Attribute extends PanacheEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
 
     @Column(length = 100, nullable = false)
     public String name;
