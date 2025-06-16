@@ -87,7 +87,7 @@ public class Product extends PanacheEntity {
     public Boolean isFeatured = false;
 
     @Column(name = "min_price")
-    public BigInteger minPrice; // calculated & stored via trigger or batch job
+    public BigInteger minPrice = BigInteger.ZERO; // calculated & stored via trigger or batch job
 
     @Column(name = "average_rating", precision = 3, scale = 2)
     public BigDecimal averageRating = BigDecimal.ZERO;

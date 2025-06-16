@@ -77,13 +77,21 @@ public class ProductStoreService {
 
             List<ProductTaxRate> taxes = new ArrayList<>();
 
+            System.out.println("productTaxDTO.getTaxId() : " + productDTO.getTaxes());
+
             for (ProductTaxDTO productTaxDTO : productDTO.getTaxes()) {
+
+                System.out.println("Tax data: ");
+                System.out.println(productTaxDTO.getTaxId());
                 ProductTaxRate productTaxRate = new ProductTaxRate();
                 productTaxRate.country = Country.findById(productTaxDTO.getCountryId());
                 productTaxRate.tax = Tax.findById(productTaxDTO.getTaxId());
                 if(productTaxRate.tax != null) {
+                    productTaxRate.product = product;
                     taxes.add(productTaxRate);
                 }
+
+                System.out.println("productTaxRate.tax : " + productTaxRate.tax);
             }
             product.taxes = taxes;
         }
@@ -188,6 +196,7 @@ public class ProductStoreService {
             product.variants = variants;
         }
 
+        setMinPrice(product);
         product.persist();
         return Response.ok(productDTO).build();
     }
@@ -361,6 +370,7 @@ public class ProductStoreService {
             product.variants = updatedVariants;
         }
 
+        setMinPrice(product);
         product.persist();
 
         return Response.ok(productDTO).build();
@@ -444,5 +454,17 @@ public class ProductStoreService {
         }
 
         return variant;
+    }
+
+    private void setMinPrice(Product product) {
+        // Calculate min price from all variants using streams
+        product.minPrice = product.variants == null ? BigInteger.ZERO :
+                product.variants.stream()
+                        .filter(v -> v.prices != null)
+                        .flatMap(v -> v.prices.stream())
+                        .filter(p -> p.price != null)
+                        .map(p -> p.price)
+                        .min(BigInteger::compareTo)
+                        .orElse(BigInteger.ZERO);
     }
 }
