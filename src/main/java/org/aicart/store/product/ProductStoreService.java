@@ -77,12 +77,7 @@ public class ProductStoreService {
 
             List<ProductTaxRate> taxes = new ArrayList<>();
 
-            System.out.println("productTaxDTO.getTaxId() : " + productDTO.getTaxes());
-
             for (ProductTaxDTO productTaxDTO : productDTO.getTaxes()) {
-
-                System.out.println("Tax data: ");
-                System.out.println(productTaxDTO.getTaxId());
                 ProductTaxRate productTaxRate = new ProductTaxRate();
                 productTaxRate.country = Country.findById(productTaxDTO.getCountryId());
                 productTaxRate.tax = Tax.findById(productTaxDTO.getTaxId());
@@ -90,8 +85,6 @@ public class ProductStoreService {
                     productTaxRate.product = product;
                     taxes.add(productTaxRate);
                 }
-
-                System.out.println("productTaxRate.tax : " + productTaxRate.tax);
             }
             product.taxes = taxes;
         }
@@ -181,8 +174,6 @@ public class ProductStoreService {
                         variantStock.warehouseLocation = WarehouseLocation.findById(variantStockDTO.getWarehouseId());
                         variantStock.productVariant = variant;
                         variantStock.quantity = variantStockDTO.getQuantity();
-
-                        System.out.println("variantStockDTO.getWarehouseId() : " + variantStockDTO.getWarehouseId());
 
                         variantStocks.add(variantStock);
                     }
