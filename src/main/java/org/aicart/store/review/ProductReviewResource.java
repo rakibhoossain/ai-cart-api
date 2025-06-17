@@ -54,6 +54,9 @@ public class ProductReviewResource {
             @PathParam("productId") Long productId,
             @Valid ProductReviewCreateDTO request
     ) {
+
+        System.out.println("securityContext");
+        System.out.println(securityContext.getUserPrincipal());
         // Get customer from token if available, otherwise null
         Customer customer = null;
         if (securityContext.getUserPrincipal() != null && jwt.getSubject() != null) {

@@ -34,12 +34,11 @@ public class ProductReviewService {
         review.body = dto.body;
         review.recommended = Boolean.TRUE.equals(dto.recommended);
         review.shop = shop;
+        review.name = dto.name;
+        review.email = dto.email;
 
         if(customer != null) {
             review.customer = customer;
-        } else {
-            review.name = dto.name;
-            review.email = dto.email;
         }
 
         repository.persist(review);
@@ -61,9 +60,8 @@ public class ProductReviewService {
                 .createQuery("SELECT SUM(r.rating) FROM product_reviews r WHERE r.product = :product")
                 .setParameter("product", product)
                 .getSingleResult();
-        BigDecimal avg = BigDecimal.valueOf(totalRating)
+        product.averageRating = BigDecimal.valueOf(totalRating)
                 .divide(BigDecimal.valueOf(totalReviews), 2, RoundingMode.HALF_UP);
-        product.averageRating = avg;
         product.reviewCount = (int) totalReviews;
     }
 }
