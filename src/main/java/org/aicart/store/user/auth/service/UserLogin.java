@@ -78,40 +78,17 @@ public class UserLogin extends AuthenticationService {
 
     private Response generateJwtResponse(User entity){
         long now = System.currentTimeMillis() / 1000L;
-        long exp = now + 60L * 60 * 24 * 365; // 1 year validity
+        long exp = now + 60L * 60 * 24 * 7; // 7 days validity (consistent with CustomerLogin)
+
         String entityIdentifier = entity.getIdentifier();
 
-        // Define roles
-        List<String> realmRoles = Arrays.asList(entityIdentifier, "offline_access", "default-roles-aicart", "uma_authorization");
-        List<String> resourceRoles = Arrays.asList("manage-account", "manage-account-links", "view-profile");
-
-        // Prepare `realm_access` claim as a map
-        Map<String, Object> realmAccess = new HashMap<>();
-        realmAccess.put("roles", realmRoles);
-
-        // Prepare `resource_access` claim as a map
-        Map<String, Object> resourceAccessRoles = new HashMap<>();
-        resourceAccessRoles.put("roles", resourceRoles);
-        Map<String, Object> resourceAccess = new HashMap<>();
-        resourceAccess.put("account", resourceAccessRoles);
-
-        // Build the JWT token
-        String token = Jwt.issuer(uriInfo.getBaseUri().toString())
+        // Build the JWT token with proper issuer that matches configuration
+        String token = Jwt.issuer("https://aicart.store")
                 .subject(entity.id.toString())
-                .claim(Claims.exp, exp)
-                .claim(Claims.iat, now)
-                .claim(Claims.auth_time, now)
-                .claim("typ", "Bearer") // Custom claim for type
-                .claim("allowed_origins", List.of("*"))
-                .claim("realm_access", realmAccess)
-                .claim("resource_access", resourceAccess)
-                .claim("scope", "openid profile email") // Custom claim for scope
-                .claim("email_verified", entity.verifiedAt > 0)
-                .claim("name", entity.name)
-                .claim("preferred_username", entity.name)
-                .claim("given_name", entity.name)
-                .claim("family_name", entity.name)
-                .claim("email", entity.email)
+                .upn(entity.email)
+                .groups(entityIdentifier) // Use the dynamic entityIdentifier for groups
+                .expiresAt(exp)
+                .issuedAt(now)
                 .sign();
 
         // Build the response object
