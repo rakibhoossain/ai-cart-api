@@ -8,6 +8,7 @@ import org.aicart.store.product.entity.Product;
 import org.aicart.store.review.dto.ProductReviewCreateDTO;
 import org.aicart.store.review.entity.ProductReview;
 import org.aicart.store.review.repository.ProductReviewRepository;
+import org.aicart.store.user.entity.Shop;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,7 +21,7 @@ public class ProductReviewService {
     ProductReviewRepository repository;
 
     @Transactional
-    public ProductReview createReview(Long productId, ProductReviewCreateDTO dto, Customer customer) {
+    public ProductReview createReview(Shop shop, Long productId, ProductReviewCreateDTO dto, Customer customer) {
         Product product = Product.findById(productId);
         if(product == null) {
             throw new IllegalArgumentException("Product not found");
@@ -32,6 +33,7 @@ public class ProductReviewService {
         review.title = dto.title;
         review.body = dto.body;
         review.recommended = Boolean.TRUE.equals(dto.recommended);
+        review.shop = shop;
 
         if(customer != null) {
             review.customer = customer;

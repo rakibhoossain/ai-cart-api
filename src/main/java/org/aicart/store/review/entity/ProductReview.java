@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 import org.aicart.store.product.entity.Product;
 import org.aicart.store.customer.entity.Customer;
+import org.aicart.store.user.entity.Shop;
 
 import java.time.LocalDateTime;
 
@@ -18,6 +19,10 @@ public class ProductReview extends PanacheEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     public Product product;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id")

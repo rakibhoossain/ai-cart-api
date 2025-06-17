@@ -9,6 +9,7 @@ import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.review.dto.ProductReviewCreateDTO;
 import org.aicart.store.review.dto.ProductReviewDTO;
 import org.aicart.store.review.service.ProductReviewService;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,7 +43,8 @@ public class ProductReviewResource {
     ) {
         // TODO: inject logged-in customer from security context if available
         Customer customer = null; // Replace with real auth fetch
-        var review = service.createReview(productId, request, customer);
+        Shop shop = Shop.findById(1);
+        var review = service.createReview(shop, productId, request, customer);
         return Response.ok(ProductReviewDTO.fromEntity(review)).status(Response.Status.CREATED).build();
     }
 }
