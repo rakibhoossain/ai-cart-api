@@ -77,6 +77,8 @@ public class UserLogin extends AuthenticationService {
     }
 
     private Response generateJwtResponse(User entity){
+        long now = System.currentTimeMillis() / 1000L;
+        long exp = now + 60L * 60 * 24 * 365; // 1 year validity
         String entityIdentifier = entity.getIdentifier();
 
         // Define roles
@@ -96,9 +98,9 @@ public class UserLogin extends AuthenticationService {
         // Build the JWT token
         String token = Jwt.issuer(uriInfo.getBaseUri().toString())
                 .subject(entity.id.toString())
-                .claim(Claims.exp, Long.MAX_VALUE)
-                .claim(Claims.iat, System.currentTimeMillis() / 1000)
-                .claim(Claims.auth_time, System.currentTimeMillis() / 1000)
+                .claim(Claims.exp, exp)
+                .claim(Claims.iat, now)
+                .claim(Claims.auth_time, now)
                 .claim("typ", "Bearer") // Custom claim for type
                 .claim("allowed_origins", List.of("*"))
                 .claim("realm_access", realmAccess)

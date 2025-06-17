@@ -55,6 +55,7 @@ public class CustomerLogin extends AuthenticationService {
     @Override
     @Transactional
     protected Response generateOauthToken(OauthLoginDTO oauthLoginDTO) {
+        long now = System.currentTimeMillis() / 1000L;
 
         // Find the user by email
         Customer dbCustomer = Customer.find("email = ?1 AND shop.id = ?2", oauthLoginDTO.getEmail(), shopContext.getShopId()).firstResult();
@@ -62,7 +63,7 @@ public class CustomerLogin extends AuthenticationService {
         if(dbCustomer != null) {
             dbCustomer.lastLoginAt = LocalDateTime.now();
             if(dbCustomer.verifiedAt == 0) {
-                dbCustomer.verifiedAt = System.currentTimeMillis() / 1000L;
+                dbCustomer.verifiedAt = now;
             }
             dbCustomer.persist();
             return generateJwtResponse(dbCustomer);
@@ -73,7 +74,7 @@ public class CustomerLogin extends AuthenticationService {
         customer.firstName = oauthLoginDTO.getName();
         customer.email = oauthLoginDTO.getEmail();
         customer.shop = Shop.findById(shopContext.getShopId());
-        customer.verifiedAt = System.currentTimeMillis() / 1000;
+        customer.verifiedAt = now;
         customer.lastLoginAt = LocalDateTime.now();
         customer.persist();
 
@@ -82,6 +83,8 @@ public class CustomerLogin extends AuthenticationService {
 
 
     private Response generateJwtResponse(Customer entity){
+        long now = System.currentTimeMillis() / 1000L;
+        long exp = now + 60L * 60 * 24 * 365; // 1 year validity
 
         String entityIdentifier = entity.getIdentifier();
 
@@ -102,9 +105,9 @@ public class CustomerLogin extends AuthenticationService {
         // Build the JWT token
         String token = Jwt.issuer(uriInfo.getBaseUri().toString())
                 .subject(entity.id.toString())
-                .claim(Claims.exp, Long.MAX_VALUE)
-                .claim(Claims.iat, System.currentTimeMillis() / 1000)
-                .claim(Claims.auth_time, System.currentTimeMillis() / 1000)
+                .claim(Claims.exp, exp)
+                .claim(Claims.iat, now)
+                .claim(Claims.auth_time, now)
                 .claim("typ", "Bearer") // Custom claim for type
                 .claim("allowed_origins", List.of("*"))
                 .claim("realm_access", realmAccess)
@@ -124,7 +127,7 @@ public class CustomerLogin extends AuthenticationService {
         response.put("id", entity.id);
         response.put("email", entity.email);
         response.put("name", (entity.firstName + " " + entity.lastName).trim());
-        response.put("verifiedAt", System.currentTimeMillis() / 1000);
+        response.put("verifiedAt", now);
 
         // Return the token
         return Response.ok(response).build();
