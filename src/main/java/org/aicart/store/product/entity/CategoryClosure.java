@@ -6,7 +6,12 @@ import jakarta.persistence.*;
 @Entity
 @Table(
         name = "category_closure",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"ancestor_id", "descendant_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"ancestor_id", "descendant_id"}),
+        indexes = {
+            @Index(name = "idx_category_closure_ancestor", columnList = "ancestor_id"),
+            @Index(name = "idx_category_closure_descendant", columnList = "descendant_id"),
+            @Index(name = "idx_category_closure_depth", columnList = "depth")
+        }
 )
 public class CategoryClosure extends PanacheEntityBase {
 

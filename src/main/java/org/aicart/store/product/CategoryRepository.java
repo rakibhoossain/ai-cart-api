@@ -2,16 +2,21 @@ package org.aicart.store.product;
 
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import org.aicart.store.product.entity.Category;
 import jakarta.transaction.Transactional;
 import org.aicart.store.product.entity.CategoryClosure;
 import org.aicart.store.product.entity.CategoryClosureId;
+import jakarta.persistence.EntityManager;
 
 import java.util.List;
 
 @ApplicationScoped
 public class CategoryRepository implements PanacheRepository<Category> {
-
+    
+    @Inject
+    EntityManager em;
+    
     public List<Category> getCategories(int page, int size) {
 
         return Category.find("parentCategory IS NULL")
@@ -40,7 +45,7 @@ public class CategoryRepository implements PanacheRepository<Category> {
     }
 
     @Transactional
-    public void updateParent(Long categoryId, Long newParentId) {
+    public void  updateParent(Long categoryId, Long newParentId) {
         Category category = findById(categoryId);
         if (category == null) {
             throw new IllegalArgumentException("Category not found");
@@ -121,5 +126,126 @@ public class CategoryRepository implements PanacheRepository<Category> {
         selfClosure.descendant = category;
         selfClosure.depth = 0;
         selfClosure.persist();
+    }
+    
+    /**
+     * Get categories with depth information relative to a parent
+     * Useful for building hierarchical UIs
+     */
+    public List<Object[]> getCategoriesWithDepth(Long parentId, int page, int size) {
+        String query = parentId == null ?
+            "SELECT c, cc.depth FROM Category c JOIN CategoryClosure cc ON c.id = cc.descendant.id " +
+            "WHERE cc.ancestor.id = cc.descendant.id AND c.parentCategory IS NULL ORDER BY c.name" :
+            "SELECT c, cc.depth FROM Category c JOIN CategoryClosure cc ON c.id = cc.descendant.id " +
+            "WHERE cc.ancestor.id = :parentId AND c.id != :parentId ORDER BY cc.depth, c.name";
+            
+        return em.createQuery(query, Object[].class)
+            .setParameter("parentId", parentId)
+            .setFirstResult(page * size)
+            .setMaxResults(size)
+            .getResultList();
+    }
+    
+    /**
+     * Get entire category tree in a single query
+     * Optimized for building complete category trees
+     */
+    public List<Object[]> getEntireCategoryTree() {
+        return em.createQuery(
+            "SELECT c, p, cc.depth FROM Category c " +
+            "LEFT JOIN c.parentCategory p " +
+            "JOIN CategoryClosure cc ON c.id = cc.descendant.id " +
+            "WHERE cc.ancestor.id IN (SELECT c2.id FROM Category c2 WHERE c2.parentCategory IS NULL) " +
+            "ORDER BY cc.depth, c.name", Object[].class)
+            .getResultList();
+    }
+    
+    /**
+     * Move an entire subtree to a new parent
+     * More efficient than updateParent for moving large subtrees
+     */
+    @Transactional
+    public void moveSubtree(Long categoryId, Long newParentId) {
+        Category category = findById(categoryId);
+        if (category == null) {
+            throw new IllegalArgumentException("Category not found");
+        }
+        
+        Category newParent = newParentId != null ? findById(newParentId) : null;
+        if (newParentId != null && newParent == null) {
+            throw new IllegalArgumentException("New parent category not found");
+        }
+        
+        // Check if new parent is not a descendant of the category being moved
+        if (newParentId != null) {
+            boolean isDescendant = CategoryClosure.count(
+                "ancestor.id = ?1 AND descendant.id = ?2", 
+                categoryId, newParentId) > 0;
+                
+            if (isDescendant) {
+                throw new IllegalArgumentException("Cannot move a category to its own descendant");
+            }
+        }
+        
+        // Update the parent reference
+        category.parentCategory = newParent;
+        category.persist();
+        
+        // Use a more efficient approach for updating the closure table
+        // This uses a single DELETE and a single INSERT with subqueries
+        
+        // 1. Delete all paths that go through the subtree root
+        em.createNativeQuery(
+            "DELETE FROM category_closure " +
+            "WHERE descendant_id IN (SELECT descendant_id FROM category_closure WHERE ancestor_id = :categoryId) " +
+            "AND ancestor_id IN (SELECT ancestor_id FROM category_closure WHERE descendant_id = :categoryId " +
+            "AND ancestor_id != descendant_id)")
+            .setParameter("categoryId", categoryId)
+            .executeUpdate();
+            
+        // 2. Insert new paths
+        if (newParentId != null) {
+            em.createNativeQuery(
+                "INSERT INTO category_closure (ancestor_id, descendant_id, depth) " +
+                "SELECT a.ancestor_id, d.descendant_id, a.depth + d.depth + 1 " +
+                "FROM category_closure a " +
+                "CROSS JOIN category_closure d " +
+                "WHERE a.descendant_id = :newParentId " +
+                "AND d.ancestor_id = :categoryId")
+                .setParameter("newParentId", newParentId)
+                .setParameter("categoryId", categoryId)
+                .executeUpdate();
+        }
+    }
+    
+    /**
+     * Batch update multiple categories at once
+     */
+    @Transactional
+    public void batchUpdateCategories(List<Category> categories) {
+        for (Category category : categories) {
+            if (category.id != null) {
+                em.merge(category);
+            } else {
+                em.persist(category);
+            }
+        }
+    }
+    
+    /**
+     * Get categories with pagination and sorting
+     */
+    public List<Category> getCategories(int page, int size, String sortField, boolean ascending) {
+        String direction = ascending ? "ASC" : "DESC";
+        return find("ORDER BY " + sortField + " " + direction)
+                .page(page, size)
+                .list();
+    }
+    
+    /**
+     * Count descendants of a category
+     */
+    public long countDescendants(Long categoryId) {
+        return CategoryClosure.count("ancestor.id = ?1 AND descendant.id != ?1", categoryId);
     }
 }
