@@ -10,6 +10,7 @@ import org.aicart.store.product.request.CategoryCreateRequest;
 import org.aicart.store.product.request.CategoryUpdateRequest;
 import org.aicart.store.product.dto.CategoryDTO;
 import org.aicart.store.product.mapper.CategoryMapper;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.List;
 import java.util.Map;
@@ -25,33 +26,71 @@ public class CategoryResource {
     
     @Inject
     CategoryMapper categoryMapper;
+    
+    // For now, we'll hardcode the shop ID
+    // Later this can be replaced with a dynamic lookup or injection
+    private Long getShopId() {
+        return 1L;
+    }
 
     @GET
     public Response getCategories(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size,
             @QueryParam("sort") @DefaultValue("name") String sortField,
-            @QueryParam("order") @DefaultValue("asc") String sortOrder
+            @QueryParam("order") @DefaultValue("asc") String sortOrder,
+            @QueryParam("q") String searchQuery
     ) {
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
         List<Category> categories = categoryService.getCategories(page, size, sortField, 
-                "asc".equalsIgnoreCase(sortOrder));
+                "asc".equalsIgnoreCase(sortOrder), searchQuery, shop);
+        long totalCount = categoryService.countCategories(sortField, "asc".equalsIgnoreCase(sortOrder), searchQuery, shop);
+        
         List<CategoryDTO> dtos = categories.stream()
                 .map(categoryMapper::toDto)
                 .collect(Collectors.toList());
-        return Response.ok(dtos).build();
+        
+        Map<String, Object> response = Map.of(
+            "data", dtos,
+            "total", totalCount,
+            "page", page,
+            "size", size
+        );
+        
+        return Response.ok(response).build();
     }
     
     @GET
     @Path("/tree")
     public Response getCategoryTree() {
-        List<Object[]> categoryTree = categoryService.getCategoryTree();
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        List<Object[]> categoryTree = categoryService.getCategoryTree(shop);
         return Response.ok(categoryMapper.toDtoTree(categoryTree)).build();
     }
     
     @GET
     @Path("/{id}")
     public Response getCategory(@PathParam("id") Long id) {
-        Category category = Category.findById(id);
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        Category category = categoryService.findById(id, shop);
         if (category == null) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(Map.of("message", "Category not found"))
@@ -62,7 +101,14 @@ public class CategoryResource {
 
     @POST
     public Response addCategory(@Valid CategoryCreateRequest request) {
-        Category category = categoryService.addCategory(request.getName(), request.getParentId());
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        Category category = categoryService.addCategory(request.getName(), request.getParentId(), shop);
         return Response.status(Response.Status.CREATED)
                 .entity(categoryMapper.toDto(category))
                 .build();
@@ -74,7 +120,14 @@ public class CategoryResource {
             @PathParam("id") Long id, 
             @Valid CategoryUpdateRequest request
     ) {
-        Category category = Category.findById(id);
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        Category category = categoryService.findById(id, shop);
         if (category == null) {
             return Response.status(Response.Status.NOT_FOUND)
                     .entity(Map.of("message", "Category not found"))
@@ -91,9 +144,16 @@ public class CategoryResource {
     @PUT
     @Path("/{id}/parent/{parentId}")
     public Response updateParent(@PathParam("id") Long id, @PathParam("parentId") Long newParentId) {
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
         try {
-            categoryService.updateParent(id, newParentId);
-            Category category = Category.findById(id);
+            categoryService.updateParent(id, newParentId, shop);
+            Category category = categoryService.findById(id, shop);
             return Response.ok(categoryMapper.toDto(category)).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -105,8 +165,15 @@ public class CategoryResource {
     @PUT
     @Path("/{id}/move-subtree/{newParentId}")
     public Response moveSubtree(@PathParam("id") Long id, @PathParam("newParentId") Long newParentId) {
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
         try {
-            categoryService.moveSubtree(id, newParentId);
+            categoryService.moveSubtree(id, newParentId, shop);
             return Response.ok(Map.of("message", "Subtree moved successfully")).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -118,8 +185,15 @@ public class CategoryResource {
     @DELETE
     @Path("/{id}")
     public Response deleteCategory(@PathParam("id") Long id) {
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
         try {
-            categoryService.deleteCategory(id);
+            categoryService.deleteCategory(id, shop);
             return Response.noContent().build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -135,7 +209,14 @@ public class CategoryResource {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        List<Category> categories = categoryService.getDescendants(id);
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        List<Category> categories = categoryService.getDescendants(id, shop);
         List<CategoryDTO> dtos = categories.stream()
                 .map(categoryMapper::toDto)
                 .collect(Collectors.toList());
@@ -145,7 +226,14 @@ public class CategoryResource {
     @GET
     @Path("/{id}/ancestors")
     public Response getAncestors(@PathParam("id") Long id) {
-        List<Category> categories = categoryService.getAncestors(id);
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        List<Category> categories = categoryService.getAncestors(id, shop);
         List<CategoryDTO> dtos = categories.stream()
                 .map(categoryMapper::toDto)
                 .collect(Collectors.toList());
@@ -159,14 +247,28 @@ public class CategoryResource {
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size
     ) {
-        List<Object[]> categoriesWithDepth = categoryService.getCategoriesWithDepth(id, page, size);
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        List<Object[]> categoriesWithDepth = categoryService.getCategoriesWithDepth(id, page, size, shop);
         return Response.ok(categoryMapper.toDtoWithDepth(categoriesWithDepth)).build();
     }
     
     @GET
     @Path("/count-descendants/{id}")
     public Response countDescendants(@PathParam("id") Long id) {
-        long count = categoryService.countDescendants(id);
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+        
+        long count = categoryService.countDescendants(id, shop);
         return Response.ok(Map.of("count", count)).build();
     }
 }

@@ -4,6 +4,7 @@ package org.aicart.store.product;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.aicart.store.product.entity.Category;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.List;
 
@@ -13,78 +14,102 @@ public class CategoryService {
     @Inject
     CategoryRepository categoryRepository;
     
-    // Add cache for root categories
+    // Add cache for root categories - will be updated to be shop-specific later
     private List<Category> rootCategoriesCache;
     private long rootCategoriesCacheTime = 0;
     private static final long CACHE_EXPIRY_MS = 300000; // 5 minutes
-    
-    public List<Category> getCategories(int page, int size) {
-        long now = System.currentTimeMillis();
-        if (rootCategoriesCache == null || now - rootCategoriesCacheTime > CACHE_EXPIRY_MS) {
-            rootCategoriesCache = categoryRepository.getCategories(page, size);
-            rootCategoriesCacheTime = now;
-        }
-        return rootCategoriesCache;
-    }
-    
-    // Add method with sorting parameters
-    public List<Category> getCategories(int page, int size, String sortField, boolean ascending) {
-        return categoryRepository.getCategories(page, size, sortField, ascending);
-    }
     
     public void invalidateCache() {
         rootCategoriesCache = null;
     }
     
-    // After any write operation (add, update, delete), call invalidateCache()
-    
-    public Category addCategory(String name, Long parentId) {
-        Category result = categoryRepository.addCategory(name, parentId);
+    /**
+     * Find a category by ID
+     */
+    public Category findById(Long id, Shop shop) {
+        return categoryRepository.findById(id, shop);
+    }
+
+    /**
+     * Get categories with pagination, sorting, and optional search
+     */
+    public List<Category> getCategories(int page, int size, String sortField, boolean ascending, String searchQuery, Shop shop) {
+        return categoryRepository.getCategories(page, size, sortField, ascending, searchQuery, shop);
+    }
+
+    /**
+     * Count total number of categories with optional filtering
+     */
+    public long countCategories(String sortField, boolean ascending, String searchQuery, Shop shop) {
+        return categoryRepository.countCategories(searchQuery, shop);
+    }
+
+    /**
+     * Add a category
+     */
+    public Category addCategory(String name, Long parentId, Shop shop) {
+        Category result = categoryRepository.addCategory(name, parentId, shop);
         invalidateCache();
         return result;
     }
 
-    public void updateParent(Long id, Long newParentId) {
-        categoryRepository.updateParent(id, newParentId);
+    /**
+     * Update parent category
+     */
+    public void updateParent(Long id, Long newParentId, Shop shop) {
+        categoryRepository.updateParent(id, newParentId, shop);
         invalidateCache();
     }
 
-    public void deleteCategory(Long id) {
-        categoryRepository.deleteCategory(id);
+    /**
+     * Delete a category
+     */
+    public void deleteCategory(Long id, Shop shop) {
+        categoryRepository.deleteCategory(id, shop);
         invalidateCache();
     }
 
-    public List<Category> getDescendants(Long categoryId) {
-        return categoryRepository.getDescendants(categoryId);
+    /**
+     * Get descendants of a category
+     */
+    public List<Category> getDescendants(Long categoryId, Shop shop) {
+        return categoryRepository.getDescendants(categoryId, shop);
     }
 
-    public List<Category> getAncestors(Long categoryId) {
-        return categoryRepository.getAncestors(categoryId);
+    /**
+     * Get ancestors of a category
+     */
+    public List<Category> getAncestors(Long categoryId, Shop shop) {
+        return categoryRepository.getAncestors(categoryId, shop);
     }
-    
-    public void moveSubtree(Long categoryId, Long newParentId) {
-        categoryRepository.moveSubtree(categoryId, newParentId);
+
+    /**
+     * Move a subtree
+     */
+    public void moveSubtree(Long categoryId, Long newParentId, Shop shop) {
+        categoryRepository.moveSubtree(categoryId, newParentId, shop);
         invalidateCache();
     }
-    
-    public List<Object[]> getCategoryTree() {
-        return categoryRepository.getEntireCategoryTree();
+
+    /**
+     * Get category tree
+     */
+    public List<Object[]> getCategoryTree(Shop shop) {
+        return categoryRepository.getEntireCategoryTree(shop);
     }
-    
-    // Add missing methods
-    
+
     /**
      * Get categories with depth information relative to a parent
      */
-    public List<Object[]> getCategoriesWithDepth(Long parentId, int page, int size) {
-        return categoryRepository.getCategoriesWithDepth(parentId, page, size);
+    public List<Object[]> getCategoriesWithDepth(Long parentId, int page, int size, Shop shop) {
+        return categoryRepository.getCategoriesWithDepth(parentId, page, size, shop);
     }
-    
+
     /**
      * Count descendants of a category
      */
-    public long countDescendants(Long categoryId) {
-        return categoryRepository.countDescendants(categoryId);
+    public long countDescendants(Long categoryId, Shop shop) {
+        return categoryRepository.countDescendants(categoryId, shop);
     }
 }
 
