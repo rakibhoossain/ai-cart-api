@@ -11,7 +11,7 @@ import org.aicart.store.product.request.CategoryUpdateRequest;
 import org.aicart.store.product.dto.CategoryDTO;
 import org.aicart.store.product.mapper.CategoryMapper;
 import org.aicart.store.user.entity.Shop;
-
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,7 +68,11 @@ public class CategoryResource {
     
     @GET
     @Path("/tree")
-    public Response getCategoryTree() {
+    public Response getCategoryTree(
+            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("size") @DefaultValue("10") int size,
+            @QueryParam("q") String searchQuery
+    ) {
         Shop shop = Shop.findById(getShopId());
         if (shop == null) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -76,8 +80,16 @@ public class CategoryResource {
                     .build();
         }
         
-        List<Object[]> categoryTree = categoryService.getCategoryTree(shop);
-        return Response.ok(categoryMapper.toDtoTree(categoryTree)).build();
+        List<Object[]> categoryTree = categoryService.getCategoryTree(shop, page, size, searchQuery);
+        long totalCount = categoryService.countCategoryTree(shop, searchQuery);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", categoryMapper.toDtoTree(categoryTree));
+        response.put("total", totalCount);
+        response.put("page", page);
+        response.put("size", size);
+        
+        return Response.ok(response).build();
     }
     
     @GET
@@ -136,7 +148,6 @@ public class CategoryResource {
         
         category.name = request.getName();
         category.persist();
-        categoryService.invalidateCache();
         
         return Response.ok(categoryMapper.toDto(category)).build();
     }

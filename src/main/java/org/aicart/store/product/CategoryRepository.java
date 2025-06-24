@@ -4,6 +4,7 @@ import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import jakarta.transaction.Transactional;
 import org.aicart.store.product.entity.Category;
 import org.aicart.store.product.entity.CategoryClosure;
@@ -180,16 +181,54 @@ public class CategoryRepository implements PanacheRepository<Category> {
         }
     }
 
-    public List<Object[]> getEntireCategoryTree(Shop shop) {
-        return em.createQuery(
+    /**
+     * Get entire category tree for a specific shop with pagination and search
+     */
+    public List<Object[]> getEntireCategoryTree(Shop shop, int page, int size, String searchQuery) {
+        String baseQuery = 
             "SELECT c, p, cc.depth FROM Category c " +
             "LEFT JOIN c.parentCategory p " +
             "JOIN CategoryClosure cc ON c.id = cc.descendant.id " +
-            "WHERE cc.ancestor.id IN (SELECT c2.id FROM Category c2 WHERE c2.parentCategory IS NULL AND c2.shop = :shop) " +
-            "AND c.shop = :shop " +
-            "ORDER BY cc.depth, c.name", Object[].class)
+            "WHERE c.shop = :shop ";
+        
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            baseQuery += "AND c.name ILIKE :searchQuery ";
+        }
+        
+        baseQuery += "ORDER BY cc.depth, c.name";
+        
+        TypedQuery<Object[]> query = em.createQuery(baseQuery, Object[].class)
             .setParameter("shop", shop)
-            .getResultList();
+            .setFirstResult(page * size)
+            .setMaxResults(size);
+        
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            query.setParameter("searchQuery", "%" + searchQuery.trim() + "%");
+        }
+        
+        return query.getResultList();
+    }
+
+    /**
+     * Count total categories in tree with optional search filter
+     */
+    public long countCategoryTree(Shop shop, String searchQuery) {
+        String baseQuery = 
+            "SELECT COUNT(c) FROM Category c " +
+            "WHERE c.shop = :shop ";
+        
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            baseQuery += "AND c.name LIKE :searchQuery ";
+        }
+        
+        TypedQuery<Long> query = em.createQuery(baseQuery, Long.class)
+            .setParameter("shop", shop);
+        
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            query.setParameter("searchQuery", "%" + searchQuery.trim() + "%");
+        }
+        
+        return query.getSingleResult();
     }
 
     public List<Object[]> getCategoriesWithDepth(Long parentId, int page, int size, Shop shop) {

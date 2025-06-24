@@ -17,7 +17,7 @@ public class CategoryService {
     /**
      * Find a category by ID
      */
-    public Category findById(Long id, Shop shop) {
+    public Category findById(Long id,  Shop shop) {
         return categoryRepository.findById(id, shop);
     }
 
@@ -78,10 +78,17 @@ public class CategoryService {
     }
 
     /**
-     * Get category tree
+     * Get category tree with pagination and optional search
      */
-    public List<Object[]> getCategoryTree(Shop shop) {
-        return categoryRepository.getEntireCategoryTree(shop);
+    public List<Object[]> getCategoryTree(Shop shop, int page, int size, String searchQuery) {
+        return categoryRepository.getEntireCategoryTree(shop, page, size, searchQuery);
+    }
+
+    /**
+     * Count total number of categories in tree with optional filtering
+     */
+    public long countCategoryTree(Shop shop, String searchQuery) {
+        return categoryRepository.countCategoryTree(shop, searchQuery);
     }
 
     /**
