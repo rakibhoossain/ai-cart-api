@@ -33,7 +33,7 @@ public class CategoryRepository implements PanacheRepository<Category> {
         String query = "shop = ?1";
         
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            query += " AND name LIKE ?2";
+            query += " AND name ILIKE ?2";
             return find(query + " ORDER BY " + sortField + " " + direction, shop, "%" + searchQuery.trim() + "%")
                     .page(page, size)
                     .list();
@@ -49,7 +49,7 @@ public class CategoryRepository implements PanacheRepository<Category> {
      */
     public long countCategories(String searchQuery, Shop shop) {
         if (searchQuery != null && !searchQuery.trim().isEmpty()) {
-            return count("shop = ?1 AND name LIKE ?2", shop, "%" + searchQuery.trim() + "%");
+            return count("shop = ?1 AND name ILIKE ?2", shop, "%" + searchQuery.trim() + "%");
         } else {
             return count("shop = ?1", shop);
         }

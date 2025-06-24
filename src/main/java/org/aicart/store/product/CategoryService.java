@@ -14,15 +14,6 @@ public class CategoryService {
     @Inject
     CategoryRepository categoryRepository;
     
-    // Add cache for root categories - will be updated to be shop-specific later
-    private List<Category> rootCategoriesCache;
-    private long rootCategoriesCacheTime = 0;
-    private static final long CACHE_EXPIRY_MS = 300000; // 5 minutes
-    
-    public void invalidateCache() {
-        rootCategoriesCache = null;
-    }
-    
     /**
      * Find a category by ID
      */
@@ -48,9 +39,7 @@ public class CategoryService {
      * Add a category
      */
     public Category addCategory(String name, Long parentId, Shop shop) {
-        Category result = categoryRepository.addCategory(name, parentId, shop);
-        invalidateCache();
-        return result;
+        return categoryRepository.addCategory(name, parentId, shop);
     }
 
     /**
@@ -58,7 +47,6 @@ public class CategoryService {
      */
     public void updateParent(Long id, Long newParentId, Shop shop) {
         categoryRepository.updateParent(id, newParentId, shop);
-        invalidateCache();
     }
 
     /**
@@ -66,7 +54,6 @@ public class CategoryService {
      */
     public void deleteCategory(Long id, Shop shop) {
         categoryRepository.deleteCategory(id, shop);
-        invalidateCache();
     }
 
     /**
@@ -88,7 +75,6 @@ public class CategoryService {
      */
     public void moveSubtree(Long categoryId, Long newParentId, Shop shop) {
         categoryRepository.moveSubtree(categoryId, newParentId, shop);
-        invalidateCache();
     }
 
     /**
