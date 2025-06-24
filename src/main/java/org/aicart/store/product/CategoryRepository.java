@@ -8,8 +8,9 @@ import jakarta.transaction.Transactional;
 import org.aicart.store.product.entity.CategoryClosure;
 import org.aicart.store.product.entity.CategoryClosureId;
 import jakarta.persistence.EntityManager;
-
+import org.aicart.store.user.entity.Shop;
 import java.util.List;
+import jakarta.ws.rs.NotFoundException;
 
 @ApplicationScoped
 public class CategoryRepository implements PanacheRepository<Category> {
@@ -28,6 +29,8 @@ public class CategoryRepository implements PanacheRepository<Category> {
     public Category addCategory(String name, Long parentId) {
         Category category = new Category();
         category.name = name;
+        category.shop = (Shop) Shop.findByIdOptional(1) // TODO:: shop
+                .orElseThrow(() -> new NotFoundException("Shop not found"));
 
         if (parentId != null) {
             Category parent = findById(parentId);
