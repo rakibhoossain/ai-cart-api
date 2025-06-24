@@ -290,4 +290,34 @@ public class CategoryRepository implements PanacheRepository<Category> {
             }
         }
     }
+
+    /**
+     * Get root categories (categories without parents) with pagination and search
+     */
+    public List<Category> getRootCategories(int page, int size, String searchQuery, Shop shop) {
+        String query = "shop = ?1 AND parentCategory IS NULL";
+        
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            query += " AND name ILIKE ?2";
+            return find(query + " ORDER BY name ASC", shop, "%" + searchQuery.trim() + "%")
+                    .page(page, size)
+                    .list();
+        } else {
+            return find(query + " ORDER BY name ASC", shop)
+                    .page(page, size)
+                    .list();
+        }
+    }
+
+    /**
+     * Count total number of root categories with optional search
+     */
+    public long countRootCategories(String searchQuery, Shop shop) {
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
+            return count("shop = ?1 AND parentCategory IS NULL AND name ILIKE ?2", 
+                        shop, "%" + searchQuery.trim() + "%");
+        } else {
+            return count("shop = ?1 AND parentCategory IS NULL", shop);
+        }
+    }
 }

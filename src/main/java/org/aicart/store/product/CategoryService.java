@@ -104,5 +104,19 @@ public class CategoryService {
     public long countDescendants(Long categoryId, Shop shop) {
         return categoryRepository.countDescendants(categoryId, shop);
     }
+
+    /**
+     * Get root categories with pagination and optional search
+     */
+    public List<Category> getRootCategories(int page, int size, String searchQuery, Shop shop) {
+        return categoryRepository.getRootCategories(page, size, searchQuery, shop);
+    }
+
+    /**
+     * Count total number of root categories with optional filtering
+     */
+    public long countRootCategories(String searchQuery, Shop shop) {
+        return categoryRepository.countRootCategories(searchQuery, shop);
+    }
 }
 

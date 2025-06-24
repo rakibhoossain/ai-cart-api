@@ -11,6 +11,8 @@ import org.aicart.store.product.request.CategoryUpdateRequest;
 import org.aicart.store.product.dto.CategoryDTO;
 import org.aicart.store.product.mapper.CategoryMapper;
 import org.aicart.store.user.entity.Shop;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,11 +82,48 @@ public class CategoryResource {
                     .build();
         }
         
-        List<Object[]> categoryTree = categoryService.getCategoryTree(shop, page, size, searchQuery);
-        long totalCount = categoryService.countCategoryTree(shop, searchQuery);
+        // Get paginated root categories
+        List<Category> rootCategories = categoryService.getRootCategories(page, size, searchQuery, shop);
+        long totalCount = categoryService.countRootCategories(searchQuery, shop);
+        
+        // For each root category, load its complete subtree
+        List<CategoryDTO> categoryTree = new ArrayList<>();
+        for (Category rootCategory : rootCategories) {
+            CategoryDTO rootDto = categoryMapper.toDto(rootCategory);
+            
+            // Load all descendants for this root category
+            List<Category> descendants = categoryService.getDescendants(rootCategory.id, shop);
+            
+            // Build the tree structure
+            Map<Long, CategoryDTO> dtoMap = new HashMap<>();
+            dtoMap.put(rootCategory.id, rootDto);
+            
+            // First pass: create all DTOs
+            for (Category descendant : descendants) {
+                CategoryDTO dto = categoryMapper.toDto(descendant);
+                dto.setChildren(new ArrayList<>());
+                dtoMap.put(descendant.id, dto);
+            }
+            
+            // Second pass: build the tree
+            for (Category descendant : descendants) {
+                if (descendant.parentCategory != null) {
+                    CategoryDTO parentDto = dtoMap.get(descendant.parentCategory.id);
+                    if (parentDto != null) {
+                        CategoryDTO childDto = dtoMap.get(descendant.id);
+                        if (parentDto.getChildren() == null) {
+                            parentDto.setChildren(new ArrayList<>());
+                        }
+                        parentDto.getChildren().add(childDto);
+                    }
+                }
+            }
+            
+            categoryTree.add(rootDto);
+        }
         
         Map<String, Object> response = new HashMap<>();
-        response.put("data", categoryMapper.toDtoTree(categoryTree));
+        response.put("data", categoryTree);
         response.put("total", totalCount);
         response.put("page", page);
         response.put("size", size);
