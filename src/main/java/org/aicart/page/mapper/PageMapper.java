@@ -21,7 +21,6 @@ public class PageMapper {
         dto.setName(entity.name);
         dto.setSlug(entity.slug);
         dto.setActive(entity.active);
-        dto.setShopId(entity.shop.id);
         dto.setCreatedAt(entity.createdAt);
         dto.setUpdatedAt(entity.updatedAt);
         

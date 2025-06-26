@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.Response;
 import org.aicart.entity.Language;
 import org.aicart.page.dto.PageDTO;
 import org.aicart.page.service.PageService;
+import org.aicart.store.context.ShopContext;
 import org.aicart.store.user.entity.Shop;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -26,6 +27,9 @@ public class PageResource {
     
     @Inject
     JsonWebToken jwt;
+
+    @Inject
+    ShopContext shopContext;
     
     @GET
     @Authenticated
@@ -36,7 +40,7 @@ public class PageResource {
             @QueryParam("direction") @DefaultValue("asc") String sortDirection,
             @QueryParam("search") String searchQuery) {
 
-        Shop shop = Shop.findById(1); // TODO: get shop from user
+        Shop shop = Shop.findById(shopContext.getShopId());
         
         List<PageDTO> pages = pageService.findByShop(
                 shop, 
@@ -76,7 +80,7 @@ public class PageResource {
     @POST
     @Authenticated
     public Response create(@Valid PageDTO dto) {
-        Shop shop = Shop.findById(1); // TODO: get shop from user
+        Shop shop = Shop.findById(shopContext.getShopId());
         
         try {
             PageDTO created = pageService.create(dto, shop);
@@ -92,7 +96,7 @@ public class PageResource {
     @Path("/{id}")
     @Authenticated
     public Response update(@PathParam("id") Long id, @Valid PageDTO dto) {
-        Shop shop = Shop.findById(1); // TODO: get shop from user
+        Shop shop = Shop.findById(shopContext.getShopId());
         
         try {
             PageDTO updated = pageService.update(id, dto, shop);
@@ -112,7 +116,7 @@ public class PageResource {
     @Path("/{id}")
     @Authenticated
     public Response delete(@PathParam("id") Long id) {
-        Shop shop = Shop.findById(1); // TODO: get shop from user
+        Shop shop = Shop.findById(shopContext.getShopId());
         
         try {
             pageService.delete(id, shop);
@@ -131,7 +135,7 @@ public class PageResource {
             @PathParam("id") Long id,
             @QueryParam("active") @DefaultValue("true") boolean active) {
 
-        Shop shop = Shop.findById(1); // TODO: get shop from user
+        Shop shop = Shop.findById(shopContext.getShopId());
         
         try {
             PageDTO updated = pageService.updateStatus(id, active, shop);
@@ -148,10 +152,9 @@ public class PageResource {
     @Blocking
     public Response getPublicBySlug(
             @PathParam("slug") String slug,
-            @QueryParam("shopId") Long shopId,
             @QueryParam("languageId") @DefaultValue("1") Long languageId) {
         
-        Shop shop = Shop.findById(shopId);
+        Shop shop = Shop.findById(shopContext.getShopId());
         if (shop == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("message", "Shop not found"))

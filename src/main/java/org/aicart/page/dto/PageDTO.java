@@ -2,7 +2,6 @@ package org.aicart.page.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,9 +17,6 @@ public class PageDTO {
     private String slug;
     
     private boolean active = true;
-    
-    @NotNull
-    private Long shopId;
     
     @Valid
     private List<PageTranslationDTO> translations = new ArrayList<>();
@@ -59,14 +55,6 @@ public class PageDTO {
     
     public void setActive(boolean active) {
         this.active = active;
-    }
-    
-    public Long getShopId() {
-        return shopId;
-    }
-    
-    public void setShopId(Long shopId) {
-        this.shopId = shopId;
     }
     
     public List<PageTranslationDTO> getTranslations() {
