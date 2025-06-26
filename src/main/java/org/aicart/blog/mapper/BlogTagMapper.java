@@ -18,6 +18,7 @@ public class BlogTagMapper {
         dto.setId(entity.id);
         dto.setName(entity.name);
         dto.setSlug(entity.slug);
+        dto.setColor(entity.color);
         dto.setShopId(entity.shop.id);
         dto.setCreatedAt(entity.createdAt);
         dto.setUpdatedAt(entity.updatedAt);

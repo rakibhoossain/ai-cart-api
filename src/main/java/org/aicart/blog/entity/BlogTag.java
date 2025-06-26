@@ -23,6 +23,9 @@ public class BlogTag extends PanacheEntity {
     @Column(nullable = false, length = 50)
     public String slug;
 
+    @Column(length = 7)
+    public String color;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     public Shop shop;

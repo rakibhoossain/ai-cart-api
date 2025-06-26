@@ -15,7 +15,9 @@ public class BlogTagDTO {
     private String name;
     
     private String slug;
-    
+
+    private String color;
+
     private Long shopId;
     
     @Valid
@@ -48,7 +50,15 @@ public class BlogTagDTO {
     public void setSlug(String slug) {
         this.slug = slug;
     }
-    
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
     public Long getShopId() {
         return shopId;
     }

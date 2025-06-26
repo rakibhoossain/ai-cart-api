@@ -93,6 +93,7 @@ public class BlogTagService {
         BlogTag tag = new BlogTag();
         tag.name = dto.getName();
         tag.slug = slugGenerator.generateSlug(dto.getName());
+        tag.color = dto.getColor();
         tag.shop = shop;
         
         // Check slug uniqueness
@@ -127,7 +128,8 @@ public class BlogTagService {
         }
         
         tag.name = dto.getName();
-        
+        tag.color = dto.getColor();
+
         // Update slug if name changed
         if (!tag.name.equals(dto.getName())) {
             String newSlug = slugGenerator.generateSlug(dto.getName());

@@ -38,7 +38,7 @@ public class Blog extends PanacheEntity {
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-        name = "blog_tags",
+        name = "blog_tag_pivot",
         joinColumns = @JoinColumn(name = "blog_id"),
         inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
@@ -46,7 +46,7 @@ public class Blog extends PanacheEntity {
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-        name = "blog_categories",
+        name = "blog_category_pivot",
         joinColumns = @JoinColumn(name = "blog_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
