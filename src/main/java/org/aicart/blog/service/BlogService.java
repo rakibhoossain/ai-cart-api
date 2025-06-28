@@ -13,11 +13,11 @@ import org.aicart.blog.repository.BlogCategoryRepository;
 import org.aicart.blog.repository.BlogRepository;
 import org.aicart.blog.repository.BlogTagRepository;
 import org.aicart.entity.Language;
-import org.aicart.media.entity.FileStorage;
 import org.aicart.store.user.entity.Shop;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -297,6 +297,18 @@ public class BlogService {
     
     public List<BlogDTO> findByTag(Long tagId, Shop shop, int page, int size, Language language) {
         return blogRepository.findByTag(tagId, shop, page, size, language)
+                .stream()
+                .map(BlogMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getBlogArchives(Shop shop) {
+        return blogRepository.getBlogArchives(shop);
+    }
+
+    public List<BlogDTO> findPublishedByShopWithFilters(Shop shop, int page, int size, Language language,
+            String search, Long categoryId, Long tagId, Integer year, Integer month, Integer day) {
+        return blogRepository.findPublishedByShopWithFilters(shop, page, size, language, search, categoryId, tagId, year, month, day)
                 .stream()
                 .map(BlogMapper::toDto)
                 .collect(Collectors.toList());

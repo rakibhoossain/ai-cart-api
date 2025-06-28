@@ -9,8 +9,6 @@ import jakarta.ws.rs.core.Response;
 import org.aicart.blog.dto.BlogCategoryDTO;
 import org.aicart.blog.service.BlogCategoryService;
 import org.aicart.store.user.entity.Shop;
-import org.aicart.store.user.entity.User;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 import java.util.Map;
@@ -135,15 +133,32 @@ public class BlogCategoryResource {
     
     @GET
     @Path("/public")
-    public Response listPublic(@QueryParam("shopId") Long shopId) {
+    public Response listPublic(
+            @QueryParam("shopId") Long shopId,
+            @QueryParam("withCounts") @DefaultValue("false") boolean withCounts,
+            @QueryParam("includeChildren") @DefaultValue("false") boolean includeChildren) {
         Shop shop = Shop.findById(shopId);
         if (shop == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("message", "Shop not found"))
                     .build();
         }
-        
-        List<BlogCategoryDTO> categories = categoryService.findRootCategories(shop);
-        return Response.ok(categories).build();
+
+        List<BlogCategoryDTO> categories;
+        if (includeChildren) {
+            if (withCounts) {
+                categories = categoryService.findAllCategoriesWithCounts(shop);
+            } else {
+                categories = categoryService.findAllCategories(shop);
+            }
+        } else {
+            if (withCounts) {
+                categories = categoryService.findRootCategoriesWithCounts(shop);
+            } else {
+                categories = categoryService.findRootCategories(shop);
+            }
+        }
+
+        return Response.ok(Map.of("data", categories)).build();
     }
 }

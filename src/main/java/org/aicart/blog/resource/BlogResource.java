@@ -5,17 +5,13 @@ import io.smallrye.common.annotation.Blocking;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
 import org.aicart.blog.dto.BlogDTO;
 import org.aicart.blog.entity.BlogStatus;
 import org.aicart.blog.service.BlogService;
 import org.aicart.entity.Language;
 import org.aicart.store.user.entity.Shop;
-import org.aicart.store.user.entity.User;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.util.List;
 import java.util.Map;
@@ -132,7 +128,13 @@ public class BlogResource {
             @QueryParam("shopId") Long shopId,
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size,
-            @QueryParam("languageId") @DefaultValue("1") Long languageId) {
+            @QueryParam("languageId") @DefaultValue("1") Long languageId,
+            @QueryParam("search") String search,
+            @QueryParam("categoryId") Long categoryId,
+            @QueryParam("tagId") Long tagId,
+            @QueryParam("year") Integer year,
+            @QueryParam("month") Integer month,
+            @QueryParam("day") Integer day) {
         
         Shop shop = Shop.findById(shopId);
         if (shop == null) {
@@ -148,8 +150,9 @@ public class BlogResource {
                     .build();
         }
         
-        List<BlogDTO> blogs = blogService.findPublishedByShop(shop, page, size, language);
-        
+        List<BlogDTO> blogs = blogService.findPublishedByShopWithFilters(
+                shop, page, size, language, search, categoryId, tagId, year, month, day);
+
         return Response.ok(Map.of(
                 "data", blogs,
                 "page", page,
@@ -257,5 +260,19 @@ public class BlogResource {
                 "page", page,
                 "size", size
         )).build();
+    }
+
+    @GET
+    @Path("/public/archives")
+    public Response getArchives(@QueryParam("shopId") Long shopId) {
+        Shop shop = Shop.findById(shopId);
+        if (shop == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
+
+        List<Map<String, Object>> archives = blogService.getBlogArchives(shop);
+        return Response.ok(Map.of("data", archives)).build();
     }
 }

@@ -44,6 +44,41 @@ public class BlogCategoryService {
                 .map(BlogCategoryMapper::toDto)
                 .collect(Collectors.toList());
     }
+
+    public List<BlogCategoryDTO> findRootCategoriesWithCounts(Shop shop) {
+        return categoryRepository.findRootCategories(shop)
+                .stream()
+                .map(category -> {
+                    BlogCategoryDTO dto = BlogCategoryMapper.toDto(category);
+                    // Add post count for this category
+                    long postCount = categoryRepository.countPublishedBlogsByCategory(category);
+                    dto.setPostCount(postCount);
+                    return dto;
+                })
+                .filter(dto -> dto.getPostCount() > 0) // Only show categories with posts
+                .collect(Collectors.toList());
+    }
+
+    public List<BlogCategoryDTO> findAllCategories(Shop shop) {
+        return categoryRepository.findAllByShop(shop)
+                .stream()
+                .map(BlogCategoryMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    public List<BlogCategoryDTO> findAllCategoriesWithCounts(Shop shop) {
+        return categoryRepository.findAllByShop(shop)
+                .stream()
+                .map(category -> {
+                    BlogCategoryDTO dto = BlogCategoryMapper.toDto(category);
+                    // Add post count for this category
+                    long postCount = categoryRepository.countPublishedBlogsByCategory(category);
+                    dto.setPostCount(postCount);
+                    return dto;
+                })
+                .filter(dto -> dto.getPostCount() > 0) // Only show categories with posts
+                .collect(Collectors.toList());
+    }
     
     public List<BlogCategoryDTO> findChildren(Long parentId) {
         BlogCategory parent = categoryRepository.findById(parentId);

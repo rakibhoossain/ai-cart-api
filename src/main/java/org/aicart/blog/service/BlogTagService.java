@@ -74,6 +74,28 @@ public class BlogTagService {
         List<BlogTag> tags = BlogTag.find("shop.id", shop.id).list();
         return tags.stream().map(BlogTagMapper::toDto).collect(Collectors.toList());
     }
+
+    public List<BlogTagDTO> findAllByShopWithCounts(Shop shop) {
+        List<BlogTag> tags = BlogTag.find("shop.id", shop.id).list();
+        return tags.stream()
+                .map(tag -> {
+                    BlogTagDTO dto = BlogTagMapper.toDto(tag);
+                    // Add post count for this tag
+                    long postCount = countPublishedBlogsByTag(tag);
+                    dto.setPostCount(postCount);
+                    return dto;
+                })
+                .filter(dto -> dto.getPostCount() > 0) // Only show tags with posts
+                .collect(Collectors.toList());
+    }
+
+    private long countPublishedBlogsByTag(BlogTag tag) {
+        return em.createQuery(
+            "SELECT COUNT(b) FROM Blog b JOIN b.tags t WHERE t = :tag AND b.status = 'PUBLISHED'",
+            Long.class)
+            .setParameter("tag", tag)
+            .getSingleResult();
+    }
     
     public BlogTagDTO findById(Long id) {
         BlogTag tag = BlogTag.findById(id);

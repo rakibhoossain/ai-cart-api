@@ -122,15 +122,23 @@ public class BlogTagResource {
     
     @GET
     @Path("/public")
-    public Response listPublic(@QueryParam("shopId") Long shopId) {
+    public Response listPublic(
+            @QueryParam("shopId") Long shopId,
+            @QueryParam("withCounts") @DefaultValue("false") boolean withCounts) {
         Shop shop = Shop.findById(shopId);
         if (shop == null) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("message", "Shop not found"))
                     .build();
         }
-        
-        List<BlogTagDTO> tags = tagService.findAllByShop(shop);
-        return Response.ok(tags).build();
+
+        List<BlogTagDTO> tags;
+        if (withCounts) {
+            tags = tagService.findAllByShopWithCounts(shop);
+        } else {
+            tags = tagService.findAllByShop(shop);
+        }
+
+        return Response.ok(Map.of("data", tags)).build();
     }
 }

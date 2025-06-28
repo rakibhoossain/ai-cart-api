@@ -25,7 +25,9 @@ public class BlogTagDTO {
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    
+
+    private Long postCount;
+
     // Getters and setters
     public Long getId() {
         return id;
@@ -89,5 +91,13 @@ public class BlogTagDTO {
     
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Long getPostCount() {
+        return postCount;
+    }
+
+    public void setPostCount(Long postCount) {
+        this.postCount = postCount;
     }
 }

@@ -45,6 +45,10 @@ public class BlogCategoryRepository implements PanacheRepository<BlogCategory> {
     public List<BlogCategory> findRootCategories(Shop shop) {
         return list("shop = ?1 AND parent IS NULL", Sort.by("name").ascending(), shop);
     }
+
+    public List<BlogCategory> findAllByShop(Shop shop) {
+        return list("shop = ?1", Sort.by("name").ascending(), shop);
+    }
     
     public Optional<BlogCategory> findByName(String name, Shop shop) {
         return find("name = ?1 AND shop = ?2", name, shop).firstResultOptional();
@@ -56,5 +60,13 @@ public class BlogCategoryRepository implements PanacheRepository<BlogCategory> {
     
     public List<BlogCategory> findChildren(BlogCategory parent) {
         return list("parent = ?1", Sort.by("name").ascending(), parent);
+    }
+
+    public long countPublishedBlogsByCategory(BlogCategory category) {
+        return em.createQuery(
+            "SELECT COUNT(b) FROM Blog b JOIN b.categories c WHERE c = :category AND b.status = 'PUBLISHED'",
+            Long.class)
+            .setParameter("category", category)
+            .getSingleResult();
     }
 }
