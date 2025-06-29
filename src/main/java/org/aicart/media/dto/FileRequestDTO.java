@@ -17,6 +17,8 @@ public class FileRequestDTO {
     @NotBlank(message = "Mime type is required")
     private String mimeType;
 
+    private String altText;
+
     public String getObjectKey() {
         return objectKey;
     }
@@ -47,5 +49,13 @@ public class FileRequestDTO {
 
     public void setMimeType(String fileType) {
         this.mimeType = fileType;
+    }
+
+    public String getAltText() {
+        return altText;
+    }
+
+    public void setAltText(String altText) {
+        this.altText = altText;
     }
 }

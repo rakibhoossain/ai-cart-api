@@ -117,7 +117,7 @@ public class MediaService {
         mediaDTO.setFileSize((long) outputByteStream.length);
         mediaDTO.setWidth(originalImage.getWidth());
         mediaDTO.setHeight(originalImage.getHeight());
-        mediaDTO.setAltText(fileRequestDTO.getFileName());
+        mediaDTO.setAltText(fileRequestDTO.getAltText() != null ? fileRequestDTO.getAltText() : fileRequestDTO.getFileName());
         mediaDTO.setStorageLocation(minioUrl + "/" + bucketName);
 
         return mediaDTO;
