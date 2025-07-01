@@ -14,6 +14,9 @@ public class OrderBillingDTO {
     private String vatNumber;  // VAT number for international orders
     private String taxNumber;  // Tax number for compliance
 
+    // Default constructor
+    public OrderBillingDTO() {}
+
     public OrderBillingDTO(String fullName, String email, String phone, String line1, String line2, String city, String state, String country, String postalCode, String vatNumber, String taxNumber) {
         this.fullName = fullName;
         this.email = email;
@@ -64,7 +67,7 @@ public class OrderBillingDTO {
         return line2;
     }
 
-    public void setAddressLine2(String line2) {
+    public void setLine2(String line2) {
         this.line2 = line2;
     }
 

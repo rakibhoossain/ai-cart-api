@@ -7,27 +7,31 @@ import org.aicart.PaymentStatusEnum;
 import org.aicart.PaymentTypeEnum;
 import org.aicart.store.context.ShopContext;
 import org.aicart.store.customer.entity.Customer;
-import org.aicart.store.order.dto.CartItemDTO;
-import org.aicart.store.order.dto.OrderShippingDTO;
-import org.aicart.store.order.dto.OrderBillingDTO;
+import org.aicart.store.order.dto.*;
 import org.aicart.store.order.entity.*;
 import org.aicart.store.order.utils.OrderTotal;
 import org.aicart.store.product.entity.Product;
 import org.aicart.store.product.entity.ProductVariant;
 import org.aicart.store.product.dto.ProductVariantDTO;
 import org.aicart.store.product.dto.VariantPriceDTO;
-import org.aicart.store.user.entity.User;
+import org.aicart.store.user.entity.Shop;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class OrderService {
 
     @Inject
     CartRepository cartRepository;
+
+    @Inject
+    OrderRepository orderRepository;
 
     @Inject
     ShopContext shopContext;
@@ -214,5 +218,571 @@ public class OrderService {
 
     public void clearCart(Cart cart) {
         cartRepository.removeItemFromCart(cart);
+    }
+
+    // ==================== ORDER MANAGEMENT METHODS ====================
+
+    /**
+     * Get paginated list of orders with filters
+     */
+    public OrderListResponse findOrdersWithFilters(Shop shop, String search, OrderStatusEnum status,
+                                                  PaymentStatusEnum paymentStatus, LocalDateTime startDate,
+                                                  LocalDateTime endDate, int page, int size,
+                                                  String sortBy, String order) {
+
+        List<OrderListDTO> orders = orderRepository.findOrdersWithFilters(
+            shop, search, status, paymentStatus, startDate, endDate, page, size, sortBy, order);
+
+        long total = orderRepository.countOrdersWithFilters(
+            shop, search, status, paymentStatus, startDate, endDate);
+
+        return new OrderListResponse(orders, total, page, size);
+    }
+
+    /**
+     * Get order details by ID
+     */
+    public OrderDetailDTO getOrderDetails(Shop shop, Long orderId) {
+        Order order = orderRepository.findByIdAndShop(orderId, shop);
+        if (order == null) {
+            throw new RuntimeException("Order not found with id: " + orderId + " for shop: " + shop.id);
+        }
+
+        return mapToOrderDetailDTO(order);
+    }
+
+    /**
+     * Update order status with tracking information
+     */
+    @Transactional
+    public OrderDetailDTO updateOrderStatus(Shop shop, Long orderId, OrderStatusUpdateDTO updateDTO, String adminUser) {
+        Order order = orderRepository.findByIdAndShop(orderId, shop);
+        if (order == null) {
+            throw new RuntimeException("Order not found with id: " + orderId + " for shop: " + shop.id);
+        }
+
+        // Update order status
+        order.status = updateDTO.getStatus();
+
+        // Create tracking entry
+        OrderTracking tracking = new OrderTracking();
+        tracking.order = order;
+        tracking.status = updateDTO.getStatus();
+        tracking.notes = updateDTO.getNotes();
+        tracking.trackingNumber = updateDTO.getTrackingNumber();
+        tracking.carrier = updateDTO.getCarrier();
+        tracking.createdBy = adminUser;
+
+        if (updateDTO.getEstimatedDelivery() != null) {
+            tracking.estimatedDelivery = LocalDateTime.parse(updateDTO.getEstimatedDelivery());
+        }
+
+        tracking.persist();
+        order.persist();
+
+        return mapToOrderDetailDTO(order);
+    }
+
+    /**
+     * Cancel an order
+     */
+    @Transactional
+    public OrderDetailDTO cancelOrder(Shop shop, Long orderId, String reason, String adminUser) {
+        Order order = orderRepository.findByIdAndShop(orderId, shop);
+        if (order == null) {
+            throw new RuntimeException("Order not found with id: " + orderId + " for shop: " + shop.id);
+        }
+
+        // Check if order can be cancelled
+        if (order.status == OrderStatusEnum.DELIVERED || order.status == OrderStatusEnum.CANCELED) {
+            throw new RuntimeException("Order cannot be cancelled in current status: " + order.status);
+        }
+
+        // Update order status
+        order.status = OrderStatusEnum.CANCELED;
+
+        // Create tracking entry
+        OrderTracking tracking = new OrderTracking();
+        tracking.order = order;
+        tracking.status = OrderStatusEnum.CANCELED;
+        tracking.notes = "Order cancelled. Reason: " + reason;
+        tracking.createdBy = adminUser;
+        tracking.persist();
+
+        // TODO: Restore inventory
+        // TODO: Process refund if payment was made
+
+        order.persist();
+        return mapToOrderDetailDTO(order);
+    }
+
+    /**
+     * Create a refund for an order
+     */
+    @Transactional
+    public OrderRefundDTO createRefund(Shop shop, Long orderId, OrderRefundRequestDTO refundRequest, String adminUser) {
+        Order order = orderRepository.findByIdAndShop(orderId, shop);
+        if (order == null) {
+            throw new RuntimeException("Order not found with id: " + orderId + " for shop: " + shop.id);
+        }
+
+        // Generate refund number
+        String refundNumber = generateRefundNumber();
+
+        // Create refund
+        OrderRefund refund = new OrderRefund();
+        refund.order = order;
+        refund.refundNumber = refundNumber;
+        refund.refundType = refundRequest.getRefundType();
+        refund.refundAmount = refundRequest.getRefundAmount();
+        refund.reason = refundRequest.getReason();
+        refund.adminNotes = refundRequest.getAdminNotes();
+        refund.processedBy = adminUser;
+        refund.processedAt = LocalDateTime.now();
+        refund.status = RefundStatusEnum.APPROVED; // Auto-approve for admin-created refunds
+
+        // Create refund items if specified
+        if (refundRequest.getItems() != null && !refundRequest.getItems().isEmpty()) {
+            List<OrderRefundItem> refundItems = new ArrayList<>();
+            for (OrderRefundRequestDTO.RefundItemRequestDTO itemRequest : refundRequest.getItems()) {
+                OrderItem orderItem = OrderItem.findById(itemRequest.getOrderItemId());
+                if (orderItem != null && orderItem.order.id.equals(orderId)) {
+                    OrderRefundItem refundItem = new OrderRefundItem();
+                    refundItem.refund = refund;
+                    refundItem.orderItem = orderItem;
+                    refundItem.quantity = itemRequest.getQuantity();
+                    refundItem.refundAmount = itemRequest.getRefundAmount();
+                    refundItem.reason = itemRequest.getReason();
+                    refundItems.add(refundItem);
+                }
+            }
+            refund.refundItems = refundItems;
+        }
+
+        refund.persist();
+
+        // Update order status if full refund
+        if (refundRequest.getRefundType() == RefundTypeEnum.FULL) {
+            order.status = OrderStatusEnum.REFUNDED;
+            order.persist();
+        }
+
+        return mapToOrderRefundDTO(refund);
+    }
+
+    /**
+     * Create an exchange for an order
+     */
+    @Transactional
+    public OrderExchangeDTO createExchange(Shop shop, Long orderId, OrderExchangeRequestDTO exchangeRequest, String adminUser) {
+        Order order = orderRepository.findByIdAndShop(orderId, shop);
+        if (order == null) {
+            throw new RuntimeException("Order not found with id: " + orderId + " for shop: " + shop.id);
+        }
+
+        // Generate exchange number
+        String exchangeNumber = generateExchangeNumber();
+
+        // Create exchange
+        OrderExchange exchange = new OrderExchange();
+        exchange.order = order;
+        exchange.exchangeNumber = exchangeNumber;
+        exchange.reason = exchangeRequest.getReason();
+        exchange.adminNotes = exchangeRequest.getAdminNotes();
+        exchange.processedBy = adminUser;
+        exchange.processedAt = LocalDateTime.now();
+        exchange.status = ExchangeStatusEnum.APPROVED; // Auto-approve for admin-created exchanges
+
+        // Create exchange items if specified
+        if (exchangeRequest.getItems() != null && !exchangeRequest.getItems().isEmpty()) {
+            List<OrderExchangeItem> exchangeItems = new ArrayList<>();
+            BigInteger totalPriceDifference = BigInteger.ZERO;
+
+            for (OrderExchangeRequestDTO.ExchangeItemRequestDTO itemRequest : exchangeRequest.getItems()) {
+                OrderItem orderItem = OrderItem.findById(itemRequest.getOriginalOrderItemId());
+                ProductVariant newVariant = ProductVariant.findById(itemRequest.getNewVariantId());
+
+                if (orderItem != null && orderItem.order.id.equals(orderId) && newVariant != null) {
+                    OrderExchangeItem exchangeItem = new OrderExchangeItem();
+                    exchangeItem.exchange = exchange;
+                    exchangeItem.originalOrderItem = orderItem;
+                    exchangeItem.newVariant = newVariant;
+                    exchangeItem.quantity = itemRequest.getQuantity();
+                    exchangeItem.reason = itemRequest.getReason();
+                    exchangeItems.add(exchangeItem);
+
+                    // Calculate price difference (simplified - you may need more complex logic)
+                    // TODO: Calculate actual price difference based on variant prices
+                }
+            }
+            exchange.exchangeItems = exchangeItems;
+            exchange.priceDifference = totalPriceDifference;
+        }
+
+        exchange.persist();
+        return mapToOrderExchangeDTO(exchange);
+    }
+
+    /**
+     * Create a credit note for an order
+     */
+    @Transactional
+    public OrderCreditNoteDTO createCreditNote(Shop shop, Long orderId, OrderCreditNoteRequestDTO creditNoteRequest, String adminUser) {
+        Order order = orderRepository.findByIdAndShop(orderId, shop);
+        if (order == null) {
+            throw new RuntimeException("Order not found with id: " + orderId + " for shop: " + shop.id);
+        }
+
+        // Generate credit note number
+        String creditNoteNumber = generateCreditNoteNumber();
+
+        // Create credit note
+        OrderCreditNote creditNote = new OrderCreditNote();
+        creditNote.order = order;
+        creditNote.creditNoteNumber = creditNoteNumber;
+        creditNote.creditAmount = creditNoteRequest.getCreditAmount();
+        creditNote.reason = creditNoteRequest.getReason();
+        creditNote.adminNotes = creditNoteRequest.getAdminNotes();
+        creditNote.issuedBy = adminUser;
+        creditNote.issuedAt = LocalDateTime.now();
+        creditNote.status = CreditNoteStatusEnum.ISSUED;
+        creditNote.remainingAmount = creditNoteRequest.getCreditAmount();
+
+        if (creditNoteRequest.getExpiryDate() != null) {
+            creditNote.expiryDate = LocalDateTime.parse(creditNoteRequest.getExpiryDate());
+        }
+
+        // Create credit note items if specified
+        if (creditNoteRequest.getItems() != null && !creditNoteRequest.getItems().isEmpty()) {
+            List<OrderCreditNoteItem> creditNoteItems = new ArrayList<>();
+            for (OrderCreditNoteRequestDTO.CreditNoteItemRequestDTO itemRequest : creditNoteRequest.getItems()) {
+                OrderItem orderItem = OrderItem.findById(itemRequest.getOrderItemId());
+                if (orderItem != null && orderItem.order.id.equals(orderId)) {
+                    OrderCreditNoteItem creditNoteItem = new OrderCreditNoteItem();
+                    creditNoteItem.creditNote = creditNote;
+                    creditNoteItem.orderItem = orderItem;
+                    creditNoteItem.quantity = itemRequest.getQuantity();
+                    creditNoteItem.creditAmount = itemRequest.getCreditAmount();
+                    creditNoteItem.reason = itemRequest.getReason();
+                    creditNoteItems.add(creditNoteItem);
+                }
+            }
+            creditNote.creditNoteItems = creditNoteItems;
+        }
+
+        creditNote.persist();
+        return mapToOrderCreditNoteDTO(creditNote);
+    }
+
+    /**
+     * Get order statistics for dashboard
+     */
+    public OrderStatsDTO getOrderStats(Shop shop, LocalDateTime startDate, LocalDateTime endDate) {
+        // Get total orders
+        long totalOrders = orderRepository.count("shop.id = ?1 and createdAt >= ?2 and createdAt <= ?3",
+                                                 shop.id, startDate, endDate);
+
+        // Get pending orders
+        long pendingOrders = orderRepository.count("shop.id = ?1 and status = ?2 and createdAt >= ?3 and createdAt <= ?4",
+                                                  shop.id, OrderStatusEnum.PENDING, startDate, endDate);
+
+        // Get completed orders
+        long completedOrders = orderRepository.count("shop.id = ?1 and status = ?2 and createdAt >= ?3 and createdAt <= ?4",
+                                                    shop.id, OrderStatusEnum.COMPLETED, startDate, endDate);
+
+        // Get cancelled orders
+        long cancelledOrders = orderRepository.count("shop.id = ?1 and status = ?2 and createdAt >= ?3 and createdAt <= ?4",
+                                                    shop.id, OrderStatusEnum.CANCELED, startDate, endDate);
+
+        // Calculate total revenue (simplified)
+        BigInteger totalRevenue = BigInteger.ZERO;
+        List<Order> completedOrdersList = orderRepository.find("shop.id = ?1 and status = ?2 and createdAt >= ?3 and createdAt <= ?4",
+                                                              shop.id, OrderStatusEnum.COMPLETED, startDate, endDate).list();
+        for (Order order : completedOrdersList) {
+            totalRevenue = totalRevenue.add(order.totalPrice);
+        }
+
+        return new OrderStatsDTO(totalOrders, pendingOrders, completedOrders, cancelledOrders, totalRevenue);
+    }
+
+    /**
+     * Export orders to CSV format
+     */
+    public String exportOrdersToCSV(List<OrderListDTO> orders) {
+        StringBuilder csv = new StringBuilder();
+
+        // CSV Header
+        csv.append("Order ID,Customer Name,Customer Email,Total Price,Currency,Status,Payment Status,Payment Type,Created At,Item Count\n");
+
+        // CSV Data
+        for (OrderListDTO order : orders) {
+            csv.append(order.getId()).append(",")
+               .append(escapeCSV(order.getCustomerName())).append(",")
+               .append(escapeCSV(order.getCustomerEmail())).append(",")
+               .append(order.getTotalPrice()).append(",")
+               .append(order.getCurrency()).append(",")
+               .append(order.getStatus()).append(",")
+               .append(order.getPaymentStatus()).append(",")
+               .append(order.getPaymentType()).append(",")
+               .append(order.getCreatedAt()).append(",")
+               .append(order.getItemCount()).append("\n");
+        }
+
+        return csv.toString();
+    }
+
+    private String escapeCSV(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    private OrderDetailDTO mapToOrderDetailDTO(Order order) {
+        OrderDetailDTO dto = new OrderDetailDTO();
+        dto.setId(order.id);
+        dto.setSessionId(order.sessionId);
+        dto.setTotalPrice(order.totalPrice);
+        dto.setSubTotal(order.subTotal);
+        dto.setTotalDiscount(order.totalDiscount);
+        dto.setShippingCost(order.shippingCost);
+        dto.setTotalTax(order.totalTax);
+        dto.setCurrency(order.currency);
+        dto.setStatus(order.status);
+        dto.setPaymentStatus(order.paymentStatus);
+        dto.setPaymentType(order.paymentType);
+        dto.setCreatedAt(order.createdAt);
+        dto.setUpdatedAt(order.updatedAt);
+
+        // Map customer info
+        if (order.customer != null) {
+            CustomerInfoDTO customer = new CustomerInfoDTO();
+            customer.setId(order.customer.id);
+            customer.setFirstName(order.customer.firstName);
+            customer.setLastName(order.customer.lastName);
+            customer.setEmail(order.customer.email);
+            customer.setPhone(order.customer.phone);
+            dto.setCustomer(customer);
+        }
+
+        // Map billing
+        if (order.billing != null) {
+            OrderBillingDTO billing = new OrderBillingDTO();
+            billing.setFullName(order.billing.fullName);
+            billing.setEmail(order.billing.email);
+            billing.setPhone(order.billing.phone);
+            billing.setLine1(order.billing.line1);
+            billing.setLine2(order.billing.line2);
+            billing.setCity(order.billing.city);
+            billing.setState(order.billing.state);
+            billing.setCountry(order.billing.country);
+            billing.setPostalCode(order.billing.postalCode);
+            billing.setVatNumber(order.billing.vatNumber);
+            billing.setTaxNumber(order.billing.taxNumber);
+            dto.setBilling(billing);
+        }
+
+        // Map shipping
+        if (order.shipping != null) {
+            OrderShippingDTO shipping = new OrderShippingDTO();
+            shipping.setFullName(order.shipping.fullName);
+            shipping.setPhone(order.shipping.phone);
+            shipping.setLine1(order.shipping.line1);
+            shipping.setLine2(order.shipping.line2);
+            shipping.setCity(order.shipping.city);
+            shipping.setState(order.shipping.state);
+            shipping.setCountry(order.shipping.country);
+            shipping.setPostalCode(order.shipping.postalCode);
+            dto.setShipping(shipping);
+        }
+
+        // Map order items
+        if (order.items != null) {
+            List<OrderItemDetailDTO> items = order.items.stream().map(item -> {
+                OrderItemDetailDTO itemDTO = new OrderItemDetailDTO();
+                itemDTO.setId(item.id);
+                itemDTO.setProductId(item.product.id);
+                itemDTO.setProductName(item.product.name);
+                itemDTO.setProductSlug(item.product.slug);
+                itemDTO.setVariantId(item.variant.id);
+                itemDTO.setVariantName(generateVariantDisplayName(item.variant));
+                itemDTO.setVariantSku(item.variant.sku);
+                itemDTO.setQuantity(item.quantity);
+                itemDTO.setPrice(item.price);
+                itemDTO.setTax(item.tax);
+                itemDTO.setDiscount(item.discount);
+                itemDTO.setTotalPrice(item.price.multiply(BigInteger.valueOf(item.quantity)));
+                // TODO: Add product image
+                return itemDTO;
+            }).collect(Collectors.toList());
+            dto.setItems(items);
+        }
+
+        // Map tracking
+        List<OrderTracking> trackingList = OrderTracking.find("order.id = ?1 ORDER BY createdAt DESC", order.id).list();
+        if (!trackingList.isEmpty()) {
+            List<OrderTrackingDTO> tracking = trackingList.stream().map(t -> {
+                OrderTrackingDTO trackingDTO = new OrderTrackingDTO();
+                trackingDTO.setId(t.id);
+                trackingDTO.setStatus(t.status);
+                trackingDTO.setNotes(t.notes);
+                trackingDTO.setTrackingNumber(t.trackingNumber);
+                trackingDTO.setCarrier(t.carrier);
+                trackingDTO.setEstimatedDelivery(t.estimatedDelivery);
+                trackingDTO.setActualDelivery(t.actualDelivery);
+                trackingDTO.setCreatedBy(t.createdBy);
+                trackingDTO.setCreatedAt(t.createdAt);
+                return trackingDTO;
+            }).collect(Collectors.toList());
+            dto.setTracking(tracking);
+        }
+
+        // Map refunds
+        List<OrderRefund> refundList = OrderRefund.find("order.id = ?1 ORDER BY createdAt DESC", order.id).list();
+        if (!refundList.isEmpty()) {
+            List<OrderRefundDTO> refunds = refundList.stream().map(this::mapToOrderRefundDTO).collect(Collectors.toList());
+            dto.setRefunds(refunds);
+        }
+
+        // Map exchanges
+        List<OrderExchange> exchangeList = OrderExchange.find("order.id = ?1 ORDER BY createdAt DESC", order.id).list();
+        if (!exchangeList.isEmpty()) {
+            List<OrderExchangeDTO> exchanges = exchangeList.stream().map(this::mapToOrderExchangeDTO).collect(Collectors.toList());
+            dto.setExchanges(exchanges);
+        }
+
+        // Map credit notes
+        List<OrderCreditNote> creditNoteList = OrderCreditNote.find("order.id = ?1 ORDER BY createdAt DESC", order.id).list();
+        if (!creditNoteList.isEmpty()) {
+            List<OrderCreditNoteDTO> creditNotes = creditNoteList.stream().map(this::mapToOrderCreditNoteDTO).collect(Collectors.toList());
+            dto.setCreditNotes(creditNotes);
+        }
+
+        return dto;
+    }
+
+    private OrderRefundDTO mapToOrderRefundDTO(OrderRefund refund) {
+        OrderRefundDTO dto = new OrderRefundDTO();
+        dto.setId(refund.id);
+        dto.setRefundNumber(refund.refundNumber);
+        dto.setRefundType(refund.refundType);
+        dto.setStatus(refund.status);
+        dto.setRefundAmount(refund.refundAmount);
+        dto.setReason(refund.reason);
+        dto.setAdminNotes(refund.adminNotes);
+        dto.setProcessedBy(refund.processedBy);
+        dto.setProcessedAt(refund.processedAt);
+        dto.setCreatedAt(refund.createdAt);
+
+        if (refund.refundItems != null) {
+            List<OrderRefundItemDTO> items = refund.refundItems.stream().map(item -> {
+                OrderRefundItemDTO itemDTO = new OrderRefundItemDTO();
+                itemDTO.setId(item.id);
+                itemDTO.setOrderItemId(item.orderItem.id);
+                itemDTO.setProductName(item.orderItem.product.name);
+                itemDTO.setVariantName(generateVariantDisplayName(item.orderItem.variant));
+                itemDTO.setQuantity(item.quantity);
+                itemDTO.setRefundAmount(item.refundAmount);
+                itemDTO.setReason(item.reason);
+                return itemDTO;
+            }).collect(Collectors.toList());
+            dto.setRefundItems(items);
+        }
+
+        return dto;
+    }
+
+    private String generateRefundNumber() {
+        return "REF-" + System.currentTimeMillis();
+    }
+
+    private String generateExchangeNumber() {
+        return "EXC-" + System.currentTimeMillis();
+    }
+
+    private String generateCreditNoteNumber() {
+        return "CN-" + System.currentTimeMillis();
+    }
+
+    private OrderExchangeDTO mapToOrderExchangeDTO(OrderExchange exchange) {
+        OrderExchangeDTO dto = new OrderExchangeDTO();
+        dto.setId(exchange.id);
+        dto.setExchangeNumber(exchange.exchangeNumber);
+        dto.setStatus(exchange.status);
+        dto.setReason(exchange.reason);
+        dto.setAdminNotes(exchange.adminNotes);
+        dto.setPriceDifference(exchange.priceDifference);
+        dto.setProcessedBy(exchange.processedBy);
+        dto.setProcessedAt(exchange.processedAt);
+        dto.setCreatedAt(exchange.createdAt);
+
+        if (exchange.exchangeItems != null) {
+            List<OrderExchangeItemDTO> items = exchange.exchangeItems.stream().map(item -> {
+                OrderExchangeItemDTO itemDTO = new OrderExchangeItemDTO();
+                itemDTO.setId(item.id);
+                itemDTO.setOriginalOrderItemId(item.originalOrderItem.id);
+                itemDTO.setOriginalProductName(item.originalOrderItem.product.name);
+                itemDTO.setOriginalVariantName(generateVariantDisplayName(item.originalOrderItem.variant));
+                itemDTO.setNewVariantId(item.newVariant.id);
+                itemDTO.setNewProductName(item.newVariant.product.name);
+                itemDTO.setNewVariantName(generateVariantDisplayName(item.newVariant));
+                itemDTO.setQuantity(item.quantity);
+                itemDTO.setReason(item.reason);
+                return itemDTO;
+            }).collect(Collectors.toList());
+            dto.setExchangeItems(items);
+        }
+
+        return dto;
+    }
+
+    private OrderCreditNoteDTO mapToOrderCreditNoteDTO(OrderCreditNote creditNote) {
+        OrderCreditNoteDTO dto = new OrderCreditNoteDTO();
+        dto.setId(creditNote.id);
+        dto.setCreditNoteNumber(creditNote.creditNoteNumber);
+        dto.setStatus(creditNote.status);
+        dto.setCreditAmount(creditNote.creditAmount);
+        dto.setReason(creditNote.reason);
+        dto.setAdminNotes(creditNote.adminNotes);
+        dto.setExpiryDate(creditNote.expiryDate);
+        dto.setUsedAmount(creditNote.usedAmount);
+        dto.setRemainingAmount(creditNote.remainingAmount);
+        dto.setIssuedBy(creditNote.issuedBy);
+        dto.setIssuedAt(creditNote.issuedAt);
+        dto.setCreatedAt(creditNote.createdAt);
+
+        if (creditNote.creditNoteItems != null) {
+            List<OrderCreditNoteItemDTO> items = creditNote.creditNoteItems.stream().map(item -> {
+                OrderCreditNoteItemDTO itemDTO = new OrderCreditNoteItemDTO();
+                itemDTO.setId(item.id);
+                itemDTO.setOrderItemId(item.orderItem.id);
+                itemDTO.setProductName(item.orderItem.product.name);
+                itemDTO.setVariantName(generateVariantDisplayName(item.orderItem.variant));
+                itemDTO.setQuantity(item.quantity);
+                itemDTO.setCreditAmount(item.creditAmount);
+                itemDTO.setReason(item.reason);
+                return itemDTO;
+            }).collect(Collectors.toList());
+            dto.setCreditNoteItems(items);
+        }
+
+        return dto;
+    }
+
+    private String generateVariantDisplayName(ProductVariant variant) {
+        if (variant == null) {
+            return "Default";
+        }
+
+        if (variant.attributeValues != null && !variant.attributeValues.isEmpty()) {
+            return variant.attributeValues.stream()
+                    .map(av -> av.value)
+                    .collect(Collectors.joining(" / "));
+        }
+
+        return variant.sku != null ? variant.sku : "Default";
     }
 }

@@ -10,6 +10,9 @@ public class OrderShippingDTO {
     private String country; // ISO 3166-1 alpha-2
     private String postalCode;
 
+    // Default constructor
+    public OrderShippingDTO() {}
+
     public OrderShippingDTO(String fullName, String phone, String line1, String line2, String city, String state, String country, String postalCode) {
         this.fullName = fullName;
         this.phone = phone;
