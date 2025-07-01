@@ -180,7 +180,7 @@ public class CartResource {
         if(response.isValid() && response.getTran_id() != null)
         {
             String cartId = response.getTran_id();
-            Cart cart = Cart.find("id = ?1 AND shop.id = ?2", cartId, shopContext.getShopId()).firstResult();
+            Cart cart = Cart.find("id = ?1", cartId).firstResult();
             if (cart == null) return Response.status(Response.Status.NOT_FOUND).build();
 
             orderService.convertCartToOrder(cart, cart.billing, cart.shipping, null);
