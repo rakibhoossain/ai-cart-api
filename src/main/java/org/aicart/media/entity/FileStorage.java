@@ -2,6 +2,8 @@ package org.aicart.media.entity;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
+
+import org.aicart.store.user.entity.Shop;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
@@ -9,6 +11,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "file_storage")
 public class FileStorage extends PanacheEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    public Shop shop;
 
     @Column(name = "file_name", nullable = false)
     public String fileName;

@@ -6,6 +6,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import org.aicart.media.entity.FileStorage;
+import org.aicart.store.user.entity.Shop;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +18,10 @@ public class MediaRepository implements PanacheRepository<FileStorage> {
     @PersistenceContext
     EntityManager em;
 
-    public List<FileStorage> findWithFilters(String search, String fileType, int page, int size, String sortBy, String order) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT f FROM FileStorage f WHERE 1=1");
+    public List<FileStorage> findWithFilters(Shop shop, String search, String fileType, int page, int size, String sortBy, String order) {
+        StringBuilder queryBuilder = new StringBuilder("SELECT f FROM FileStorage f WHERE shop.id=:shopId");
         Map<String, Object> params = new HashMap<>();
+        params.put("shopId", shop.id);
 
         // Add search filter
         if (search != null && !search.trim().isEmpty()) {
@@ -54,9 +56,10 @@ public class MediaRepository implements PanacheRepository<FileStorage> {
                 .getResultList();
     }
 
-    public long countWithFilters(String search, String fileType) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(f) FROM FileStorage f WHERE 1=1");
+    public long countWithFilters(Shop shop, String search, String fileType) {
+        StringBuilder queryBuilder = new StringBuilder("SELECT COUNT(f) FROM FileStorage f WHERE shop.id=:shopId");
         Map<String, Object> params = new HashMap<>();
+        params.put("shopId", shop.id);
 
         // Add search filter
         if (search != null && !search.trim().isEmpty()) {
@@ -78,5 +81,19 @@ public class MediaRepository implements PanacheRepository<FileStorage> {
         }
 
         return query.getSingleResult();
+    }
+
+    /**
+     * Find a file by ID that belongs to the specified shop
+     */
+    public FileStorage findByIdAndShop(Long id, Shop shop) {
+        return find("id = ?1 and shop.id = ?2", id, shop.id).firstResult();
+    }
+
+    /**
+     * Check if a file exists and belongs to the specified shop
+     */
+    public boolean existsByIdAndShop(Long id, Shop shop) {
+        return count("id = ?1 and shop.id = ?2", id, shop.id) > 0;
     }
 }

@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.aicart.store.user.entity.Shop;
 
 @ApplicationScoped
 public class MediaService {
@@ -39,7 +40,7 @@ public class MediaService {
     ImageService imageService;
 
 
-    public FileStorage store(FileRequestDTO fileRequestDTO) throws Exception {
+    public FileStorage store(Shop shop, FileRequestDTO fileRequestDTO) throws Exception {
 
         // Get object from source bucket
         GetObjectArgs getRequest = buildGetRequest(fileRequestDTO.getObjectKey());
@@ -53,16 +54,18 @@ public class MediaService {
             MediaDTO mediaDTO = processAndUploadImage(fileRequestDTO, inputStream);
             removeObject(fileRequestDTO.getObjectKey());
 
-            return storeMedia(mediaDTO);
+            return storeMedia(shop, mediaDTO);
 
         } catch (Exception e) {
+            System.out.println(e);
+            e.printStackTrace();
             throw new Exception(e.getMessage());
         }
     }
 
 
     @Transactional
-    public FileStorage storeMedia(MediaDTO mediaDTO) {
+    public FileStorage storeMedia(Shop shop, MediaDTO mediaDTO) {
         FileStorage file = new FileStorage();
         file.fileName = mediaDTO.getFileName();
         file.fileType = mediaDTO.getFileType();
@@ -75,6 +78,7 @@ public class MediaService {
         file.height = mediaDTO.getHeight();
         file.altText = mediaDTO.getAltText();
         file.storageLocation = mediaDTO.getStorageLocation();
+        file.shop = shop;
 
         file.persist();
 
@@ -162,9 +166,9 @@ public class MediaService {
     }
 
     // New CRUD methods for media management
-    public MediaListResponse findAllWithFilters(String search, String fileType, int page, int size, String sortBy, String order) {
-        List<FileStorage> files = mediaRepository.findWithFilters(search, fileType, page, size, sortBy, order);
-        long total = mediaRepository.countWithFilters(search, fileType);
+    public MediaListResponse findAllWithFilters(Shop shop, String search, String fileType, int page, int size, String sortBy, String order) {
+        List<FileStorage> files = mediaRepository.findWithFilters(shop, search, fileType, page, size, sortBy, order);
+        long total = mediaRepository.countWithFilters(shop, search, fileType);
 
         List<MediaFileDTO> fileDTOs = files.stream()
                 .map(MediaFileMapper::toDto)
@@ -173,16 +177,19 @@ public class MediaService {
         return new MediaListResponse(fileDTOs, total, page, size);
     }
 
-    public MediaFileDTO findById(Long id) {
-        FileStorage file = mediaRepository.findById(id);
+    public MediaFileDTO findById(Shop shop, Long id) {
+        FileStorage file = mediaRepository.findByIdAndShop(id, shop);
+        if (file == null) {
+            throw new RuntimeException("Media file not found with id: " + id + " for shop: " + shop.id);
+        }
         return MediaFileMapper.toDto(file);
     }
 
     @Transactional
-    public MediaFileDTO updateMedia(Long id, MediaUpdateDTO updateDTO) {
-        FileStorage file = mediaRepository.findById(id);
+    public MediaFileDTO updateMedia(Shop shop, Long id, MediaUpdateDTO updateDTO) {
+        FileStorage file = mediaRepository.findByIdAndShop(id, shop);
         if (file == null) {
-            throw new RuntimeException("Media file not found with id: " + id);
+            throw new RuntimeException("Media file not found with id: " + id + " for shop: " + shop.id);
         }
 
         if (updateDTO.getFileName() != null) {
@@ -200,8 +207,8 @@ public class MediaService {
     }
 
     @Transactional
-    public boolean deleteMedia(Long id) {
-        FileStorage file = mediaRepository.findById(id);
+    public boolean deleteMedia(Shop shop, Long id) {
+        FileStorage file = mediaRepository.findByIdAndShop(id, shop);
         if (file == null) {
             return false;
         }

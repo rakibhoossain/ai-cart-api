@@ -10,7 +10,8 @@ import org.aicart.media.dto.MediaFileDTO;
 import org.aicart.media.dto.MediaListResponse;
 import org.aicart.media.dto.MediaUpdateDTO;
 import org.aicart.media.entity.FileStorage;
-
+import io.quarkus.security.Authenticated;
+import org.aicart.store.user.entity.Shop;
 import java.util.Map;
 
 @Path("/media")
@@ -21,9 +22,22 @@ public class MediaResource {
     @Inject
     MediaService mediaService;
 
+    private Long getShopId() {
+        // In a real application, this would come from authentication context
+        return 1L;
+    }
+
     @POST
+    @Authenticated
     @Path("store")
     public Response store(@Valid FileRequestDTO fileRequestDTO) {
+
+        Shop shop = Shop.findById(getShopId());
+        if (shop == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", "Shop not found"))
+                    .build();
+        }
 
         if (fileRequestDTO == null) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -32,7 +46,7 @@ public class MediaResource {
         }
 
         try {
-            FileStorage file = mediaService.store(fileRequestDTO);
+            FileStorage file = mediaService.store(shop, fileRequestDTO);
             return Response.ok(file).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -42,6 +56,7 @@ public class MediaResource {
     }
 
     @GET
+    @Authenticated
     public Response list(
             @QueryParam("page") @DefaultValue("0") int page,
             @QueryParam("size") @DefaultValue("10") int size,
@@ -51,7 +66,15 @@ public class MediaResource {
             @QueryParam("order") @DefaultValue("desc") String order) {
 
         try {
-            MediaListResponse response = mediaService.findAllWithFilters(search, fileType, page, size, sortBy, order);
+
+            Shop shop = Shop.findById(getShopId());
+            if (shop == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("message", "Shop not found"))
+                        .build();
+            }
+
+            MediaListResponse response = mediaService.findAllWithFilters(shop, search, fileType, page, size, sortBy, order);
             return Response.ok(response).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -61,10 +84,19 @@ public class MediaResource {
     }
 
     @GET
+    @Authenticated
     @Path("/{id}")
     public Response getById(@PathParam("id") Long id) {
         try {
-            MediaFileDTO file = mediaService.findById(id);
+
+            Shop shop = Shop.findById(getShopId());
+            if (shop == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("message", "Shop not found"))
+                        .build();
+            }
+
+            MediaFileDTO file = mediaService.findById(shop, id);
             if (file == null) {
                 return Response.status(Response.Status.NOT_FOUND)
                         .entity(Map.of("message", "Media file not found"))
@@ -79,10 +111,19 @@ public class MediaResource {
     }
 
     @PUT
+    @Authenticated
     @Path("/{id}")
     public Response update(@PathParam("id") Long id, @Valid MediaUpdateDTO updateDTO) {
         try {
-            MediaFileDTO updatedFile = mediaService.updateMedia(id, updateDTO);
+
+            Shop shop = Shop.findById(getShopId());
+            if (shop == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("message", "Shop not found"))
+                        .build();
+            }
+
+            MediaFileDTO updatedFile = mediaService.updateMedia(shop, id, updateDTO);
             return Response.ok(updatedFile).build();
         } catch (RuntimeException e) {
             return Response.status(Response.Status.NOT_FOUND)
@@ -96,10 +137,19 @@ public class MediaResource {
     }
 
     @DELETE
+    @Authenticated
     @Path("/{id}")
     public Response delete(@PathParam("id") Long id) {
         try {
-            boolean deleted = mediaService.deleteMedia(id);
+
+            Shop shop = Shop.findById(getShopId());
+            if (shop == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("message", "Shop not found"))
+                        .build();
+            }
+
+            boolean deleted = mediaService.deleteMedia(shop, id);
             if (!deleted) {
                 return Response.status(Response.Status.NOT_FOUND)
                         .entity(Map.of("message", "Media file not found"))
