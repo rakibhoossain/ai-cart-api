@@ -81,6 +81,24 @@ public class Order extends PanacheEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column(name = "notes", columnDefinition = "TEXT")
+    public String notes; // Admin notes
+
+    @Column(name = "customer_notes", columnDefinition = "TEXT")
+    public String customerNotes; // Customer notes
+
+    @Column(name = "coupon_code")
+    public String couponCode; // Applied coupon code
+
+    @Column(name = "reference_number")
+    public String referenceNumber; // External reference number
+
+    @Column(name = "shipping_method")
+    public String shippingMethod; // Shipping method selected
+
+    @Column(name = "delivery_instructions", columnDefinition = "TEXT")
+    public String deliveryInstructions; // Special delivery instructions
+
     @Column(name = "updated_at", nullable = false)
     public LocalDateTime updatedAt = LocalDateTime.now();
 

@@ -35,6 +35,33 @@ public class OrderResource {
     }
 
     /**
+     * Create a new order
+     */
+    @POST
+    public Response createOrder(@Valid OrderCreateRequestDTO createRequest) {
+        try {
+            Shop shop = Shop.findById(getShopId());
+            if (shop == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("message", "Shop not found"))
+                        .build();
+            }
+
+            OrderDetailDTO order = orderService.createOrder(shop, createRequest, getCurrentUser());
+            return Response.status(Response.Status.CREATED).entity(order).build();
+
+        } catch (RuntimeException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
      * Get paginated list of orders with filters
      */
     @GET
@@ -98,6 +125,34 @@ public class OrderResource {
 
         } catch (RuntimeException e) {
             return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * Update an existing order
+     */
+    @PUT
+    @Path("/{id}")
+    public Response updateOrder(@PathParam("id") Long id, @Valid OrderUpdateRequestDTO updateRequest) {
+        try {
+            Shop shop = Shop.findById(getShopId());
+            if (shop == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("message", "Shop not found"))
+                        .build();
+            }
+
+            OrderDetailDTO order = orderService.updateOrder(shop, id, updateRequest, getCurrentUser());
+            return Response.ok(order).build();
+
+        } catch (RuntimeException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("message", e.getMessage()))
                     .build();
         } catch (Exception e) {

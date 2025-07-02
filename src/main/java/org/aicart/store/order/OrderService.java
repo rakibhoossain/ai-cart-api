@@ -506,6 +506,273 @@ public class OrderService {
     }
 
     /**
+     * Create a new order
+     */
+    @Transactional
+    public OrderDetailDTO createOrder(Shop shop, OrderCreateRequestDTO createRequest, String createdBy) {
+        try {
+            // Create order entity
+            Order order = new Order();
+            order.shop = shop;
+            order.sessionId = generateSessionId();
+
+            // Set customer information
+            if (createRequest.getCustomerId() != null) {
+                // TODO: Load customer from database
+                // order.customer = customerRepository.findById(createRequest.getCustomerId());
+            }
+
+            // Set pricing
+            order.subTotal = createRequest.getSubTotal();
+            order.totalDiscount = createRequest.getTotalDiscount();
+            order.shippingCost = createRequest.getShippingCost();
+            order.totalTax = createRequest.getTotalTax();
+            order.totalPrice = createRequest.getTotalPrice();
+            order.currency = createRequest.getCurrency();
+
+            // Set payment and status
+            order.paymentType = createRequest.getPaymentType();
+            order.status = createRequest.getInitialStatus();
+            order.paymentStatus = PaymentStatusEnum.PENDING;
+
+            // Set addresses
+            order.billing = mapToBillingEntity(createRequest.getBilling());
+            if (createRequest.getShipping() != null) {
+                order.shipping = mapToShippingEntity(createRequest.getShipping());
+            }
+
+            // Set additional fields
+            order.notes = createRequest.getNotes();
+            order.customerNotes = createRequest.getCustomerNotes();
+            order.couponCode = createRequest.getCouponCode();
+            order.referenceNumber = createRequest.getReferenceNumber();
+            order.shippingMethod = createRequest.getShippingMethod();
+            order.deliveryInstructions = createRequest.getDeliveryInstructions();
+
+            // Save order
+            order.persist();
+
+            // Create order items
+            for (OrderCreateRequestDTO.OrderItemRequestDTO itemRequest : createRequest.getItems()) {
+                OrderItem orderItem = new OrderItem();
+                orderItem.order = order;
+
+                // TODO: Load product and variant from database
+                // orderItem.product = productRepository.findById(itemRequest.getProductId());
+                // orderItem.variant = variantRepository.findById(itemRequest.getVariantId());
+
+                orderItem.quantity = itemRequest.getQuantity();
+                orderItem.price = itemRequest.getPrice();
+                orderItem.tax = itemRequest.getTax();
+                orderItem.discount = itemRequest.getDiscount();
+                orderItem.totalPrice = calculateItemTotal(itemRequest);
+
+                orderItem.persist();
+            }
+
+            // Create initial tracking entry
+            addTrackingEntry(order, order.status, TrackingEventTypeEnum.STATUS_CHANGE,
+                "Order Created", "Order has been created successfully",
+                null, null, null, null, createdBy, true, true);
+
+            // Create order log
+            addOrderLog(order, OrderLogTypeEnum.ORDER_CREATED, "Order Created",
+                "Order #" + order.id + " has been created", null, null, createdBy, false, true);
+
+            return mapToOrderDetailDTO(order);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create order: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Update an existing order
+     */
+    @Transactional
+    public OrderDetailDTO updateOrder(Shop shop, Long orderId, OrderUpdateRequestDTO updateRequest, String updatedBy) {
+        try {
+            Order order = orderRepository.findByIdAndShop(orderId, shop);
+            if (order == null) {
+                throw new RuntimeException("Order not found");
+            }
+
+            // Check if order can be updated
+            if (!canOrderBeUpdated(order)) {
+                throw new RuntimeException("Order cannot be updated in current status: " + order.status);
+            }
+
+            // Track changes for logging
+            StringBuilder changes = new StringBuilder();
+
+            // Update customer information
+            if (updateRequest.getCustomerInfo() != null) {
+                updateCustomerInfo(order, updateRequest.getCustomerInfo(), changes);
+            }
+
+            // Update addresses
+            if (updateRequest.getBilling() != null) {
+                updateBillingAddress(order, updateRequest.getBilling(), changes);
+            }
+
+            if (updateRequest.getShipping() != null) {
+                updateShippingAddress(order, updateRequest.getShipping(), changes);
+            }
+
+            // Update pricing if provided
+            if (updateRequest.getTotalPrice() != null) {
+                updateOrderPricing(order, updateRequest, changes);
+            }
+
+            // Update other fields
+            updateOrderFields(order, updateRequest, changes);
+
+            // Update items if provided
+            if (updateRequest.getItems() != null) {
+                updateOrderItems(order, updateRequest.getItems(), changes);
+            }
+
+            // Save order
+            order.persist();
+
+            // Create order log
+            if (changes.length() > 0) {
+                addOrderLog(order, OrderLogTypeEnum.ORDER_UPDATED, "Order Updated",
+                    changes.toString(), null, null, updatedBy, false, true);
+            }
+
+            return mapToOrderDetailDTO(order);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update order: " + e.getMessage(), e);
+        }
+    }
+
+    private boolean canOrderBeUpdated(Order order) {
+        // Orders can be updated if they are not completed, delivered, cancelled, or refunded
+        return !List.of(OrderStatusEnum.COMPLETED, OrderStatusEnum.DELIVERED,
+                       OrderStatusEnum.CANCELED, OrderStatusEnum.REFUNDED).contains(order.status);
+    }
+
+    private void updateCustomerInfo(Order order, OrderUpdateRequestDTO.CustomerInfoUpdateDTO customerInfo, StringBuilder changes) {
+        // For guest orders, we can update customer info through billing address
+        // For registered customers, we would update the customer entity
+        // This is a simplified implementation
+        if (customerInfo.getEmail() != null && order.billing != null) {
+            if (!customerInfo.getEmail().equals(order.billing.email)) {
+                changes.append("Email changed from ").append(order.billing.email)
+                       .append(" to ").append(customerInfo.getEmail()).append("; ");
+                order.billing.email = customerInfo.getEmail();
+            }
+        }
+    }
+
+    private void updateBillingAddress(Order order, OrderUpdateRequestDTO.OrderBillingUpdateDTO billing, StringBuilder changes) {
+        if (order.billing == null) {
+            order.billing = new OrderBilling();
+        }
+
+        // Update billing fields if provided
+        if (billing.getFullName() != null) {
+            order.billing.fullName = billing.getFullName();
+            changes.append("Billing name updated; ");
+        }
+        if (billing.getEmail() != null) {
+            order.billing.email = billing.getEmail();
+            changes.append("Billing email updated; ");
+        }
+        // Add other billing field updates as needed
+    }
+
+    private void updateShippingAddress(Order order, OrderUpdateRequestDTO.OrderShippingUpdateDTO shipping, StringBuilder changes) {
+        if (order.shipping == null) {
+            order.shipping = new OrderShipping();
+        }
+
+        // Update shipping fields if provided
+        if (shipping.getFullName() != null) {
+            order.shipping.fullName = shipping.getFullName();
+            changes.append("Shipping name updated; ");
+        }
+        // Add other shipping field updates as needed
+    }
+
+    private void updateOrderPricing(Order order, OrderUpdateRequestDTO updateRequest, StringBuilder changes) {
+        if (updateRequest.getSubTotal() != null) {
+            order.subTotal = updateRequest.getSubTotal();
+        }
+        if (updateRequest.getTotalDiscount() != null) {
+            order.totalDiscount = updateRequest.getTotalDiscount();
+        }
+        if (updateRequest.getShippingCost() != null) {
+            order.shippingCost = updateRequest.getShippingCost();
+        }
+        if (updateRequest.getTotalTax() != null) {
+            order.totalTax = updateRequest.getTotalTax();
+        }
+        if (updateRequest.getTotalPrice() != null) {
+            order.totalPrice = updateRequest.getTotalPrice();
+        }
+        changes.append("Order pricing updated; ");
+    }
+
+    private void updateOrderFields(Order order, OrderUpdateRequestDTO updateRequest, StringBuilder changes) {
+        if (updateRequest.getNotes() != null) {
+            order.notes = updateRequest.getNotes();
+            changes.append("Admin notes updated; ");
+        }
+        if (updateRequest.getCustomerNotes() != null) {
+            order.customerNotes = updateRequest.getCustomerNotes();
+            changes.append("Customer notes updated; ");
+        }
+        if (updateRequest.getShippingMethod() != null) {
+            order.shippingMethod = updateRequest.getShippingMethod();
+            changes.append("Shipping method updated; ");
+        }
+        if (updateRequest.getDeliveryInstructions() != null) {
+            order.deliveryInstructions = updateRequest.getDeliveryInstructions();
+            changes.append("Delivery instructions updated; ");
+        }
+    }
+
+    private void updateOrderItems(Order order, List<OrderUpdateRequestDTO.OrderItemUpdateDTO> itemUpdates, StringBuilder changes) {
+        // This is a simplified implementation
+        // In a real system, you'd need to handle inventory, pricing recalculation, etc.
+
+        for (OrderUpdateRequestDTO.OrderItemUpdateDTO itemUpdate : itemUpdates) {
+            if (itemUpdate.getRemove() != null && itemUpdate.getRemove()) {
+                // Remove item
+                if (itemUpdate.getId() != null) {
+                    OrderItem.deleteById(itemUpdate.getId());
+                    changes.append("Item removed; ");
+                }
+            } else if (itemUpdate.getId() == null) {
+                // Add new item
+                OrderItem newItem = new OrderItem();
+                newItem.order = order;
+                // Set item properties
+                newItem.quantity = itemUpdate.getQuantity();
+                newItem.price = itemUpdate.getPrice();
+                newItem.persist();
+                changes.append("Item added; ");
+            } else {
+                // Update existing item
+                OrderItem existingItem = OrderItem.findById(itemUpdate.getId());
+                if (existingItem != null && existingItem.order.id.equals(order.id)) {
+                    if (itemUpdate.getQuantity() != null) {
+                        existingItem.quantity = itemUpdate.getQuantity();
+                    }
+                    if (itemUpdate.getPrice() != null) {
+                        existingItem.price = itemUpdate.getPrice();
+                    }
+                    existingItem.persist();
+                    changes.append("Item updated; ");
+                }
+            }
+        }
+    }
+
+    /**
      * Export orders to CSV format
      */
     public String exportOrdersToCSV(List<OrderListDTO> orders) {
@@ -770,6 +1037,83 @@ public class OrderService {
         }
 
         return dto;
+    }
+
+    private String generateSessionId() {
+        return "SES-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 1000);
+    }
+
+    private BigInteger calculateItemTotal(OrderCreateRequestDTO.OrderItemRequestDTO itemRequest) {
+        BigInteger total = itemRequest.getPrice().multiply(BigInteger.valueOf(itemRequest.getQuantity()));
+        total = total.add(itemRequest.getTax());
+        total = total.subtract(itemRequest.getDiscount());
+        return total;
+    }
+
+    private OrderBilling mapToBillingEntity(OrderCreateRequestDTO.OrderBillingRequestDTO billingRequest) {
+        OrderBilling billing = new OrderBilling();
+        billing.fullName = billingRequest.getFullName();
+        billing.email = billingRequest.getEmail();
+        billing.phone = billingRequest.getPhone();
+        billing.line1 = billingRequest.getLine1();
+        billing.line2 = billingRequest.getLine2();
+        billing.city = billingRequest.getCity();
+        billing.state = billingRequest.getState();
+        billing.country = billingRequest.getCountry();
+        billing.postalCode = billingRequest.getPostalCode();
+        billing.vatNumber = billingRequest.getVatNumber();
+        billing.taxNumber = billingRequest.getTaxNumber();
+        return billing;
+    }
+
+    private OrderShipping mapToShippingEntity(OrderCreateRequestDTO.OrderShippingRequestDTO shippingRequest) {
+        OrderShipping shipping = new OrderShipping();
+        shipping.fullName = shippingRequest.getFullName();
+        shipping.phone = shippingRequest.getPhone();
+        shipping.line1 = shippingRequest.getLine1();
+        shipping.line2 = shippingRequest.getLine2();
+        shipping.city = shippingRequest.getCity();
+        shipping.state = shippingRequest.getState();
+        shipping.country = shippingRequest.getCountry();
+        shipping.postalCode = shippingRequest.getPostalCode();
+        return shipping;
+    }
+
+    private void addTrackingEntry(Order order, OrderStatusEnum status, TrackingEventTypeEnum eventType,
+                                 String title, String description, String trackingNumber, String carrier,
+                                 String location, LocalDateTime eventTimestamp, String createdBy,
+                                 Boolean isPublic, Boolean isMilestone) {
+        OrderTracking tracking = new OrderTracking();
+        tracking.order = order;
+        tracking.status = status;
+        tracking.eventType = eventType;
+        tracking.title = title;
+        tracking.description = description;
+        tracking.trackingNumber = trackingNumber;
+        tracking.carrier = carrier;
+        tracking.location = location;
+        tracking.eventTimestamp = eventTimestamp != null ? eventTimestamp : LocalDateTime.now();
+        tracking.createdBy = createdBy;
+        tracking.isPublic = isPublic;
+        tracking.isMilestone = isMilestone;
+        tracking.persist();
+    }
+
+    private void addOrderLog(Order order, OrderLogTypeEnum logType, String title, String description,
+                           String oldValue, String newValue, String createdBy, Boolean isSystemGenerated,
+                           Boolean isVisibleToCustomer) {
+        OrderLog log = new OrderLog();
+        log.order = order;
+        log.logType = logType;
+        log.title = title;
+        log.description = description;
+        log.oldValue = oldValue;
+        log.newValue = newValue;
+        log.createdBy = createdBy;
+        log.createdByType = "ADMIN"; // TODO: Determine based on user type
+        log.isSystemGenerated = isSystemGenerated;
+        log.isVisibleToCustomer = isVisibleToCustomer;
+        log.persist();
     }
 
     private String generateVariantDisplayName(ProductVariant variant) {
