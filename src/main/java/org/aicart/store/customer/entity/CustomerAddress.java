@@ -13,11 +13,17 @@ public class CustomerAddress extends PanacheEntity {
     @JoinColumn(name = "customer_id", nullable = false)
     public Customer customer;
 
+    @Column(name = "type", length = 20)
+    public String type; // BILLING, SHIPPING, BOTH
+
     @Column(name = "first_name", nullable = false, length = 30)
     public String firstName;
 
     @Column(name = "last_name", length = 30)
     public String lastName;
+
+    @Column(name = "company", length = 100)
+    public String company;
 
     @Column(name = "line1", nullable = false)
     public String line1;
@@ -34,11 +40,17 @@ public class CustomerAddress extends PanacheEntity {
     @Column(name = "postal_code", nullable = false, length = 20)
     public String postalCode;
 
-    @Column(name = "country_code", nullable = false, length = 2)
+    @Column(name = "country", nullable = false, length = 50)
+    public String country;
+
+    @Column(name = "country_code", length = 2)
     public String countryCode; // ISO 3166-1 alpha-2
 
     @Column(name = "phone", length = 20)
     public String phone;
+
+    @Column(name = "is_default", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    public boolean isDefault = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     public LocalDateTime createdAt = LocalDateTime.now();
