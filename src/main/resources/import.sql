@@ -2,7 +2,8 @@
 
 -- Inserting users
 INSERT INTO users (id, name, email, password, created_at, updated_at, verified_at)
-VALUES (1, 'Rakib', 'admin@mail.com', '123456', NOW(), NOW(), 0);
+VALUES (1, 'Rakib', 'admin@mail.com', '123456', NOW(), NOW(), 0),
+(2, 'Admin User', 'admin@aicart.store', '$2a$10$p0uM1tTDWCRioZaq4oHIh.flcqgQJtXPrqDWn0MJH4w0vZh5B0VB2', NOW(), NOW(), 0);
 
 -- Inserting Currency (USD, EUR)
 INSERT INTO currencies (id, code, name, symbol) VALUES (1, 'USD', 'US Dollar', '$'), (2, 'EUR', 'Euro', '€');
@@ -308,3 +309,57 @@ VALUES (1, 1, 'truck', 'Free Shipping', 'Free shipping on all orders over $50', 
        (2, 1, 'phone', '24/7 Customer Support', 'Have a question? Get in touch.', TRUE, 1),
        (3, 1, 'handCoins', 'Best prices', 'We offer the best prices on the market.', TRUE, 2);
 SELECT setval(pg_get_serial_sequence('shop_highlights', 'id'), (SELECT MAX(id) FROM shop_highlights));
+
+
+INSERT INTO customers (
+    id,
+    shop_id,
+    email,
+    first_name,
+    last_name,
+    phone,
+    company,
+    job_title,
+    language_code,
+    currency_code,
+    timezone,
+    tags,
+    notes,
+    email_verified,
+    account_locked,
+    tax_exempt,
+    newsletter_subscribe,
+    email_subscribe,
+    phone_subscribe,
+    sms_subscribe,
+    created_at,
+    updated_at,
+    password,
+    verified_at
+)
+VALUES (
+    1,
+    1,
+    'admin@aicart.store',
+    'Admin',
+    'Customer',
+    '+1 (555) 987-6543',
+    'AiCart Technologies',
+    'System Administrator',
+    'en',
+    'USD',
+    'America/New_York',
+    ARRAY['Admin', 'VIP', 'System User'],
+    'System administrator account',
+    true,
+    false,
+    false,
+    true,
+    true,
+    false,
+    false,
+    NOW() - INTERVAL '6 months',
+    NOW(),
+    '$2a$10$p0uM1tTDWCRioZaq4oHIh.flcqgQJtXPrqDWn0MJH4w0vZh5B0VB2',
+    EXTRACT(EPOCH FROM NOW() - INTERVAL '6 months')::BIGINT
+);

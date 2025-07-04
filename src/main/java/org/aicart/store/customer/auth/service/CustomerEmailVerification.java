@@ -65,13 +65,14 @@ public class CustomerEmailVerification extends EmailVerificationService {
                     .build();
         }
 
-        if(customer.verifiedAt > 0) {
+        if(customer.verifiedAt != null && customer.verifiedAt > 0) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("message", "User already verified"))
                     .build();
         }
 
         customer.verifiedAt = System.currentTimeMillis() / 1000;
+        customer.emailVerified = true; // Also set the boolean flag
         customer.persist();
         EmailVerification.delete("entityId = ?1 AND identifierName = ?2", emailVerification.entityId, emailVerification.identifierName);
 
@@ -98,6 +99,7 @@ public class CustomerEmailVerification extends EmailVerificationService {
         }
 
         customer.verifiedAt = System.currentTimeMillis() / 1000;
+        customer.emailVerified = true; // Also set the boolean flag
         customer.persist();
 
         EmailVerification.delete("entityId = ?1 AND identifierName = ?2", customer.id, tokenUser.getIdentifierName());

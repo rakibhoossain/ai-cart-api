@@ -169,7 +169,7 @@ public class Customer extends PanacheEntity implements IdentifiableEntity {
     public LocalDateTime updatedAt = LocalDateTime.now();
 
     @Column(name = "verified_at")
-    public long verifiedAt = 0;
+    public Long verifiedAt = 0L;
 
     @PreUpdate
     public void preUpdate() {

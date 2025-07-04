@@ -249,6 +249,46 @@ public class CustomerResource {
     }
 
     /**
+     * Create customer from email signup (newsletter, lead generation)
+     * This is the minimal customer creation endpoint for email capture forms
+     */
+    @POST
+    @Path("/email-signup")
+    public Response createCustomerFromEmail(@Valid CustomerEmailSignupDTO signupRequest) {
+        try {
+            Shop shop = Shop.findById(getShopId());
+            if (shop == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("message", "Shop not found"))
+                        .build();
+            }
+
+            CustomerDetailDTO customer = customerService.createCustomerFromEmail(shop, signupRequest);
+
+            // Return 201 for new customer, 200 for existing customer updated
+            boolean isNewCustomer = customer.getCreatedAt().isAfter(LocalDateTime.now().minusMinutes(1));
+            Response.Status status = isNewCustomer ? Response.Status.CREATED : Response.Status.OK;
+
+            return Response.status(status)
+                    .entity(Map.of(
+                        "message", isNewCustomer ? "Customer created successfully" : "Customer preferences updated",
+                        "customer", customer,
+                        "isNewCustomer", isNewCustomer
+                    ))
+                    .build();
+
+        } catch (RuntimeException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("message", e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
      * Get customer statistics
      */
     @GET

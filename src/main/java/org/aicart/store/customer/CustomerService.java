@@ -34,6 +34,55 @@ public class CustomerService {
     @Inject
     CustomerAddressMapper customerAddressMapper;
 
+    // Email-only customer creation (for newsletter signup, lead generation)
+    @Transactional
+    public CustomerDetailDTO createCustomerFromEmail(Shop shop, CustomerEmailSignupDTO signupRequest) {
+        // Check if customer already exists
+        Customer existingCustomer = customerRepository.findByEmailAndShop(signupRequest.getEmail(), shop);
+        if (existingCustomer != null) {
+            // Update existing customer's marketing preferences if they're signing up again
+            existingCustomer.newsletterSubscribe = signupRequest.isNewsletterSubscribe();
+            existingCustomer.emailSubscribe = signupRequest.isEmailSubscribe();
+            existingCustomer.updatedAt = LocalDateTime.now();
+            existingCustomer.persist();
+            return customerMapper.toDetailDTO(existingCustomer);
+        }
+
+        // Create new customer with minimal data
+        Customer customer = new Customer();
+        customer.shop = shop;
+        customer.email = signupRequest.getEmail();
+        customer.emailVerified = false; // Email needs verification
+        customer.newsletterSubscribe = signupRequest.isNewsletterSubscribe();
+        customer.emailSubscribe = signupRequest.isEmailSubscribe();
+        customer.phoneSubscribe = false;
+        customer.smsSubscribe = false;
+        customer.customerType = CustomerType.PROSPECT; // Start as prospect
+        customer.customerTier = CustomerTier.BRONZE;
+        customer.accountLocked = false;
+        customer.taxExempt = false;
+        customer.languageCode = "en";
+        customer.currencyCode = "USD";
+        customer.timezone = "UTC";
+        customer.createdAt = LocalDateTime.now();
+        customer.updatedAt = LocalDateTime.now();
+
+        // Set geolocation data if provided
+        if (signupRequest.getCountry() != null) {
+            // Store in notes for now, could be separate fields
+            customer.notes = String.format("Signup location: %s, %s",
+                signupRequest.getCity(), signupRequest.getCountry());
+        }
+
+        customer.persist();
+
+        // TODO: Send welcome email if requested
+        // TODO: Add to email marketing list
+        // TODO: Track signup source and campaign
+
+        return customerMapper.toDetailDTO(customer);
+    }
+
     // Legacy methods for backward compatibility
     public Optional<Customer> getCustomer(Long id) {
         return customerRepository.findByIdOptional(id);
@@ -192,6 +241,9 @@ public class CustomerService {
 
             // Set email verification
             customer.emailVerified = createRequest.isVerifyEmail();
+            if (createRequest.isVerifyEmail()) {
+                customer.verifiedAt = System.currentTimeMillis() / 1000; // Set timestamp if verified
+            }
 
             // Save customer
             customer.persist();

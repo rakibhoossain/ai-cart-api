@@ -15,7 +15,6 @@ import org.aicart.authentication.AuthenticationService;
 import org.aicart.store.context.ShopContext;
 import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.user.entity.Shop;
-import org.eclipse.microprofile.jwt.Claims;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
 import java.time.LocalDateTime;
@@ -59,8 +58,9 @@ public class CustomerLogin extends AuthenticationService {
 
         if(dbCustomer != null) {
             dbCustomer.lastLoginAt = LocalDateTime.now();
-            if(dbCustomer.verifiedAt == 0) {
+            if(dbCustomer.verifiedAt == null || dbCustomer.verifiedAt == 0) {
                 dbCustomer.verifiedAt = now;
+                dbCustomer.emailVerified = true; // Also set the boolean flag
             }
             dbCustomer.persist();
             return generateJwtResponse(dbCustomer);

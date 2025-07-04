@@ -11,15 +11,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class CustomerCreateRequestDTO {
-    
-    @NotBlank(message = "First name is required")
-    private String firstName;
-    
-    private String lastName;
-    
+
+    // Email is the ONLY required field for customer creation (like Shopify newsletter signup)
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
     private String email;
+
+    // All other fields are optional for progressive enhancement
+    private String firstName;
+    private String lastName;
     
     private String phone;
     private LocalDateTime dateOfBirth;
