@@ -9,10 +9,13 @@ import jakarta.ws.rs.NotFoundException;
 import org.aicart.store.customer.dto.*;
 import org.aicart.store.customer.entity.Customer;
 import org.aicart.store.customer.entity.CustomerAddress;
+import org.aicart.store.customer.entity.CustomerTag;
 import org.aicart.store.customer.entity.CustomerType;
 import org.aicart.store.customer.entity.CustomerTier;
 import org.aicart.store.customer.mapper.CustomerMapper;
 import org.aicart.store.customer.mapper.CustomerAddressMapper;
+import org.aicart.store.customer.service.CustomerTagService;
+import org.aicart.store.customer.service.CustomerTierService;
 import org.aicart.store.user.entity.Shop;
 
 import java.time.LocalDateTime;
@@ -33,6 +36,12 @@ public class CustomerService {
 
     @Inject
     CustomerAddressMapper customerAddressMapper;
+
+    @Inject
+    CustomerTagService customerTagService;
+
+    @Inject
+    CustomerTierService customerTierService;
 
     // Email-only customer creation (for newsletter signup, lead generation)
     @Transactional
@@ -230,7 +239,11 @@ public class CustomerService {
             // Set customer classification
             customer.customerType = createRequest.getCustomerType();
             customer.customerTier = createRequest.getCustomerTier();
-            customer.tags = createRequest.getTags();
+            // Handle tags - convert string to CustomerTag entities
+            if (createRequest.getTags() != null && !createRequest.getTags().trim().isEmpty()) {
+                customer.legacyTags = createRequest.getTags();
+                processTagsFromString(customer, createRequest.getTags(), customer.shop);
+            }
             customer.notes = createRequest.getNotes();
 
             // Set tax information
@@ -247,6 +260,9 @@ public class CustomerService {
 
             // Save customer
             customer.persist();
+
+            // Calculate initial tier
+            customerTierService.calculateTier(customer);
 
             // Create addresses if provided
             if (createRequest.getAddresses() != null && !createRequest.getAddresses().isEmpty()) {
@@ -395,7 +411,11 @@ public class CustomerService {
             }
 
             if (updateRequest.getTags() != null) {
-                customer.tags = updateRequest.getTags();
+                customer.legacyTags = updateRequest.getTags();
+                customer.clearTags(); // Clear existing tags
+                if (!updateRequest.getTags().trim().isEmpty()) {
+                    processTagsFromString(customer, updateRequest.getTags(), customer.shop);
+                }
                 changes.append("Tags updated; ");
             }
 
@@ -559,5 +579,54 @@ public class CustomerService {
 
     private void logCustomerDeletion(Customer customer, String deletedBy) {
         // TODO: Implement customer deletion logging
+    }
+
+    /**
+     * Process tags from comma-separated string and add them to customer
+     */
+    private void processTagsFromString(Customer customer, String tagsString, Shop shop) {
+        if (tagsString == null || tagsString.trim().isEmpty()) {
+            return;
+        }
+
+        // Parse tags from string (handle both comma-separated and JSON-like format)
+        String[] tagNames = parseTagsFromString(tagsString);
+
+        for (String tagName : tagNames) {
+            if (tagName != null && !tagName.trim().isEmpty()) {
+                CustomerTag tag = customerTagService.findOrCreateTag(tagName.trim(), shop);
+                customer.addTag(tag);
+            }
+        }
+    }
+
+    /**
+     * Parse tags from various string formats
+     */
+    private String[] parseTagsFromString(String tagsString) {
+        if (tagsString == null || tagsString.trim().isEmpty()) {
+            return new String[0];
+        }
+
+        // Remove curly braces if present (JSON-like format)
+        String cleaned = tagsString.trim();
+        if (cleaned.startsWith("{") && cleaned.endsWith("}")) {
+            cleaned = cleaned.substring(1, cleaned.length() - 1);
+        }
+
+        // Split by comma and clean up each tag
+        String[] parts = cleaned.split(",");
+        String[] result = new String[parts.length];
+
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i].trim();
+            // Remove quotes if present
+            if (part.startsWith("\"") && part.endsWith("\"")) {
+                part = part.substring(1, part.length() - 1);
+            }
+            result[i] = part;
+        }
+
+        return result;
     }
 }

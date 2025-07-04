@@ -9,7 +9,9 @@ import org.aicart.store.user.entity.Shop;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "customers",
@@ -133,8 +135,30 @@ public class Customer extends PanacheEntity implements IdentifiableEntity {
     @Column(name = "customer_tier", columnDefinition = "VARCHAR(20) DEFAULT 'BRONZE'")
     public CustomerTier customerTier = CustomerTier.BRONZE;
 
-    @Column(name = "tags", columnDefinition = "TEXT")
-    public String tags; // Comma-separated tags for segmentation
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "customer_tag_pivot",
+        joinColumns = @JoinColumn(name = "customer_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    public Set<CustomerTag> tags = new HashSet<>();
+
+    @Column(name = "legacy_tags", columnDefinition = "TEXT")
+    public String legacyTags; // Keep for migration purposes
+
+    // Tier management fields
+    @Column(name = "tier_updated_at")
+    public LocalDateTime tierUpdatedAt;
+
+    @Column(name = "tier_overridden")
+    public Boolean tierOverridden = false;
+
+    @Column(name = "tier_override_reason", length = 500)
+    public String tierOverrideReason;
+
+    // Customer type management
+    @Column(name = "customer_type_overridden")
+    public Boolean customerTypeOverridden = false;
 
     @Column(name = "notes", columnDefinition = "TEXT")
     public String notes; // Admin notes about the customer
@@ -188,5 +212,22 @@ public class Customer extends PanacheEntity implements IdentifiableEntity {
 
     public enum AccountStatus {
         ACTIVE, INACTIVE, SUSPENDED, PENDING
+    }
+
+    // Helper methods for tag management
+    public void addTag(CustomerTag tag) {
+        tags.add(tag);
+        tag.customers.add(this);
+    }
+
+    public void removeTag(CustomerTag tag) {
+        tags.remove(tag);
+        tag.customers.remove(this);
+    }
+
+    public void clearTags() {
+        for (CustomerTag tag : new HashSet<>(tags)) {
+            removeTag(tag);
+        }
     }
 }

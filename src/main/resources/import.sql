@@ -323,7 +323,7 @@ INSERT INTO customers (
     language_code,
     currency_code,
     timezone,
-    tags,
+    legacy_tags,
     notes,
     email_verified,
     account_locked,
@@ -335,7 +335,13 @@ INSERT INTO customers (
     created_at,
     updated_at,
     password,
-    verified_at
+    verified_at,
+    customer_type,
+    customer_tier,
+    total_spent,
+    total_orders,
+    tier_overridden,
+    customer_type_overridden
 )
 VALUES (
     1,
@@ -349,7 +355,7 @@ VALUES (
     'en',
     'USD',
     'America/New_York',
-    ARRAY['Admin', 'VIP', 'System User'],
+    'Admin, VIP, System User',
     'System administrator account',
     true,
     false,
@@ -361,5 +367,13 @@ VALUES (
     NOW() - INTERVAL '6 months',
     NOW(),
     '$2a$10$p0uM1tTDWCRioZaq4oHIh.flcqgQJtXPrqDWn0MJH4w0vZh5B0VB2',
-    EXTRACT(EPOCH FROM NOW() - INTERVAL '6 months')::BIGINT
+    EXTRACT(EPOCH FROM NOW() - INTERVAL '6 months')::BIGINT,
+    'VIP',
+    'GOLD',
+    250000,
+    15,
+    false,
+    false
 );
+
+-- Customer tags will be created dynamically through the API
