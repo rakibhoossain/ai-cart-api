@@ -32,6 +32,10 @@ public class ProductService {
         return productRepository.getProductBySlug(slug);
     }
 
+    public ProductItemDTO getProductById(Long id) {
+        return productRepository.getProductById(id);
+    }
+
     public List<Map<String, Object>> getProductsWithCategories(int page, int pageSize) {
         // Step 1: Fetch paginated products
         List<Product> products = productRepository.findPaginatedProducts(page, pageSize);
