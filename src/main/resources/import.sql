@@ -190,8 +190,8 @@ VALUES (1, 1, 1, 'Blue'),
 
 
 -- Inserting brands
-INSERT INTO product_brands(id, shop_id, name)
-VALUES (1, 1, 'Brand A'), (2, 1, 'Brand B');
+INSERT INTO product_brands(id, shop_id, name, created_at, updated_at)
+VALUES (1, 1, 'Brand A', NOW(), NOW()), (2, 1, 'Brand B', NOW(), NOW());
 
 -- Inserting tags
 INSERT INTO product_tags(id, name)
@@ -207,8 +207,10 @@ VALUES (1, 'Type A'), (2, 'Type B');
 
 -- Inserting Product
 INSERT INTO products(id, is_featured, status, shop_id, product_type_id, product_brand_id, name, slug, created_at, updated_at)
-VALUES (1, true, 1, 1, 1, 1,'Test product 1', 'test-product-1', NOW(), NOW()),
-       (2, false,1, 1, 2, 2,'Test product 2', 'test-product-2', NOW(), NOW());
+VALUES (1, true, 1, 1, 1, 1, 'Test product 1', 'test-product-1', NOW(), NOW()),
+       (2, false, 1, 1, 2, 2, 'Test product 2', 'test-product-2', NOW(), NOW());
+
+SELECT setval(pg_get_serial_sequence('products', 'id'), (SELECT MAX(id) FROM products) + 1);
 
 -- Insert product shipping
 INSERT INTO product_shippings(id, product_id, weight, weight_unit)
@@ -269,6 +271,8 @@ VALUES (1, 1, 'SKU_1_V', 1),
        (2, 2, 'SKU_2_V', 2),
        (3, 1, 'SKU_1_2V', 3);
 
+SELECT setval(pg_get_serial_sequence('product_variants', 'id'), (SELECT MAX(id) FROM product_variants) + 1);
+
 -- Inserting product variant value
 INSERT INTO product_variant_value(variant_id, attribute_value_id)
 VALUES (1, 1),
@@ -289,11 +293,15 @@ VALUES (1, 1, 100, 1),
        (2, 2, 150, 1),
        (3, 3, 200, 1);
 
+SELECT setval(pg_get_serial_sequence('variant_stocks', 'id'), (SELECT MAX(id) FROM variant_stocks) + 1);
+
 -- Insert VariantPrice
 INSERT INTO variant_prices(id, country_id, variant_id, price, discount, is_active)
 VALUES (1, 1, 1, 1200, 0, TRUE),
        (2, 1, 2, 1700, 0, TRUE),
        (3, 1, 3, 1700, 0, TRUE);
+
+SELECT setval(pg_get_serial_sequence('variant_prices', 'id'), (SELECT MAX(id) FROM variant_prices) + 1);
 
 -- Insert themes
 INSERT INTO themes (id, name, description, price, thumbnail_id)
