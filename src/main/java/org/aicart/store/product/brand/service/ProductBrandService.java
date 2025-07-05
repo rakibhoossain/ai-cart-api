@@ -42,25 +42,31 @@ public class ProductBrandService {
      * Create a new brand
      */
     @Transactional
-    public ProductBrand createBrand(String name, Shop shop) {
+    public ProductBrand createBrand(String name, String description, String logo, String website, Shop shop) {
         ProductBrand brand = new ProductBrand();
         brand.name = name;
+        brand.description = description;
+        brand.logo = logo;
+        brand.website = website;
         brand.shop = shop;
         brand.persist();
         return brand;
     }
-    
+
     /**
      * Update an existing brand
      */
     @Transactional
-    public ProductBrand updateBrand(Long id, String name, Shop shop) {
+    public ProductBrand updateBrand(Long id, String name, String description, String logo, String website, Shop shop) {
         ProductBrand brand = findById(id, shop);
         if (brand == null) {
             throw new IllegalArgumentException("Brand not found");
         }
-        
+
         brand.name = name;
+        brand.description = description;
+        brand.logo = logo;
+        brand.website = website;
         brand.persist();
         return brand;
     }

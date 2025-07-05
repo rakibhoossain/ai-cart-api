@@ -89,7 +89,13 @@ public class ProductBrandResource {
                     .build();
         }
         
-        ProductBrand brand = brandService.createBrand(dto.getName(), shop);
+        ProductBrand brand = brandService.createBrand(
+            dto.getName(),
+            dto.getDescription(),
+            dto.getLogo(),
+            dto.getWebsite(),
+            shop
+        );
         return Response.status(Response.Status.CREATED)
                 .entity(ProductBrandMapper.toDto(brand))
                 .build();
@@ -109,7 +115,14 @@ public class ProductBrandResource {
         }
         
         try {
-            ProductBrand brand = brandService.updateBrand(id, dto.getName(), shop);
+            ProductBrand brand = brandService.updateBrand(
+                id,
+                dto.getName(),
+                dto.getDescription(),
+                dto.getLogo(),
+                dto.getWebsite(),
+                shop
+            );
             return Response.ok(ProductBrandMapper.toDto(brand)).build();
         } catch (IllegalArgumentException e) {
             return Response.status(Response.Status.NOT_FOUND)
