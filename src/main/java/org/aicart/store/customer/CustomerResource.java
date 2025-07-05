@@ -9,6 +9,15 @@ import org.aicart.store.customer.dto.*;
 import org.aicart.store.customer.entity.CustomerType;
 import org.aicart.store.customer.entity.CustomerTier;
 import org.aicart.store.customer.mapper.CustomerAddressMapper;
+import org.aicart.store.customer.service.CustomerTagService;
+import org.aicart.store.customer.entity.Customer;
+import org.aicart.store.customer.entity.CustomerTag;
+import org.aicart.store.customer.dto.CustomerTagDTO;
+import org.aicart.store.customer.mapper.CustomerTagMapper;
+import org.aicart.store.customer.CustomerRepository;
+import java.util.List;
+import java.util.Optional;
+import jakarta.transaction.Transactional;
 import org.aicart.store.customer.mapper.CustomerMapper;
 import org.aicart.store.user.entity.Shop;
 
@@ -27,6 +36,12 @@ public class CustomerResource {
     @Inject
     CustomerAddressMapper customerAddressMapper;
 
+    @Inject
+    CustomerTagService customerTagService;
+
+    @Inject
+    CustomerRepository customerRepository;
+
     private Long getShopId() {
         // In a real application, this would come from authentication context
         return 1L;
@@ -37,35 +52,7 @@ public class CustomerResource {
         return "admin@example.com";
     }
 
-    // Legacy endpoints for backward compatibility
-    @POST
-    @Path("/legacy")
-    public Response createCustomerLegacy(@Valid CustomerDTO dto) {
-        return Response.status(Response.Status.CREATED)
-                .entity(CustomerMapper.toDto(customerService.createCustomer(dto)))
-                .build();
-    }
 
-    @GET
-    @Path("/legacy/{id}")
-    public Response getCustomerLegacy(@PathParam("id") Long id) {
-        return customerService.getCustomer(id)
-                .map(customer -> Response.ok(CustomerMapper.toDto(customer)).build())
-                .orElse(Response.status(Response.Status.NOT_FOUND).build());
-    }
-
-    @PUT
-    @Path("/legacy/{id}")
-    public Response updateCustomerLegacy(@PathParam("id") Long id, @Valid CustomerDTO dto) {
-        return Response.ok(CustomerMapper.toDto(customerService.updateCustomer(id, dto))).build();
-    }
-
-    @DELETE
-    @Path("/legacy/{id}")
-    public Response deleteCustomerLegacy(@PathParam("id") Long id) {
-        customerService.deleteCustomer(id);
-        return Response.noContent().build();
-    }
 
     @PUT
     @Path("/{customerId}/primary-address/{addressId}")
@@ -118,7 +105,7 @@ public class CustomerResource {
      */
     @GET
     public Response getCustomers(
-            @QueryParam("page") @DefaultValue("0") int page,
+            @QueryParam("page") @DefaultValue("1") int page,
             @QueryParam("size") @DefaultValue("20") int size,
             @QueryParam("search") String search,
             @QueryParam("customerType") CustomerType customerType,
@@ -150,9 +137,12 @@ public class CustomerResource {
                 endDateTime = LocalDateTime.parse(endDate, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
             }
 
+            // Convert 1-based page to 0-based for Panache
+            int zeroBasedPage = Math.max(0, page - 1);
+
             CustomerListResponseDTO response = customerService.getCustomers(
                 shop, search, customerType, customerTier, emailVerified,
-                accountLocked, startDateTime, endDateTime, sortBy, order, page, size
+                accountLocked, startDateTime, endDateTime, sortBy, order, zeroBasedPage, size
             );
 
             return Response.ok(response).build();
@@ -392,5 +382,157 @@ public class CustomerResource {
             return "\"" + value.replace("\"", "\"\"") + "\"";
         }
         return value;
+    }
+
+    /**
+     * Get customer tags
+     */
+    @GET
+    @Path("/{id}/tags")
+    public Response getCustomerTags(@PathParam("id") Long customerId) {
+        try {
+            Shop shop = Shop.findById(getShopId());
+            Customer customer = customerRepository.findByIdAndShop(customerId, shop);
+
+            if (customer == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Customer not found"))
+                        .build();
+            }
+
+            List<CustomerTagDTO> tags = customer.tags.stream()
+                    .map(CustomerTagMapper::toDto)
+                    .collect(java.util.stream.Collectors.toList());
+
+            return Response.ok(Map.of("data", tags)).build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Failed to fetch customer tags: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * Add tag to customer
+     */
+    @POST
+    @Path("/{id}/tags/{tagId}")
+    @Transactional
+    public Response addTagToCustomer(
+            @PathParam("id") Long customerId,
+            @PathParam("tagId") Long tagId) {
+        try {
+            Shop shop = Shop.findById(getShopId());
+            Customer customer = customerRepository.findByIdAndShop(customerId, shop);
+
+            if (customer == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Customer not found"))
+                        .build();
+            }
+
+            Optional<CustomerTagDTO> tagDto = customerTagService.findById(tagId, shop);
+            if (tagDto.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Tag not found"))
+                        .build();
+            }
+
+            CustomerTag tag = CustomerTag.findById(tagId);
+            customer.addTag(tag);
+            customerRepository.persist(customer);
+
+            return Response.ok(Map.of("message", "Tag added successfully")).build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Failed to add tag: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * Remove tag from customer
+     */
+    @DELETE
+    @Path("/{id}/tags/{tagId}")
+    @Transactional
+    public Response removeTagFromCustomer(
+            @PathParam("id") Long customerId,
+            @PathParam("tagId") Long tagId) {
+        try {
+            Shop shop = Shop.findById(getShopId());
+            Customer customer = customerRepository.findByIdAndShop(customerId, shop);
+
+            if (customer == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Customer not found"))
+                        .build();
+            }
+
+            CustomerTag tag = CustomerTag.findById(tagId);
+            if (tag == null || !tag.shop.id.equals(shop.id)) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Tag not found"))
+                        .build();
+            }
+
+            customer.removeTag(tag);
+            customerRepository.persist(customer);
+
+            return Response.ok(Map.of("message", "Tag removed successfully")).build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Failed to remove tag: " + e.getMessage()))
+                    .build();
+        }
+    }
+
+    /**
+     * Update customer tags (replace all tags)
+     */
+    @PUT
+    @Path("/{id}/tags")
+    @Transactional
+    public Response updateCustomerTags(
+            @PathParam("id") Long customerId,
+            List<Long> tagIds) {
+        try {
+            Shop shop = Shop.findById(getShopId());
+            Customer customer = customerRepository.findByIdAndShop(customerId, shop);
+
+            if (customer == null) {
+                return Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "Customer not found"))
+                        .build();
+            }
+
+            // Clear existing tags
+            customer.clearTags();
+
+            // Add new tags
+            for (Long tagId : tagIds) {
+                Optional<CustomerTagDTO> tagDto = customerTagService.findById(tagId, shop);
+                if (tagDto.isPresent()) {
+                    CustomerTag tag = CustomerTag.findById(tagId);
+                    customer.addTag(tag);
+                }
+            }
+
+            customerRepository.persist(customer);
+
+            List<CustomerTagDTO> updatedTags = customer.tags.stream()
+                    .map(CustomerTagMapper::toDto)
+                    .collect(java.util.stream.Collectors.toList());
+
+            return Response.ok(Map.of("data", updatedTags)).build();
+
+        } catch (Exception e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Failed to update tags: " + e.getMessage()))
+                    .build();
+        }
     }
 }

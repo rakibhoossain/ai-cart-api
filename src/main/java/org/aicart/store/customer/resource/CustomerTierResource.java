@@ -10,6 +10,9 @@ import org.aicart.store.customer.entity.CustomerTier;
 import org.aicart.store.customer.CustomerRepository;
 import org.aicart.store.customer.service.CustomerTierService;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
@@ -47,21 +50,22 @@ public class CustomerTierResource {
 
         CustomerTierService.TierRequirements requirements = customerTierService.getTierRequirements();
 
-        return Response.ok(Map.of(
-                "current_tier", customer.customerTier,
-                "tier_overridden", customer.tierOverridden != null ? customer.tierOverridden : false,
-                "tier_override_reason", customer.tierOverrideReason,
-                "tier_updated_at", customer.tierUpdatedAt,
-                "total_spent", customer.totalSpent,
-                "total_orders", customer.totalOrders,
-                "requirements", Map.of(
-                        "bronze", requirements.bronze,
-                        "silver", requirements.silver,
-                        "gold", requirements.gold,
-                        "platinum", requirements.platinum,
-                        "diamond", requirements.diamond
-                )
-        )).build();
+        Map<String, Object> response = new HashMap<>();
+        response.put("current_tier", customer.customerTier != null ? customer.customerTier : CustomerTier.BRONZE);
+        response.put("tier_overridden", customer.tierOverridden != null ? customer.tierOverridden : false);
+        response.put("tier_override_reason", customer.tierOverrideReason);
+        response.put("tier_updated_at", customer.tierUpdatedAt);
+        response.put("total_spent", customer.totalSpent != null ? customer.totalSpent : 0L);
+        response.put("total_orders", customer.totalOrders != null ? customer.totalOrders : 0);
+        response.put("requirements", Map.of(
+                "bronze", requirements.bronze,
+                "silver", requirements.silver,
+                "gold", requirements.gold,
+                "platinum", requirements.platinum,
+                "diamond", requirements.diamond
+        ));
+
+        return Response.ok(response).build();
     }
 
     @POST

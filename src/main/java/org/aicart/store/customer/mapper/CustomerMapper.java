@@ -78,14 +78,12 @@ public class CustomerMapper {
         dto.setLastActivityAt(customer.lastActivityAt);
         dto.setCustomerType(customer.customerType);
         dto.setCustomerTier(customer.customerTier);
-        // Convert tags to comma-separated string for backward compatibility
+        // Convert tags to comma-separated string
         if (customer.tags != null && !customer.tags.isEmpty()) {
             String tagsString = customer.tags.stream()
                     .map(tag -> tag.name)
                     .collect(java.util.stream.Collectors.joining(", "));
             dto.setTags(tagsString);
-        } else if (customer.legacyTags != null) {
-            dto.setTags(customer.legacyTags);
         } else {
             dto.setTags("");
         }

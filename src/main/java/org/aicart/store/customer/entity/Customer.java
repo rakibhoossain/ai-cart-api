@@ -143,8 +143,7 @@ public class Customer extends PanacheEntity implements IdentifiableEntity {
     )
     public Set<CustomerTag> tags = new HashSet<>();
 
-    @Column(name = "legacy_tags", columnDefinition = "TEXT")
-    public String legacyTags; // Keep for migration purposes
+
 
     // Tier management fields
     @Column(name = "tier_updated_at")

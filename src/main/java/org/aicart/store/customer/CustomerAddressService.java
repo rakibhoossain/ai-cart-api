@@ -45,6 +45,7 @@ public class CustomerAddressService {
         return addressRepository.listByCustomerId(customerId);
     }
 
+    @Transactional
     public CustomerAddress createAddress(Long customerId, CustomerAddressDTO dto) {
         Customer customer = customerRepository.findByIdOptional(customerId)
                 .orElseThrow(() -> new NotFoundException("Customer not found"));
@@ -56,6 +57,7 @@ public class CustomerAddressService {
         return address;
     }
 
+    @Transactional
     public CustomerAddress updateAddress(Long customerId, Long addressId, CustomerAddressDTO dto) {
         CustomerAddress address = addressRepository.findByIdAndCustomerId(addressId, customerId)
                 .orElseThrow(() -> new NotFoundException("Address not found"));
@@ -65,6 +67,7 @@ public class CustomerAddressService {
         return address;
     }
 
+    @Transactional
     public void deleteAddress(Long customerId, Long addressId) {
         boolean deleted = addressRepository.deleteByIdAndCustomerId(addressId, customerId);
         if (!deleted) {
@@ -80,8 +83,12 @@ public class CustomerAddressService {
         entity.city = dto.city;
         entity.state = dto.state;
         entity.postalCode = dto.postalCode;
+        entity.country = dto.country;
         entity.countryCode = dto.countryCode;
         entity.phone = dto.phone;
+        entity.company = dto.company;
+        entity.type = dto.type;
+        entity.isDefault = dto.isDefault;
     }
 
     // New comprehensive address management methods

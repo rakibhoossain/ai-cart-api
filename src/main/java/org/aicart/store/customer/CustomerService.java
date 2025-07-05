@@ -241,7 +241,6 @@ public class CustomerService {
             customer.customerTier = createRequest.getCustomerTier();
             // Handle tags - convert string to CustomerTag entities
             if (createRequest.getTags() != null && !createRequest.getTags().trim().isEmpty()) {
-                customer.legacyTags = createRequest.getTags();
                 processTagsFromString(customer, createRequest.getTags(), customer.shop);
             }
             customer.notes = createRequest.getNotes();
@@ -411,7 +410,6 @@ public class CustomerService {
             }
 
             if (updateRequest.getTags() != null) {
-                customer.legacyTags = updateRequest.getTags();
                 customer.clearTags(); // Clear existing tags
                 if (!updateRequest.getTags().trim().isEmpty()) {
                     processTagsFromString(customer, updateRequest.getTags(), customer.shop);
