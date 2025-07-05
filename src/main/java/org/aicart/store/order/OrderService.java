@@ -36,6 +36,9 @@ public class OrderService {
     @Inject
     ShopContext shopContext;
 
+    @Inject
+    org.aicart.store.customer.service.CustomerTierService customerTierService;
+
     @Transactional
     public Order convertCartToOrder(Cart cart,
                                     OrderBillingDTO billingDetails,
@@ -104,10 +107,14 @@ public class OrderService {
         // 7. Persist Order and Payment
         order.persist();
 
+        // 8. Update customer statistics if customer exists
+        if (order.customer != null) {
+            updateCustomerStatisticsOnOrderCreate(order.customer, order.totalPrice);
+        }
 
 //        payment.persist();
 
-        // 8. Clear the Cart
+        // 9. Clear the Cart
         clearCart(cart);
 
         return order;
@@ -312,6 +319,11 @@ public class OrderService {
         // TODO: Restore inventory
         // TODO: Process refund if payment was made
 
+        // Update customer statistics for cancellation (reduce spending)
+        if (order.customer != null) {
+            updateCustomerStatisticsOnOrderCancel(order.customer, order.totalPrice);
+        }
+
         order.persist();
         return mapToOrderDetailDTO(order);
     }
@@ -367,6 +379,11 @@ public class OrderService {
             order.persist();
         }
 
+        // Update customer statistics for refund
+        if (order.customer != null) {
+            updateCustomerStatisticsOnRefund(order.customer, refund.refundAmount);
+        }
+
         return mapToOrderRefundDTO(refund);
     }
 
@@ -420,6 +437,12 @@ public class OrderService {
         }
 
         exchange.persist();
+
+        // Update customer statistics for exchange
+        if (order.customer != null) {
+            updateCustomerStatisticsOnExchange(order.customer, exchange.priceDifference);
+        }
+
         return mapToOrderExchangeDTO(exchange);
     }
 
@@ -518,8 +541,10 @@ public class OrderService {
 
             // Set customer information
             if (createRequest.getCustomerId() != null) {
-                // TODO: Load customer from database
-                // order.customer = customerRepository.findById(createRequest.getCustomerId());
+                Customer customer = Customer.findById(createRequest.getCustomerId());
+                if (customer != null && customer.shop.id.equals(shop.id)) {
+                    order.customer = customer;
+                }
             }
 
             // Set pricing
@@ -551,6 +576,11 @@ public class OrderService {
 
             // Save order
             order.persist();
+
+            // Update customer statistics if customer exists
+            if (order.customer != null) {
+                updateCustomerStatisticsOnOrderCreate(order.customer, order.totalPrice);
+            }
 
             // Create order items
             for (OrderCreateRequestDTO.OrderItemRequestDTO itemRequest : createRequest.getItems()) {
@@ -1128,5 +1158,128 @@ public class OrderService {
         }
 
         return variant.sku != null ? variant.sku : "Default";
+    }
+
+    /**
+     * Update customer statistics when an order is created
+     */
+    void updateCustomerStatisticsOnOrderCreate(Customer customer, BigInteger orderAmount) {
+        try {
+            // Convert BigInteger to Long (cents)
+            Long orderAmountInCents = orderAmount.longValue();
+
+            // Update customer spending and tier
+            customerTierService.updateSpendingAndTier(customer, orderAmountInCents);
+
+            // Update first order date if this is the first order
+            if (customer.firstOrderAt == null) {
+                customer.firstOrderAt = LocalDateTime.now();
+            }
+
+            // Update average order value
+            updateAverageOrderValue(customer);
+
+        } catch (Exception e) {
+            System.err.println("Error updating customer statistics on order create: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Update customer statistics when a refund is processed
+     */
+    void updateCustomerStatisticsOnRefund(Customer customer, BigInteger refundAmount) {
+        try {
+            // Convert BigInteger to Long (cents)
+            Long refundAmountInCents = refundAmount.longValue();
+
+            // Reduce total spent
+            if (customer.totalSpent != null && customer.totalSpent > 0) {
+                customer.totalSpent = Math.max(0L, customer.totalSpent - refundAmountInCents);
+            }
+
+            // Update average order value
+            updateAverageOrderValue(customer);
+
+            // Recalculate tier if not manually overridden
+            if (!customer.tierOverridden) {
+                customerTierService.calculateTier(customer);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error updating customer statistics on refund: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Update customer statistics when an exchange is processed
+     */
+    void updateCustomerStatisticsOnExchange(Customer customer, BigInteger priceDifference) {
+        try {
+            // Only update if there's a price difference
+            if (priceDifference != null && !priceDifference.equals(BigInteger.ZERO)) {
+                Long priceDifferenceInCents = priceDifference.longValue();
+
+                // Update total spent (can be positive or negative)
+                if (customer.totalSpent == null) {
+                    customer.totalSpent = 0L;
+                }
+                customer.totalSpent = Math.max(0L, customer.totalSpent + priceDifferenceInCents);
+
+                // Update average order value
+                updateAverageOrderValue(customer);
+
+                // Recalculate tier if not manually overridden
+                if (!customer.tierOverridden) {
+                    customerTierService.calculateTier(customer);
+                }
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error updating customer statistics on exchange: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Update customer statistics when an order is cancelled
+     */
+    void updateCustomerStatisticsOnOrderCancel(Customer customer, BigInteger orderAmount) {
+        try {
+            // Convert BigInteger to Long (cents)
+            Long orderAmountInCents = orderAmount.longValue();
+
+            // Reduce total spent and order count
+            if (customer.totalSpent != null && customer.totalSpent > 0) {
+                customer.totalSpent = Math.max(0L, customer.totalSpent - orderAmountInCents);
+            }
+
+            if (customer.totalOrders != null && customer.totalOrders > 0) {
+                customer.totalOrders = customer.totalOrders - 1;
+            }
+
+            // Update average order value
+            updateAverageOrderValue(customer);
+
+            // Recalculate tier if not manually overridden
+            if (!customer.tierOverridden) {
+                customerTierService.calculateTier(customer);
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error updating customer statistics on order cancel: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Update customer's average order value
+     */
+    void updateAverageOrderValue(Customer customer) {
+        if (customer.totalOrders != null && customer.totalOrders > 0 && customer.totalSpent != null) {
+            customer.averageOrderValue = customer.totalSpent / customer.totalOrders;
+            customer.lifetimeValue = customer.totalSpent; // For now, lifetime value equals total spent
+        }
     }
 }
